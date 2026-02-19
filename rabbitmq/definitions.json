@@ -1,0 +1,128 @@
+{
+  "rabbit_version": "3.13.0",
+  "users": [
+    {
+      "name": "maka",
+      "password_hash": "kI3FJRZeXucpEu8ZUF8Mhh88CzfL80q145s+0v0aHW/LxHri",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    { "name": "/" }
+  ],
+  "permissions": [
+    {
+      "user": "maka",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "maka.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "stock.commande.validee",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "finance.vente.conclue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "finance.paie.calculee",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "crm.stock.alerte",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "ventes.paiement.recu",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "stock.rupture",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "maka.events",
+      "vhost": "/",
+      "destination": "stock.commande.validee",
+      "destination_type": "queue",
+      "routing_key": "stock.commande.validee",
+      "arguments": {}
+    },
+    {
+      "source": "maka.events",
+      "vhost": "/",
+      "destination": "finance.vente.conclue",
+      "destination_type": "queue",
+      "routing_key": "finance.vente.conclue",
+      "arguments": {}
+    },
+    {
+      "source": "maka.events",
+      "vhost": "/",
+      "destination": "finance.paie.calculee",
+      "destination_type": "queue",
+      "routing_key": "finance.paie.calculee",
+      "arguments": {}
+    },
+    {
+      "source": "maka.events",
+      "vhost": "/",
+      "destination": "crm.stock.alerte",
+      "destination_type": "queue",
+      "routing_key": "crm.stock.alerte",
+      "arguments": {}
+    },
+    {
+      "source": "maka.events",
+      "vhost": "/",
+      "destination": "ventes.paiement.recu",
+      "destination_type": "queue",
+      "routing_key": "ventes.paiement.recu",
+      "arguments": {}
+    },
+    {
+      "source": "maka.events",
+      "vhost": "/",
+      "destination": "stock.rupture",
+      "destination_type": "queue",
+      "routing_key": "stock.rupture",
+      "arguments": {}
+    }
+  ]
+}
