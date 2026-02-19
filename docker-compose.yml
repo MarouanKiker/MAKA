@@ -1,0 +1,277 @@
+version: '3.8'
+
+networks:
+  maka-network:
+    driver: bridge
+
+services:
+  # ─── API Gateway ───────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: maka-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - auth-service
+      - crm-service
+      - stock-service
+      - sales-service
+      - hr-service
+      - finance-service
+      - frontend
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  # ─── Message Broker ────────────────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: maka-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-maka}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-maka_secret}
+    volumes:
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  # ─── Databases ─────────────────────────────────────────────────────────────
+  auth-db:
+    image: mysql:8.0
+    container_name: maka-auth-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${AUTH_DB_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${AUTH_DB_NAME:-maka_auth}
+      MYSQL_USER: ${AUTH_DB_USER:-auth_user}
+      MYSQL_PASSWORD: ${AUTH_DB_PASSWORD:-auth_secret}
+    volumes:
+      - auth_db_data:/var/lib/mysql
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  crm-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: maka-crm-db
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${CRM_DB_PASSWORD:-CrmSecret123!}
+      MSSQL_DB: ${CRM_DB_NAME:-maka_crm}
+    volumes:
+      - crm_db_data:/var/opt/mssql
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  stock-db:
+    image: mysql:8.0
+    container_name: maka-stock-db
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${STOCK_DB_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${STOCK_DB_NAME:-maka_stock}
+      MYSQL_USER: ${STOCK_DB_USER:-stock_user}
+      MYSQL_PASSWORD: ${STOCK_DB_PASSWORD:-stock_secret}
+    volumes:
+      - stock_db_data:/var/lib/mysql
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  sales-db:
+    image: postgres:15-alpine
+    container_name: maka-sales-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${SALES_DB_NAME:-maka_sales}
+      POSTGRES_USER: ${SALES_DB_USER:-sales_user}
+      POSTGRES_PASSWORD: ${SALES_DB_PASSWORD:-sales_secret}
+    volumes:
+      - sales_db_data:/var/lib/postgresql/data
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  hr-db:
+    image: postgres:15-alpine
+    container_name: maka-hr-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${HR_DB_NAME:-maka_hr}
+      POSTGRES_USER: ${HR_DB_USER:-hr_user}
+      POSTGRES_PASSWORD: ${HR_DB_PASSWORD:-hr_secret}
+    volumes:
+      - hr_db_data:/var/lib/postgresql/data
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  finance-db:
+    image: postgres:15-alpine
+    container_name: maka-finance-db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: ${FINANCE_DB_NAME:-maka_finance}
+      POSTGRES_USER: ${FINANCE_DB_USER:-finance_user}
+      POSTGRES_PASSWORD: ${FINANCE_DB_PASSWORD:-finance_secret}
+    volumes:
+      - finance_db_data:/var/lib/postgresql/data
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  # ─── Microservices ─────────────────────────────────────────────────────────
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: maka-auth-service
+    ports:
+      - "8001:8001"
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      DATABASE_URL: mysql://${AUTH_DB_USER:-auth_user}:${AUTH_DB_PASSWORD:-auth_secret}@auth-db:3306/${AUTH_DB_NAME:-maka_auth}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-jwt_passphrase}
+      MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-maka}:${RABBITMQ_PASS:-maka_secret}@rabbitmq:5672/%2f/messages
+    depends_on:
+      - auth-db
+      - rabbitmq
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  crm-service:
+    build:
+      context: ./services/crm-service
+      dockerfile: Dockerfile
+    container_name: maka-crm-service
+    ports:
+      - "8002:8002"
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=crm-db,1433;Database=${CRM_DB_NAME:-maka_crm};User=sa;Password=${CRM_DB_PASSWORD:-CrmSecret123!};TrustServerCertificate=True"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: ${RABBITMQ_USER:-maka}
+      RabbitMQ__Password: ${RABBITMQ_PASS:-maka_secret}
+      JWT__Secret: ${JWT_SECRET:-jwt_signing_secret_key_min_32_chars}
+      ASPNETCORE_URLS: http://+:8002
+    depends_on:
+      - crm-db
+      - rabbitmq
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  stock-service:
+    build:
+      context: ./services/stock-service
+      dockerfile: Dockerfile
+    container_name: maka-stock-service
+    ports:
+      - "8003:8003"
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      DATABASE_URL: mysql://${STOCK_DB_USER:-stock_user}:${STOCK_DB_PASSWORD:-stock_secret}@stock-db:3306/${STOCK_DB_NAME:-maka_stock}
+      MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-maka}:${RABBITMQ_PASS:-maka_secret}@rabbitmq:5672/%2f/messages
+    depends_on:
+      - stock-db
+      - rabbitmq
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  sales-service:
+    build:
+      context: ./services/sales-service
+      dockerfile: Dockerfile
+    container_name: maka-sales-service
+    ports:
+      - "8004:8004"
+    environment:
+      DATABASE_URL: postgresql://${SALES_DB_USER:-sales_user}:${SALES_DB_PASSWORD:-sales_secret}@sales-db:5432/${SALES_DB_NAME:-maka_sales}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-maka}:${RABBITMQ_PASS:-maka_secret}@rabbitmq:5672/
+    depends_on:
+      - sales-db
+      - rabbitmq
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  hr-service:
+    build:
+      context: ./services/hr-service
+      dockerfile: Dockerfile
+    container_name: maka-hr-service
+    ports:
+      - "8005:8005"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://hr-db:5432/${HR_DB_NAME:-maka_hr}
+      SPRING_DATASOURCE_USERNAME: ${HR_DB_USER:-hr_user}
+      SPRING_DATASOURCE_PASSWORD: ${HR_DB_PASSWORD:-hr_secret}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-maka}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASS:-maka_secret}
+    depends_on:
+      - hr-db
+      - rabbitmq
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  finance-service:
+    build:
+      context: ./services/finance-service
+      dockerfile: Dockerfile
+    container_name: maka-finance-service
+    ports:
+      - "8006:8006"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://finance-db:5432/${FINANCE_DB_NAME:-maka_finance}
+      SPRING_DATASOURCE_USERNAME: ${FINANCE_DB_USER:-finance_user}
+      SPRING_DATASOURCE_PASSWORD: ${FINANCE_DB_PASSWORD:-finance_secret}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-maka}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASS:-maka_secret}
+    depends_on:
+      - finance-db
+      - rabbitmq
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    container_name: maka-frontend
+    ports:
+      - "4200:4200"
+    networks:
+      - maka-network
+    restart: unless-stopped
+
+# ─── Volumes ───────────────────────────────────────────────────────────────
+volumes:
+  rabbitmq_data:
+  auth_db_data:
+  crm_db_data:
+  stock_db_data:
+  sales_db_data:
+  hr_db_data:
+  finance_db_data:
