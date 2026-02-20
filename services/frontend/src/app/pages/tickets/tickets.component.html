@@ -1,0 +1,81 @@
+<div>
+    <div class="page-header">
+        <div>
+            <h1>🎫 Tickets Support</h1>
+            <p class="page-subtitle">Glissez les tickets entre les etapes du support</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:.75rem;">
+            <span class="total-badge">{{ crm.tickets.length }} tickets</span>
+            <button class="btn-add" (click)="openForm()">+ Nouveau ticket</button>
+        </div>
+    </div>
+
+    <div class="kanban">
+        <div class="kanban-col" *ngFor="let col of columns" (dragover)="onDragOver($event)"
+            (drop)="onDrop($event, col.key)">
+
+            <div class="kanban-col-header">
+                <span class="kanban-dot" [style.background]="col.color"></span>
+                <span class="kanban-col-title">{{ col.label }}</span>
+                <span class="kanban-count">{{ getByStatut(col.key).length }}</span>
+            </div>
+
+            <div class="kanban-cards">
+                <div class="kanban-card" *ngFor="let t of getByStatut(col.key)" draggable="true"
+                    (dragstart)="onDragStart(t)" (dragend)="onDragEnd()" [class.dragging]="draggedTicket === t">
+
+                    <div class="card-top">
+                        <span class="card-title">{{ t.sujet }}</span>
+                        <span class="badge" [class]="t.priorite.toLowerCase()">{{ t.priorite }}</span>
+                    </div>
+
+                    <div class="card-meta">
+                        <span class="card-meta-item">🏢 {{ crm.getAccountName(t.accountId) }}</span>
+                        <span class="card-meta-item">👤 {{ t.agent }}</span>
+                    </div>
+
+                    <div class="card-date">📅 {{ t.dateCreation }}</div>
+                </div>
+
+                <div class="kanban-empty" *ngIf="getByStatut(col.key).length === 0">
+                    Deposez un ticket ici
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal -->
+    <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h2>Nouveau ticket</h2>
+            <div class="champ">
+                <label>Sujet</label>
+                <input type="text" [(ngModel)]="sujet" placeholder="Probleme..." />
+            </div>
+            <div class="row">
+                <div class="champ">
+                    <label>Priorite</label>
+                    <select [(ngModel)]="priorite">
+                        <option>Haute</option>
+                        <option>Moyenne</option>
+                        <option>Basse</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Compte</label>
+                    <select [(ngModel)]="accountId">
+                        <option *ngFor="let a of crm.accounts" [ngValue]="a.id">{{ a.nom }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="champ">
+                <label>Agent</label>
+                <input type="text" [(ngModel)]="agent" placeholder="Nom" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" (click)="showForm = false">Annuler</button>
+                <button class="btn-save" (click)="save()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>

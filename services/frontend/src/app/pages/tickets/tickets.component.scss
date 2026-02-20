@@ -1,0 +1,174 @@
+/* Tickets - Kanban drag & drop */
+
+.total-badge {
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .3rem .65rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-0);
+    border-radius: 20px;
+    color: var(--text-2);
+}
+
+.kanban {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    animation: fadeInUp .4s ease;
+}
+
+.kanban-col {
+    flex: 1;
+    min-width: 220px;
+}
+
+.kanban-col-header {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .6rem .8rem;
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.kanban-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.kanban-col-title {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    flex: 1;
+}
+
+.kanban-count {
+    font-size: .72rem;
+    font-weight: 700;
+    background: var(--bg-2);
+    padding: .12rem .45rem;
+    border-radius: 10px;
+    color: var(--text-2);
+}
+
+.kanban-cards {
+    background: var(--bg-2);
+    border: 1px solid var(--border-0);
+    border-top: none;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    padding: .55rem;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+}
+
+.kanban-card {
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-sm);
+    padding: .85rem;
+    cursor: grab;
+    transition: all .2s;
+    animation: fadeInUp .3s ease both;
+    user-select: none;
+}
+
+.kanban-card:hover {
+    border-color: var(--border-1);
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
+
+.kanban-card:active {
+    cursor: grabbing;
+}
+
+.kanban-card.dragging {
+    opacity: .4;
+    transform: scale(.95);
+}
+
+.card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .4rem;
+}
+
+.card-title {
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem .6rem;
+    margin-bottom: .25rem;
+}
+
+.card-meta-item {
+    font-size: .72rem;
+    color: var(--text-2);
+}
+
+.card-date {
+    font-size: .68rem;
+    color: var(--text-3);
+}
+
+.badge {
+    font-size: .62rem;
+    font-weight: 700;
+    padding: .17rem .45rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.badge.haute {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.badge.moyenne {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.badge.basse {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.kanban-empty {
+    text-align: center;
+    padding: 3rem .5rem;
+    color: var(--text-3);
+    font-size: .78rem;
+    border: 2px dashed var(--border-0);
+    border-radius: var(--radius-sm);
+}
+
+/* ========== RESPONSIVE - MOBILE ========== */
+@media (max-width: 768px) {
+    .kanban {
+        flex-direction: column;
+    }
+
+    .kanban-col {
+        min-width: 100%;
+    }
+
+    .kanban-cards {
+        min-height: 80px;
+    }
+}

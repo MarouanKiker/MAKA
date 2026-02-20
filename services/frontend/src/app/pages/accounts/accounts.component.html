@@ -1,0 +1,87 @@
+<div>
+    <div class="page-header">
+        <div>
+            <h1>🏢 Comptes</h1>
+            <p class="page-subtitle">Gerez vos clients et entreprises</p>
+        </div>
+        <button class="btn-add" (click)="openForm()">+ Nouveau compte</button>
+    </div>
+
+    <div class="page-stats">
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--accent-soft)">🏢</div>
+            <div>
+                <span class="mini-stat-value">{{ crm.accounts.length }}</span>
+                <span class="mini-stat-label">Total comptes</span>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--blue-soft)">👤</div>
+            <div>
+                <span class="mini-stat-value">{{ crm.contacts.length }}</span>
+                <span class="mini-stat-label">Contacts lies</span>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--warning-soft)">🎫</div>
+            <div>
+                <span class="mini-stat-value">{{ crm.tickets.length }}</span>
+                <span class="mini-stat-label">Tickets ouverts</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- recherche -->
+    <div class="champ" style="max-width:300px; margin-bottom:1.25rem;">
+        <input type="text" [(ngModel)]="search" placeholder="🔍 Rechercher un compte..." />
+    </div>
+
+    <div class="card-grid">
+        <div class="item-card" *ngFor="let a of filtered">
+            <div class="card-top">
+                <span class="card-title">{{ a.nom }}</span>
+            </div>
+            <div class="card-meta">
+                <span class="card-meta-item"><span class="meta-icon">📧</span> {{ a.email }}</span>
+                <span class="card-meta-item"><span class="meta-icon">📞</span> {{ a.telephone }}</span>
+                <span class="card-meta-item"><span class="meta-icon">👤</span> {{ a.responsable }}</span>
+            </div>
+            <div class="card-actions">
+                <button class="btn-sm danger" (click)="delete(a.id)">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty" *ngIf="filtered.length === 0">
+        <span class="empty-icon">🏢</span>
+        Aucun compte trouve.
+    </div>
+
+    <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h2>Nouveau compte</h2>
+            <div class="champ">
+                <label>Nom</label>
+                <input type="text" [(ngModel)]="nom" placeholder="Nom de l'entreprise" />
+            </div>
+            <div class="champ">
+                <label>Email</label>
+                <input type="email" [(ngModel)]="email" placeholder="email@entreprise.com" />
+            </div>
+            <div class="row">
+                <div class="champ">
+                    <label>Telephone</label>
+                    <input type="text" [(ngModel)]="telephone" placeholder="0522-000000" />
+                </div>
+                <div class="champ">
+                    <label>Responsable</label>
+                    <input type="text" [(ngModel)]="responsable" placeholder="Nom" />
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" (click)="showForm = false">Annuler</button>
+                <button class="btn-save" (click)="save()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>

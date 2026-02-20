@@ -1,0 +1,83 @@
+<div>
+    <div class="page-header">
+        <div>
+            <h1>🎯 Pipeline Leads</h1>
+            <p class="page-subtitle">Glissez les leads entre les colonnes pour changer leur statut</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:.75rem;">
+            <span class="total-badge">{{ crm.leads.length }} leads</span>
+            <button class="btn-add" (click)="openForm()">+ Nouveau lead</button>
+        </div>
+    </div>
+
+    <!-- kanban drag & drop -->
+    <div class="kanban">
+        <div class="kanban-col" *ngFor="let col of columns" (dragover)="onDragOver($event)"
+            (drop)="onDrop($event, col.key)">
+
+            <div class="kanban-col-header">
+                <span class="kanban-dot" [style.background]="col.color"></span>
+                <span class="kanban-col-title">{{ col.label }}</span>
+                <span class="kanban-count">{{ getByStatut(col.key).length }}</span>
+            </div>
+
+            <div class="kanban-cards">
+                <div class="kanban-card" *ngFor="let l of getByStatut(col.key)" draggable="true"
+                    (dragstart)="onDragStart(l)" (dragend)="onDragEnd()" [class.dragging]="draggedLead === l">
+
+                    <div class="card-top">
+                        <span class="card-title">{{ l.source }}</span>
+                        <span class="score-pill">{{ l.score }}</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-fill" [style.width.%]="l.score"></div>
+                    </div>
+
+                    <div class="card-meta">
+                        <span class="card-meta-item">👤 {{ l.responsable }}</span>
+                        <span class="card-meta-item">📅 {{ l.dateCreation }}</span>
+                    </div>
+
+                    <div class="card-bottom">
+                        <button class="btn-del" (click)="delete(l.id)" title="Supprimer">×</button>
+                    </div>
+                </div>
+
+                <div class="kanban-empty" *ngIf="getByStatut(col.key).length === 0">
+                    Deposez un lead ici
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal -->
+    <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h2>Nouveau lead</h2>
+            <div class="row">
+                <div class="champ">
+                    <label>Source</label>
+                    <select [(ngModel)]="source">
+                        <option>Site Web</option>
+                        <option>Salon</option>
+                        <option>Email</option>
+                        <option>Recommandation</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Score</label>
+                    <input type="number" [(ngModel)]="score" min="0" max="100" />
+                </div>
+            </div>
+            <div class="champ">
+                <label>Responsable</label>
+                <input type="text" [(ngModel)]="responsable" placeholder="Nom" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" (click)="showForm = false">Annuler</button>
+                <button class="btn-save" (click)="save()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>

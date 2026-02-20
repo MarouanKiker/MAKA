@@ -1,0 +1,418 @@
+/* Dashboard - Design riche + responsive */
+
+.dashboard {
+    max-width: 1100px;
+}
+
+/* en-tete */
+.dash-header {
+    margin-bottom: 1.5rem;
+    animation: fadeInUp .4s ease;
+}
+
+.dash-header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -.3px;
+}
+
+.dash-subtitle {
+    color: var(--text-2);
+    font-size: .82rem;
+    margin-top: .1rem;
+}
+
+/* grille de stats */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: .8rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    padding: .9rem;
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    transition: all .25s;
+    animation: fadeInUp .4s ease both;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-1);
+}
+
+.stat-letter {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .6rem;
+    font-weight: 800;
+    letter-spacing: .3px;
+    margin-bottom: .5rem;
+}
+
+.stat-number {
+    font-size: 1.4rem;
+    font-weight: 800;
+    display: block;
+    line-height: 1.1;
+}
+
+.stat-name {
+    font-size: .65rem;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    font-weight: 600;
+}
+
+.stat-bar {
+    height: 3px;
+    background: var(--border-0);
+    border-radius: 10px;
+    margin-top: .55rem;
+    overflow: hidden;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width .8s ease .3s;
+}
+
+/* grille 2 colonnes pour les sections */
+.dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+.dash-section {
+    animation: fadeInUp .5s ease both;
+}
+
+.section-title {
+    font-size: .95rem;
+    font-weight: 700;
+    margin-bottom: .65rem;
+}
+
+/* pipeline en barres horizontales */
+.pipeline-chart {
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    padding: .85rem;
+}
+
+.pipeline-bar-row {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin-bottom: .55rem;
+}
+
+.pipeline-bar-row:last-child {
+    margin-bottom: 0;
+}
+
+.pipeline-label {
+    font-size: .75rem;
+    font-weight: 600;
+    width: 65px;
+    color: var(--text-2);
+}
+
+.pipeline-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border-0);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.pipeline-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width .8s ease .2s;
+    min-width: 4px;
+}
+
+.pipeline-val {
+    font-size: .82rem;
+    font-weight: 800;
+    width: 20px;
+    text-align: right;
+}
+
+/* liste de taches */
+.task-list {
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .6rem .85rem;
+    border-bottom: 1px solid var(--border-0);
+    transition: background .15s;
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item:hover {
+    background: var(--bg-hover);
+}
+
+.task-priority {
+    width: 4px;
+    height: 24px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.task-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.task-name {
+    font-size: .82rem;
+    font-weight: 600;
+}
+
+.task-meta {
+    font-size: .68rem;
+    color: var(--text-3);
+}
+
+/* liste de leads */
+.lead-list {
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.lead-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .65rem .85rem;
+    border-bottom: 1px solid var(--border-0);
+    transition: background .15s;
+}
+
+.lead-item:last-child {
+    border-bottom: none;
+}
+
+.lead-item:hover {
+    background: var(--bg-hover);
+}
+
+.lead-source {
+    font-size: .82rem;
+    font-weight: 600;
+    display: block;
+}
+
+.lead-resp {
+    font-size: .68rem;
+    color: var(--text-3);
+}
+
+.lead-right {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+}
+
+.mini-progress {
+    width: 40px;
+    height: 4px;
+    background: var(--border-0);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    border-radius: 10px;
+}
+
+/* liste de tickets */
+.ticket-list {
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.ticket-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .65rem .85rem;
+    border-bottom: 1px solid var(--border-0);
+    transition: background .15s;
+}
+
+.ticket-item:last-child {
+    border-bottom: none;
+}
+
+.ticket-item:hover {
+    background: var(--bg-hover);
+}
+
+.ticket-subject {
+    font-size: .82rem;
+    font-weight: 600;
+    display: block;
+}
+
+.ticket-account {
+    font-size: .68rem;
+    color: var(--text-3);
+}
+
+.ticket-right {
+    display: flex;
+    gap: .3rem;
+}
+
+/* badges de statut */
+.badge {
+    display: inline-block;
+    font-size: .62rem;
+    font-weight: 700;
+    padding: .17rem .45rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.badge.haute {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.badge.moyenne {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.badge.basse {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge.a_faire {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.badge.en_cours {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.badge.terminee {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge.nouveau {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.badge.qualifie {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.badge.converti {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge.ouvert {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.badge.resolu {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+/* ========== RESPONSIVE - TABLETTE ========== */
+@media (max-width: 1024px) {
+    .stat-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ========== RESPONSIVE - MOBILE ========== */
+@media (max-width: 768px) {
+
+    /* les stats sur 2 colonnes */
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: .55rem;
+    }
+
+    /* les sections sur 1 colonne */
+    .dash-grid {
+        grid-template-columns: 1fr;
+        gap: .8rem;
+    }
+
+    .dash-header h1 {
+        font-size: 1.1rem;
+    }
+
+    .section-title {
+        font-size: .85rem;
+    }
+}
+
+/* ========== RESPONSIVE - PETIT MOBILE ========== */
+@media (max-width: 480px) {
+    .stat-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: .4rem;
+    }
+
+    .stat-card {
+        padding: .65rem;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+    }
+}

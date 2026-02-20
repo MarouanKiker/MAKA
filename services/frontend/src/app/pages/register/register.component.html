@@ -1,0 +1,51 @@
+<div class="auth-page">
+    <div class="auth-bg">
+        <div class="bg-shape s1"></div>
+        <div class="bg-shape s2"></div>
+        <div class="bg-shape s3"></div>
+    </div>
+
+    <div class="auth-card">
+        <button class="theme-toggle" (click)="toggleTheme()">
+            {{ themeSvc.isDark() ? '☀️' : '🌙' }}
+        </button>
+
+        <div class="card-brand">
+            <img src="assets/logo.jpeg" alt="MAKA" class="card-logo" />
+            <span class="card-brand-text">MAKA <span>ERP</span></span>
+        </div>
+
+        <h2>Creer un compte</h2>
+        <p class="card-sub">Rejoignez la plateforme CRM</p>
+
+        <div class="alert alert-error" *ngIf="erreur">{{ erreur }}</div>
+        <div class="alert alert-success" *ngIf="succes">{{ succes }}</div>
+
+        <form (ngSubmit)="onRegister()">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" [(ngModel)]="nom" name="nom" placeholder="Kiker" required />
+                </div>
+                <div class="form-group">
+                    <label>Prenom</label>
+                    <input type="text" [(ngModel)]="prenom" name="prenom" placeholder="Marwan" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" [(ngModel)]="email" name="email" placeholder="votre@email.com" required />
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" [(ngModel)]="password" name="password" placeholder="Min. 6 caracteres"
+                    required />
+            </div>
+            <button type="submit" class="btn-primary" [disabled]="loading">
+                {{ loading ? 'Inscription...' : 'Creer mon compte' }}
+            </button>
+        </form>
+
+        <p class="card-footer">Deja un compte ? <a routerLink="/login">Se connecter</a></p>
+    </div>
+</div>

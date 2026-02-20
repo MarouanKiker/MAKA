@@ -1,0 +1,251 @@
+/* Register - meme style centree que login */
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0b1117 0%, #152d44 50%, #0d1b2a 100%);
+}
+
+.auth-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.bg-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .4;
+    animation: float 8s ease-in-out infinite;
+}
+
+.s1 {
+    width: 350px;
+    height: 350px;
+    background: rgba(54, 197, 184, .2);
+    top: -80px;
+    left: -50px;
+}
+
+.s2 {
+    width: 250px;
+    height: 250px;
+    background: rgba(74, 158, 255, .15);
+    bottom: -60px;
+    right: -30px;
+    animation-delay: -3s;
+}
+
+.s3 {
+    width: 180px;
+    height: 180px;
+    background: rgba(147, 112, 255, .15);
+    top: 40%;
+    right: 20%;
+    animation-delay: -5s;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+    }
+
+    50% {
+        transform: translateY(-25px) scale(1.05);
+    }
+}
+
+.auth-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+    padding: 2.25rem 2rem;
+    background: var(--bg-1);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, .35);
+    animation: scaleIn .4s ease;
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-0);
+    background: var(--bg-2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+}
+
+.theme-toggle:hover {
+    background: var(--bg-3);
+}
+
+.card-brand {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+}
+
+.card-brand-text {
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.card-brand-text span {
+    font-weight: 400;
+    color: var(--accent);
+}
+
+h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.card-sub {
+    color: var(--text-2);
+    font-size: .82rem;
+    margin-bottom: 1.5rem;
+}
+
+.alert-error {
+    padding: .5rem .75rem;
+    border-radius: var(--radius-sm);
+    font-size: .78rem;
+    margin-bottom: 1rem;
+    background: var(--danger-soft);
+    border: 1px solid rgba(240, 108, 98, .2);
+    color: var(--danger);
+}
+
+.alert-success {
+    padding: .5rem .75rem;
+    border-radius: var(--radius-sm);
+    font-size: .78rem;
+    margin-bottom: 1rem;
+    background: var(--success-soft);
+    border: 1px solid rgba(68, 212, 146, .2);
+    color: var(--success);
+}
+
+.form-row {
+    display: flex;
+    gap: .6rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: .3rem;
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: .6rem .8rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-sm);
+    color: var(--text-0);
+    font-family: inherit;
+    font-size: .85rem;
+    outline: none;
+    transition: all var(--transition);
+}
+
+.form-group input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.form-group input::placeholder {
+    color: var(--text-3);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: .7rem;
+    margin-top: .3rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: #fff;
+    font-family: inherit;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(54, 197, 184, .3);
+}
+
+.btn-primary:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.card-footer {
+    text-align: center;
+    margin-top: 1.1rem;
+    font-size: .78rem;
+    color: var(--text-3);
+}
+
+/* ========== RESPONSIVE - MOBILE ========== */
+@media (max-width: 500px) {
+    .auth-card {
+        margin: 1rem;
+        padding: 1.5rem 1.2rem;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+    }
+
+    .bg-shape {
+        display: none;
+    }
+}
