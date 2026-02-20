@@ -1,0 +1,199 @@
+/* ========================================
+   MAKA ERP - Design System
+   ======================================== */
+
+/* --- DARK THEME --- */
+body[data-theme="dark"],
+body:not([data-theme]) {
+  --bg-0: #0b1117;
+  --bg-1: #111921;
+  --bg-2: #17212d;
+  --bg-3: #1e2d3d;
+  --bg-hover: #1c2938;
+  --bg-input: #0e1620;
+  --surface: #192330;
+  --surface-hover: #1f2e3f;
+  --accent: #36c5b8;
+  --accent-soft: rgba(54, 197, 184, .10);
+  --accent-hover: #43d4c7;
+  --blue: #4a9eff;
+  --blue-soft: rgba(74, 158, 255, .10);
+  --purple: #9370ff;
+  --purple-soft: rgba(147, 112, 255, .10);
+  --text-0: #f0f4f8;
+  --text-1: #c3cdd8;
+  --text-2: #7e909f;
+  --text-3: #4c5e6f;
+  --border-0: #1a2736;
+  --border-1: #253546;
+  --danger: #f06c62;
+  --danger-soft: rgba(240, 108, 98, .10);
+  --success: #44d492;
+  --success-soft: rgba(68, 212, 146, .10);
+  --warning: #f5c748;
+  --warning-soft: rgba(245, 199, 72, .10);
+  --shadow: 0 1px 3px rgba(0, 0, 0, .3), 0 4px 12px rgba(0, 0, 0, .2);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, .4), 0 8px 32px rgba(0, 0, 0, .25);
+  --glow-accent: 0 0 20px rgba(54, 197, 184, .15);
+}
+
+/* --- LIGHT THEME --- */
+body[data-theme="light"] {
+  --bg-0: #e8ecf1;
+  --bg-1: #eef1f5;
+  --bg-2: #f4f6f9;
+  --bg-3: #ffffff;
+  --bg-hover: #e2e7ed;
+  --bg-input: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #f0f3f7;
+  --accent: #1a9e93;
+  --accent-soft: rgba(26, 158, 147, .08);
+  --accent-hover: #14857c;
+  --blue: #2b7de9;
+  --blue-soft: rgba(43, 125, 233, .08);
+  --purple: #7c5ce0;
+  --purple-soft: rgba(124, 92, 224, .08);
+  --text-0: #1a242e;
+  --text-1: #3d4f5f;
+  --text-2: #6b7f8e;
+  --text-3: #94a3b2;
+  --border-0: #d8dfe6;
+  --border-1: #c6d0da;
+  --danger: #e35449;
+  --danger-soft: rgba(227, 84, 73, .08);
+  --success: #1daa67;
+  --success-soft: rgba(29, 170, 103, .08);
+  --warning: #d4a72c;
+  --warning-soft: rgba(212, 167, 44, .08);
+  --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 4px 12px rgba(0, 0, 0, .04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, .08), 0 8px 32px rgba(0, 0, 0, .04);
+  --glow-accent: 0 0 20px rgba(26, 158, 147, .08);
+}
+
+:root {
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --sidebar-w: 250px;
+  --sidebar-collapsed: 64px;
+  --topbar-h: 52px;
+  --transition: .2s ease;
+}
+
+/* --- RESET --- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-0);
+  color: var(--text-0);
+  min-height: 100vh;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition), color var(--transition);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-1);
+  border-radius: 10px;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .6;
+  }
+}

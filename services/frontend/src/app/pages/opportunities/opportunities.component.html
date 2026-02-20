@@ -1,0 +1,37 @@
+<div>
+    <div class="page-header">
+        <div>
+            <h1>💰 Pipeline Opportunites</h1>
+            <p class="page-subtitle">Glissez les opportunites entre les etapes du pipeline</p>
+        </div>
+        <span class="total-badge">{{ crm.opportunities.length }} opportunites</span>
+    </div>
+
+    <div class="kanban">
+        <div class="kanban-col" *ngFor="let col of columns" (dragover)="onDragOver($event)"
+            (drop)="onDrop($event, col.key)">
+
+            <div class="kanban-col-header">
+                <span class="kanban-dot" [style.background]="col.color"></span>
+                <span class="kanban-col-title">{{ col.label }}</span>
+                <span class="kanban-count">{{ getByStatut(col.key).length }}</span>
+            </div>
+
+            <div class="kanban-cards">
+                <div class="kanban-card" *ngFor="let o of getByStatut(col.key)" draggable="true"
+                    (dragstart)="onDragStart(o)" (dragend)="onDragEnd()" [class.dragging]="draggedOpp === o">
+
+                    <div class="card-title">{{ o.titre }}</div>
+                    <div class="kanban-value">{{ o.valeur | number }} MAD</div>
+                    <div class="card-meta" *ngIf="o.dateCloture">
+                        <span class="card-meta-item">📅 {{ o.dateCloture }}</span>
+                    </div>
+                </div>
+
+                <div class="kanban-empty" *ngIf="getByStatut(col.key).length === 0">
+                    Deposez ici
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

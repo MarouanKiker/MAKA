@@ -1,0 +1,91 @@
+<div>
+    <div class="page-header">
+        <div>
+            <h1>👤 Contacts</h1>
+            <p class="page-subtitle">Personnes liees a vos comptes clients</p>
+        </div>
+        <button class="btn-add" (click)="openForm()">+ Nouveau contact</button>
+    </div>
+
+    <div class="page-stats">
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--accent-soft)">👤</div>
+            <div>
+                <span class="mini-stat-value">{{ crm.contacts.length }}</span>
+                <span class="mini-stat-label">Total contacts</span>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--blue-soft)">🎯</div>
+            <div>
+                <span class="mini-stat-value">{{ countByType('Decideur') }}</span>
+                <span class="mini-stat-label">Decideurs</span>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--purple-soft)">⚙️</div>
+            <div>
+                <span class="mini-stat-value">{{ countByType('Technique') }}</span>
+                <span class="mini-stat-label">Techniques</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-grid">
+        <div class="item-card" *ngFor="let c of crm.contacts">
+            <div class="card-top">
+                <span class="card-title">{{ c.nom }}</span>
+                <span class="badge"
+                    [class]="c.type === 'Decideur' ? 'nouvelle' : c.type === 'Technique' ? 'en_cours' : 'ouvert'">{{
+                    c.type }}</span>
+            </div>
+            <div class="card-meta">
+                <span class="card-meta-item"><span class="meta-icon">🏢</span> {{ crm.getAccountName(c.accountId)
+                    }}</span>
+                <span class="card-meta-item"><span class="meta-icon">📍</span> {{ c.adresse }}</span>
+            </div>
+            <div class="card-actions">
+                <button class="btn-sm danger" (click)="delete(c.id)">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty" *ngIf="crm.contacts.length === 0">
+        <span class="empty-icon">👤</span>
+        Aucun contact.
+    </div>
+
+    <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h2>Nouveau contact</h2>
+            <div class="champ">
+                <label>Nom complet</label>
+                <input type="text" [(ngModel)]="nom" placeholder="Nom complet" />
+            </div>
+            <div class="row">
+                <div class="champ">
+                    <label>Type</label>
+                    <select [(ngModel)]="type">
+                        <option>Decideur</option>
+                        <option>Technique</option>
+                        <option>Autre</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Compte</label>
+                    <select [(ngModel)]="accountId">
+                        <option *ngFor="let a of crm.accounts" [ngValue]="a.id">{{ a.nom }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="champ">
+                <label>Adresse</label>
+                <input type="text" [(ngModel)]="adresse" placeholder="Ville" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" (click)="showForm = false">Annuler</button>
+                <button class="btn-save" (click)="save()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,53 @@
+<div class="auth-page">
+    <!-- fond anime -->
+    <div class="auth-bg">
+        <div class="bg-shape s1"></div>
+        <div class="bg-shape s2"></div>
+        <div class="bg-shape s3"></div>
+    </div>
+
+    <!-- carte centree -->
+    <div class="auth-card">
+
+        <button class="theme-toggle" (click)="toggleTheme()">
+            {{ themeSvc.isDark() ? '☀️' : '🌙' }}
+        </button>
+
+        <div class="card-brand">
+            <img src="assets/logo.jpeg" alt="MAKA" class="card-logo" />
+            <span class="card-brand-text">MAKA <span>ERP</span></span>
+        </div>
+
+        <h2>Connexion</h2>
+        <p class="card-sub">Accedez a votre espace CRM</p>
+
+        <div class="alert alert-error" *ngIf="erreur">{{ erreur }}</div>
+
+        <form (ngSubmit)="onLogin()">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="votre@email.com"
+                    required />
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••"
+                    required />
+            </div>
+            <button type="submit" class="btn-primary" [disabled]="loading">
+                {{ loading ? 'Connexion...' : 'Se connecter' }}
+            </button>
+        </form>
+
+        <p class="card-footer">Pas de compte ? <a routerLink="/register">Creer un compte</a></p>
+
+        <div class="demo-section">
+            <span class="demo-label">Comptes demo</span>
+            <div class="demo-row">
+                <button class="demo-chip admin" (click)="fillAdmin()">Admin</button>
+                <button class="demo-chip commercial" (click)="fillCommercial()">Commercial</button>
+                <button class="demo-chip support" (click)="fillSupport()">Support</button>
+            </div>
+        </div>
+    </div>
+</div>

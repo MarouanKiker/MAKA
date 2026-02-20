@@ -1,0 +1,86 @@
+<div>
+    <div class="page-header">
+        <div>
+            <h1>📢 Campagnes Marketing</h1>
+            <p class="page-subtitle">Gerez vos campagnes et budgets</p>
+        </div>
+        <button class="btn-add" (click)="openForm()">+ Nouvelle campagne</button>
+    </div>
+
+    <div class="page-stats">
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--accent-soft)">📢</div>
+            <div>
+                <span class="mini-stat-value">{{ crm.campaigns.length }}</span>
+                <span class="mini-stat-label">Campagnes</span>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--warning-soft)">💵</div>
+            <div>
+                <span class="mini-stat-value">{{ totalBudget | number }} MAD</span>
+                <span class="mini-stat-label">Budget total</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-grid">
+        <div class="item-card" *ngFor="let c of crm.campaigns">
+            <div class="card-top">
+                <span class="card-title">{{ c.nom }}</span>
+            </div>
+
+            <div class="card-meta">
+                <span class="card-meta-item"><span class="meta-icon">📅</span> {{ c.dateDebut }} → {{ c.dateFin
+                    }}</span>
+            </div>
+
+            <!-- budget bar -->
+            <div
+                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:.2rem; margin-top:.4rem;">
+                <span style="font-size:.72rem; color:var(--text-2);">Budget</span>
+                <span style="font-size:.92rem; font-weight:800; color:var(--accent);">{{ c.budget | number }} MAD</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getBudgetPercent(c.budget)"></div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn-sm danger" (click)="delete(c.id)">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty" *ngIf="crm.campaigns.length === 0">
+        <span class="empty-icon">📢</span>
+        Aucune campagne.
+    </div>
+
+    <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h2>Nouvelle campagne</h2>
+            <div class="champ">
+                <label>Nom</label>
+                <input type="text" [(ngModel)]="nom" placeholder="Nom de la campagne" />
+            </div>
+            <div class="champ">
+                <label>Budget (MAD)</label>
+                <input type="number" [(ngModel)]="budget" />
+            </div>
+            <div class="row">
+                <div class="champ">
+                    <label>Date debut</label>
+                    <input type="date" [(ngModel)]="dateDebut" />
+                </div>
+                <div class="champ">
+                    <label>Date fin</label>
+                    <input type="date" [(ngModel)]="dateFin" />
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" (click)="showForm = false">Annuler</button>
+                <button class="btn-save" (click)="save()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>

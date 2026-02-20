@@ -1,0 +1,120 @@
+﻿node.exe : - Building...
+Au caractère Ligne:1 : 1
++ & "C:\Program 
+Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpec 
+   ified: (- Building...:String) [],  
+   RemoteException
+    + FullyQualifiedErrorId : NativeC 
+   ommandError
+ 
+
+Initial chunk files   | Names                   |  Raw size | Estimated transfer size
+chunk-HOLQVIJH.js     | -                       | 139.33 kB |                40.95 kB
+chunk-G5FYF4E3.js     | -                       |  98.66 kB |                25.11 kB
+polyfills-FFHMD2TL.js | polyfills               |  33.71 kB |                11.02 kB
+main-COKREISP.js      | main                    |   8.49 kB |                 2.46 kB
+styles-AQRMAKK6.css   | styles                  |   2.84 kB |               959 bytes
+chunk-V6LKNOK5.js     | -                       | 588 bytes |               588 bytes
+
+                      | Initial total           | 283.61 kB |                81.05 kB
+
+Lazy chunk files      | Names                   |  Raw size | Estimated transfer size
+chunk-5SQAMVC7.js     | -                       |  32.10 kB |                 6.64 kB
+chunk-VDMWPNX3.js     | tickets-component       |  14.95 kB |                 3.49 kB
+chunk-2MGM2RN4.js     | leads-component         |  14.20 kB |                 3.47 kB
+chunk-S3IEXFAR.js     | tasks-component         |  13.89 kB |                 3.27 kB
+chunk-RVN6PDPP.js     | accounts-component      |  13.00 kB |                 3.04 kB
+chunk-J7BKOQH4.js     | contacts-component      |  12.90 kB |                 3.09 kB
+chunk-2TEPW37Z.js     | opportunities-component |  12.78 kB |                 2.90 kB
+chunk-NNP56ZVY.js     | campaigns-component     |  12.77 kB |                 3.08 kB
+chunk-LQ55MOFO.js     | dashboard-component     |   9.64 kB |                 2.42 kB
+chunk-PSVOBOWJ.js     | login-component         |   9.35 kB |                 2.68 kB
+chunk-QLJ7PB4Z.js     | register-component      |   7.73 kB |                 2.37 kB
+chunk-UTNV5NBU.js     | -                       |   4.25 kB |                 1.30 kB
+
+Output location: C:\Users\marouan\Desktop\MAKA-main\services\frontend\dist\maka-frontend
+
+Application bundle generation complete. [9.041 seconds]
+
+▲ [WARNING] NG8107: The left side of 
+this optional chain operation does 
+not include 'null' or 'undefined' in 
+its type, therefore the '?.' operator 
+can be replaced with the '.' 
+operator. [plugin angular-compiler]
+
+    src/app/layout/layout.component.ht
+ml:43:57:
+      43 │ ...user-avatar">{{ 
+user.prenom?.charAt(0) }}{{ 
+user.nom?.charAt(0)...
+         ╵                            
+     ~~~~~~
+
+  Error occurs in the template of 
+component LayoutComponent.
+
+    src/app/layout/layout.component.ts
+:12:17:
+      12 │     templateUrl: 
+'./layout.component.html',
+         ╵                  
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: The left side of 
+this optional chain operation does 
+not include 'null' or 'undefined' in 
+its type, therefore the '?.' operator 
+can be replaced with the '.' 
+operator. [plugin angular-compiler]
+
+    src/app/layout/layout.component.ht
+ml:43:82:
+      43 │ ...vatar">{{ 
+user.prenom?.charAt(0) }}{{ 
+user.nom?.charAt(0) }}</div>
+         ╵                            
+                        ~~~~~~
+
+  Error occurs in the template of 
+component LayoutComponent.
+
+    src/app/layout/layout.component.ts
+:12:17:
+      12 │     templateUrl: 
+'./layout.component.html',
+         ╵                  
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: The left side of 
+this optional chain operation does 
+not include 'null' or 'undefined' in 
+its type, therefore the '?.' operator 
+can be replaced with the '.' 
+operator. [plugin angular-compiler]
+
+    src/app/layout/layout.component.ht
+ml:46:62:
+      46 │ ...class="user-role">{{ 
+user.roles[0]?.replace('ROLE_', '') 
+}}</span>
+         ╵                            
+            ~~~~~~~
+
+  Error occurs in the template of 
+component LayoutComponent.
+
+    src/app/layout/layout.component.ts
+:12:17:
+      12 │     templateUrl: 
+'./layout.component.html',
+         ╵                  
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+

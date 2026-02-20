@@ -1,0 +1,550 @@
+/* Styles partages pour toutes les pages CRM */
+/* ces styles sont importes par chaque composant CRM */
+
+/* en-tete de la page */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp .4s ease;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.page-header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.page-subtitle {
+    color: var(--text-2);
+    font-size: .78rem;
+}
+
+/* bouton d'ajout */
+.btn-add {
+    padding: .5rem 1rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: #fff;
+    font-family: inherit;
+    font-size: .78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+}
+
+.btn-add:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(54, 197, 184, .3);
+}
+
+/* grille de cartes */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: .8rem;
+    animation: fadeInUp .4s ease;
+}
+
+/* carte individuelle */
+.item-card {
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-md);
+    padding: 1.1rem;
+    box-shadow: var(--shadow);
+    transition: all .25s ease;
+    animation: fadeInUp .4s ease both;
+    position: relative;
+    overflow: hidden;
+}
+
+.item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-1);
+}
+
+/* barre decorative en haut de la carte */
+.item-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity .2s;
+}
+
+.item-card:hover::before {
+    opacity: 1;
+}
+
+.card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: .4rem;
+    gap: .5rem;
+}
+
+.card-title {
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+/* meta infos sous le titre (email, telephone, etc.) */
+.card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    margin-bottom: .4rem;
+}
+
+.card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .78rem;
+    color: var(--text-2);
+    line-height: 1.4;
+}
+
+.meta-icon {
+    font-size: .75rem;
+    flex-shrink: 0;
+}
+
+.card-row {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    margin-bottom: .25rem;
+    font-size: .78rem;
+    color: var(--text-2);
+}
+
+/* barre de progression */
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--border-0);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: .4rem 0;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    transition: width .5s ease;
+}
+
+/* actions de la carte */
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .3rem;
+    margin-top: .55rem;
+    padding-top: .45rem;
+    border-top: 1px solid var(--border-0);
+}
+
+/* === BOUTONS DANS LES CARTES === */
+
+/* bouton "Supprimer" — style proper */
+.btn-sm {
+    padding: .3rem .65rem;
+    border: 1px solid var(--border-0);
+    background: var(--bg-2);
+    color: var(--text-2);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: .72rem;
+    font-weight: 600;
+    transition: all .15s;
+}
+
+.btn-sm:hover {
+    background: var(--bg-3);
+    color: var(--text-0);
+}
+
+/* bouton danger (supprimer en rouge) */
+.btn-sm.danger {
+    border-color: transparent;
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.btn-sm.danger:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+/* boutons action (convertir, etc.) */
+.btn-sm.success {
+    border-color: transparent;
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.btn-sm.success:hover {
+    background: var(--success);
+    color: #fff;
+}
+
+.btn-sm.primary {
+    border-color: transparent;
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.btn-sm.primary:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* ancien style aussi (pour compatibilite) */
+.btn-delete {
+    padding: .3rem .65rem;
+    border: none;
+    background: var(--danger-soft);
+    color: var(--danger);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: .72rem;
+    font-weight: 600;
+    transition: all .15s;
+}
+
+.btn-delete:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+/* badge de statut */
+.badge {
+    display: inline-block;
+    font-size: .62rem;
+    font-weight: 700;
+    padding: .17rem .45rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.badge.haute {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.badge.moyenne {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.badge.basse {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge.nouveau,
+.badge.nouvelle {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.badge.qualifie {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.badge.en_cours {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.badge.converti,
+.badge.gagnee {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge.perdue {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.badge.a_faire {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.badge.terminee {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge.ouvert {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.badge.resolu {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge.ferme {
+    background: var(--bg-3);
+    color: var(--text-2);
+}
+
+/* mini stats en haut des pages */
+.page-stats {
+    display: flex;
+    gap: .65rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.mini-stat {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem .65rem;
+    background: var(--surface);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+}
+
+.mini-stat-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .7rem;
+}
+
+.mini-stat-value {
+    font-size: .95rem;
+    font-weight: 800;
+    display: block;
+}
+
+.mini-stat-label {
+    font-size: .6rem;
+    color: var(--text-2);
+}
+
+/* barre de recherche */
+.search-bar {
+    margin-bottom: 1rem;
+    animation: fadeInUp .35s ease;
+}
+
+.search-bar input {
+    width: 100%;
+    max-width: 320px;
+    padding: .55rem .85rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-sm);
+    color: var(--text-0);
+    font-family: inherit;
+    font-size: .82rem;
+    outline: none;
+    transition: all var(--transition);
+}
+
+.search-bar input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* etat vide (quand il n'y a rien a afficher) */
+.empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-3);
+    font-size: .85rem;
+}
+
+.empty-icon {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: .5rem;
+}
+
+/* overlay et modal pour les formulaires */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    animation: fadeIn .2s ease;
+}
+
+.modal {
+    width: 95%;
+    max-width: 440px;
+    background: var(--bg-1);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 12px 50px rgba(0, 0, 0, .4);
+    padding: 1.5rem;
+    animation: scaleIn .25s ease;
+}
+
+.modal h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.champ {
+    margin-bottom: .85rem;
+}
+
+.champ label {
+    display: block;
+    margin-bottom: .25rem;
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.champ input,
+.champ select,
+.champ textarea {
+    width: 100%;
+    padding: .55rem .75rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-0);
+    border-radius: var(--radius-sm);
+    color: var(--text-0);
+    font-family: inherit;
+    font-size: .82rem;
+    outline: none;
+    transition: all var(--transition);
+    box-sizing: border-box;
+}
+
+.champ input:focus,
+.champ select:focus,
+.champ textarea:focus {
+    border-color: var(--accent);
+}
+
+.champ textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+/* ligne de 2 champs */
+.row {
+    display: flex;
+    gap: .6rem;
+}
+
+.row .champ {
+    flex: 1;
+}
+
+/* boutons du modal */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    margin-top: .5rem;
+}
+
+.btn-cancel {
+    padding: .45rem .85rem;
+    border: 1px solid var(--border-0);
+    background: var(--bg-2);
+    border-radius: var(--radius-sm);
+    color: var(--text-1);
+    font-family: inherit;
+    font-size: .78rem;
+    cursor: pointer;
+    transition: all .15s;
+}
+
+.btn-cancel:hover {
+    background: var(--bg-3);
+}
+
+.btn-save {
+    padding: .45rem .85rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: #fff;
+    font-family: inherit;
+    font-size: .78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+}
+
+.btn-save:hover {
+    background: var(--accent-hover);
+}
+
+/* ========== RESPONSIVE - TABLETTE ========== */
+@media (max-width: 1024px) {
+    .card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+/* ========== RESPONSIVE - MOBILE ========== */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .5rem;
+    }
+
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-stats {
+        flex-wrap: wrap;
+    }
+
+    .modal {
+        margin: 1rem;
+        padding: 1.2rem;
+    }
+
+    .row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .search-bar input {
+        max-width: 100%;
+    }
+}

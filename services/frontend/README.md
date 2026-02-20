@@ -1,36 +1,27 @@
-# Frontend
+# MakaFrontend
 
-Interface utilisateur de MAKA ERP. Application Angular avec mode sombre, qui unifie l'accès à tous les modules métier.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
 
-Statut : en cours de développement.
+## Development server
 
-## Stack technique
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-- Angular 17+
-- TypeScript
-- Angular Material / TailwindCSS
-- RxJS
+## Code scaffolding
 
-## Modules prévus
+Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-- **Tableau de bord** — KPIs globaux, graphiques de performance
-- **Authentification** — page de connexion, gestion de session JWT
-- **CRM** — pipeline Kanban des opportunités, gestion des leads et tickets
-- **Stock** — niveaux de stock par dépôt, alertes de rupture
-- **Ventes & Achats** — devis, commandes, factures
-- **RH** — gestion des employés, congés, fiches de paie
-- **Finance** — journal comptable, rapports, trésorerie
+## Build
 
-## Démarrage
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
-```bash
-npm install
-ng serve --host 0.0.0.0 --port 4200
-```
+## Running unit tests
 
-## Équipe
+Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-- Maroun Kiker
-- Abdelilah Hamdaoui
-- Missaoui Abderahman
-- Abdelah Ajebli
+## Running end-to-end tests
+
+Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+
+## Further help
+
+To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
