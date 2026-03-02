@@ -1,0 +1,31 @@
+# =============================================================================
+# Services - Auto-wiring, auto-configuration + Event Listeners JWT
+# =============================================================================
+
+services:
+    # Configuration par défaut pour les services de ce fichier
+    _defaults:
+        autowire: true        # Injection automatique des dépendances
+        autoconfigure: true   # Enregistrement automatique des services
+
+    # Enregistrer toutes les classes dans src/ comme services
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # -------------------------------------------------------------------------
+    # Event Listeners LexikJWT
+    # -------------------------------------------------------------------------
+
+    # Enrichir le payload JWT avec user_id, roles, email
+    App\EventListener\JWTCreatedListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
+
+    # Ajouter le refresh token dans la réponse de login
+    App\EventListener\AuthenticationSuccessListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess }

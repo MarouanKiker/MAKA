@@ -1,29 +1,23 @@
 using System.ComponentModel.DataAnnotations;
+using Maka.CRM.Enums;
 
-namespace Maka.CRM.Models;
-
-public enum PrioriteOpportunite { Basse, Moyenne, Haute, Critique }
-public enum StatutOpportunite { Prospect, EnCours, Gagne, Perdu }
-
-public class Opportunite
+namespace Maka.CRM.Models
 {
-    [Key]
-    public int Id { get; set; }
+    public class Opportunite
+    {
+        [Key]
+        public int IdOpportunite { get; set; }
+        public string Titre { get; set; }
+        public decimal Valeur { get; set; }
+        public StatutOpportunite Statut { get; set; }
 
-    [Required, MaxLength(200)]
-    public string Titre { get; set; } = string.Empty;
+        // Règle métier : Obligatoire seulement si GAGNEE ou PERDUE
+        public DateTime? DateCloture { get; set; }
 
-    [Column(TypeName = "decimal(18,2)")]
-    public decimal Valeur { get; set; }
+        // Clé étrangère 
+        public int IdLead { get; set; }
 
-    public PrioriteOpportunite Priorite { get; set; } = PrioriteOpportunite.Moyenne;
-
-    public StatutOpportunite Statut { get; set; } = StatutOpportunite.Prospect;
-
-    public DateTime? DateCloture { get; set; }
-
-    public int LeadId { get; set; }
-
-    // Navigation
-    public Lead? Lead { get; set; }
+        // Propriété de navigation
+        public Lead Lead { get; set; } = null!;
+    }
 }

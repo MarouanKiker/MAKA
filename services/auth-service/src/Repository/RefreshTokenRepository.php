@@ -1,4 +1,7 @@
 <?php
+// =============================================================================
+// RefreshTokenRepository - Requêtes personnalisées pour les refresh tokens
+// =============================================================================
 
 namespace App\Repository;
 
@@ -16,27 +19,13 @@ class RefreshTokenRepository extends ServiceEntityRepository
         parent::__construct($registry, RefreshToken::class);
     }
 
-    public function save(RefreshToken $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->persist($entity);
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
-    public function remove(RefreshToken $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->remove($entity);
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
+    /**
+     * Trouver un refresh token valide (non expiré) par sa valeur.
+     */
     public function findValidToken(string $token): ?RefreshToken
     {
         return $this->createQueryBuilder('rt')
             ->where('rt.token = :token')
-            ->andWhere('rt.revoked = false')
             ->andWhere('rt.expiresAt > :now')
             ->setParameter('token', $token)
             ->setParameter('now', new \DateTimeImmutable())
@@ -44,11 +33,27 @@ class RefreshTokenRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function revokeAllForUser(int $userId): void
+    /**
+     * Supprimer tous les refresh tokens expirés.
+     * Retourne le nombre de tokens supprimés.
+     */
+    public function deleteExpiredTokens(): int
     {
-        $this->createQueryBuilder('rt')
-            ->update()
-            ->set('rt.revoked', 'true')
+        return $this->createQueryBuilder('rt')
+            ->delete()
+            ->where('rt.expiresAt <= :now')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * Supprimer tous les refresh tokens d'un utilisateur (logout complet).
+     */
+    public function deleteAllForUser(int $userId): int
+    {
+        return $this->createQueryBuilder('rt')
+            ->delete()
             ->where('rt.user = :userId')
             ->setParameter('userId', $userId)
             ->getQuery()
