@@ -1,85 +1,80 @@
 <?php
+// =============================================================================
+// Entity User - Entité Doctrine pour l'authentification
+// Champs : email, password, roles, resetToken, resetTokenExpiresAt, createdAt
+// =============================================================================
 
 namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-#[UniqueEntity(fields: ['email'], message: 'A user with this email already exists.')]
+#[ORM\HasLifecycleCallbacks]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $nom = null;
-
-    #[ORM\Column(length: 100)]
-    private ?string $prenom = null;
-
-    #[ORM\Column(length: 180, unique: true)]
+    #[ORM\Column(type: 'string', length: 180, unique: true)]
     private ?string $email = null;
 
-    #[ORM\Column]
-    private ?string $password = null;
+    #[ORM\Column(type: 'string', length: 100)]
+    private ?string $firstName = null;
+
+    #[ORM\Column(type: 'string', length: 100)]
+    private ?string $lastName = null;
 
     /**
-     * @var list<string> Available roles:
-     *   ROLE_ADMIN, ROLE_COMMERCIAL, ROLE_RESPONSABLE_STOCK,
-     *   ROLE_RESPONSABLE_RH, ROLE_COMPTABLE, ROLE_RESPONSABLE_FINANCIER,
-     *   ROLE_MAGASINIER, ROLE_AGENT_SUPPORT, ROLE_RESP_VENTES,
-     *   ROLE_RESP_MARKETING, ROLE_ACHETEUR, ROLE_ADV, ROLE_EMPLOYE
+     * @var list<string> Les rôles de l'utilisateur
      */
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
-    #[ORM\Column]
-    private bool $isActive = true;
+    /**
+     * @var string Le mot de passe hashé
+     */
+    #[ORM\Column(type: 'string')]
+    private ?string $password = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    // -------------------------------------------------------------------------
+    // Champs pour la réinitialisation du mot de passe
+    // -------------------------------------------------------------------------
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastLoginAt = null;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $resetToken = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $resetTokenExpiresAt = null;
+
+    // -------------------------------------------------------------------------
+    // Métadonnées
+    // -------------------------------------------------------------------------
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $createdAt;
+
+    // -------------------------------------------------------------------------
+    // Constructeur
+    // -------------------------------------------------------------------------
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->roles = ['ROLE_EMPLOYE'];
     }
+
+    // -------------------------------------------------------------------------
+    // Getters & Setters - Champs de base
+    // -------------------------------------------------------------------------
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getNom(): ?string
-    {
-        return $this->nom;
-    }
-
-    public function setNom(string $nom): static
-    {
-        $this->nom = $nom;
-        return $this;
-    }
-
-    public function getPrenom(): ?string
-    {
-        return $this->prenom;
-    }
-
-    public function setPrenom(string $prenom): static
-    {
-        $this->prenom = $prenom;
-        return $this;
     }
 
     public function getEmail(): ?string
@@ -93,11 +88,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Identifiant unique de l'utilisateur (utilisé par Symfony Security)
+     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(string $firstName): static
+    {
+        $this->firstName = $firstName;
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(string $lastName): static
+    {
+        $this->lastName = $lastName;
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -105,13 +128,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param list<string> $roles
+     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
         return $this;
     }
 
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -122,18 +148,76 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isActive(): bool
+    /**
+     * Nettoyer les données sensibles temporaires
+     */
+    public function eraseCredentials(): void
     {
-        return $this->isActive;
+        // $this->plainPassword = null;
     }
 
-    public function setIsActive(bool $isActive): static
+    // -------------------------------------------------------------------------
+    // Getters & Setters - Reset Token
+    // -------------------------------------------------------------------------
+
+    public function getResetToken(): ?string
     {
-        $this->isActive = $isActive;
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): static
+    {
+        $this->resetToken = $resetToken;
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getResetTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->resetTokenExpiresAt;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): static
+    {
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+        return $this;
+    }
+
+    /**
+     * Génère un token crypto-sécurisé pour la réinitialisation du mot de passe.
+     * Expire dans 1 heure par défaut.
+     */
+    public function generateResetToken(int $ttlMinutes = 60): string
+    {
+        $this->resetToken = bin2hex(random_bytes(32)); // 64 caractères hex
+        $this->resetTokenExpiresAt = new \DateTimeImmutable("+{$ttlMinutes} minutes");
+        return $this->resetToken;
+    }
+
+    /**
+     * Vérifie si le token de reset est toujours valide (non expiré).
+     */
+    public function isResetTokenValid(): bool
+    {
+        if ($this->resetToken === null || $this->resetTokenExpiresAt === null) {
+            return false;
+        }
+        return $this->resetTokenExpiresAt > new \DateTimeImmutable();
+    }
+
+    /**
+     * Nettoie le token de reset après utilisation.
+     */
+    public function clearResetToken(): void
+    {
+        $this->resetToken = null;
+        $this->resetTokenExpiresAt = null;
+    }
+
+    // -------------------------------------------------------------------------
+    // Getters & Setters - Métadonnées
+    // -------------------------------------------------------------------------
+
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
@@ -142,21 +226,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->createdAt = $createdAt;
         return $this;
-    }
-
-    public function getLastLoginAt(): ?\DateTimeImmutable
-    {
-        return $this->lastLoginAt;
-    }
-
-    public function setLastLoginAt(?\DateTimeImmutable $lastLoginAt): static
-    {
-        $this->lastLoginAt = $lastLoginAt;
-        return $this;
-    }
-
-    public function eraseCredentials(): void
-    {
-        // Clear any temporary, sensitive data stored on the user
     }
 }

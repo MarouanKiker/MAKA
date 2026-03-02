@@ -1,0 +1,16 @@
+# =============================================================================
+# Framework Bundle - Configuration générale de Symfony
+# =============================================================================
+
+framework:
+    secret: '%env(APP_SECRET)%'
+    http_method_override: false
+    handle_all_throwables: true
+
+    # Configuration du routeur
+    router:
+        utf8: true
+
+    # Pas de session (API stateless)
+    session:
+        enabled: false

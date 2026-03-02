@@ -1,22 +1,30 @@
 <?php
+// =============================================================================
+// JWTCreatedListener - Enrichir le payload JWT
+// Ajoute les rôles et l'ID utilisateur dans le token JWT
+// =============================================================================
 
 namespace App\EventListener;
 
+use App\Entity\User;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-#[AsEventListener(event: 'lexik_jwt_authentication.on_jwt_created')]
-class JwtCreatedListener
+class JWTCreatedListener
 {
-    public function __invoke(JWTCreatedEvent $event): void
+    /**
+     * Appelé quand un JWT est créé par LexikJWT.
+     * Enrichit le payload avec des données supplémentaires.
+     */
+    public function onJWTCreated(JWTCreatedEvent $event): void
     {
+        /** @var User $user */
         $user = $event->getUser();
         $payload = $event->getData();
 
-        // Enrich JWT payload with additional user data
-        $payload['nom']    = method_exists($user, 'getNom') ? $user->getNom() : null;
-        $payload['prenom'] = method_exists($user, 'getPrenom') ? $user->getPrenom() : null;
-        $payload['roles']  = $user->getRoles();
+        // Ajouter l'ID et les rôles dans le payload JWT
+        $payload['user_id'] = $user->getId();
+        $payload['roles'] = $user->getRoles();
+        $payload['email'] = $user->getEmail();
 
         $event->setData($payload);
     }

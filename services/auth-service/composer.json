@@ -1,42 +1,29 @@
 {
-    "name": "maka/auth-service",
-    "description": "MAKA ERP — Authentication microservice (Symfony 7, PHP 8.2)",
+    "name": "hub-spoke/auth-service",
+    "description": "Auth microservice - Symfony 7 + LexikJWT",
     "type": "project",
-    "license": "proprietary",
-    "minimum-stability": "stable",
-    "prefer-stable": true,
+    "license": "MIT",
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "doctrine/doctrine-bundle": "^2.11",
         "doctrine/doctrine-migrations-bundle": "^3.3",
-        "doctrine/orm": "^3.1",
-        "lexik/jwt-authentication-bundle": "^3.1",
-        "nelmio/cors-bundle": "^2.4",
-        "symfony/console": "7.*",
-        "symfony/dotenv": "7.*",
-        "symfony/flex": "^2",
-        "symfony/framework-bundle": "7.*",
-        "symfony/messenger": "7.*",
-        "symfony/security-bundle": "7.*",
-        "symfony/serializer": "7.*",
-        "symfony/uid": "7.*",
-        "symfony/validator": "7.*"
+        "doctrine/orm": "^3.0",
+        "lexik/jwt-authentication-bundle": "^3.0",
+        "symfony/console": "^7.4",
+        "symfony/dotenv": "^7.0",
+        "symfony/framework-bundle": "^7.4",
+        "symfony/runtime": "^7.0",
+        "symfony/security-bundle": "^7.0",
+        "symfony/serializer": "^7.0",
+        "symfony/validator": "^7.0",
+        "symfony/yaml": "^7.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11",
-        "symfony/browser-kit": "7.*",
-        "symfony/http-client": "7.*",
-        "symfony/phpunit-bridge": "7.*"
-    },
-    "config": {
-        "allow-plugins": {
-            "php-http/discovery": true,
-            "symfony/flex": true,
-            "symfony/runtime": true
-        },
-        "sort-packages": true
+        "symfony/maker-bundle": "^1.0",
+        "symfony/debug-bundle": "^7.0",
+        "symfony/profiler-pack": "^1.0"
     },
     "autoload": {
         "psr-4": {
@@ -49,21 +36,21 @@
         }
     },
     "scripts": {
-        "auto-scripts": {
-            "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
-        },
-        "post-install-cmd": [
-            "@auto-scripts"
-        ],
-        "post-update-cmd": [
-            "@auto-scripts"
-        ]
+        "auto-scripts": {},
+        "post-install-cmd": [],
+        "post-update-cmd": []
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/flex": true,
+            "symfony/runtime": true
+        }
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
-            "require": "7.*"
+            "allow-contrib": true,
+            "require": "7.0.*"
         }
     }
 }

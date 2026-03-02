@@ -1,3 +1,7 @@
+# =============================================================================
+# Routes - Chargement automatique des routes via les attributs PHP
+# =============================================================================
+
 controllers:
     resource:
         path: ../src/Controller/

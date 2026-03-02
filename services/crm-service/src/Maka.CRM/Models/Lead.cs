@@ -1,33 +1,26 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using Maka.CRM.Enums;
 
 namespace Maka.CRM.Models;
 
-public enum StatutLead { Nouveau, Qualifie, Converti, Perdu }
 
 public class Lead
 {
     [Key]
-    public int Id { get; set; }
-
-    [Required, MaxLength(200)]
-    public string Nom { get; set; } = string.Empty;
-
-    [MaxLength(100)]
-    public string? Source { get; set; }
-
-    public StatutLead Statut { get; set; } = StatutLead.Nouveau;
-
-    public int Score { get; set; } = 0;
-
+    public int IdLead { get; set; }
+    public string Source { get; set; } = string.Empty;
+    public StatutLead Statut { get; set; }
+    public int Score { get; set; }
     public DateTime DateCreation { get; set; } = DateTime.UtcNow;
 
-    public int? UtilisateurId { get; set; }
+    // Clés étrangères (issues deMLD)
+    public int IdUtilisateur { get; set; }
+    public int? IdCampagne { get; set; } // Nullable : un lead peut venir d'ailleurs que d'une campagne
 
-    public int? CampagneId { get; set; }
-
-    // Navigation
+    // Propriétés de navigation
     public CampagneMarketing? Campagne { get; set; }
-    public ICollection<Tache> Taches { get; set; } = new List<Tache>();
-    public ICollection<Opportunite> Opportunites { get; set; } = new List<Opportunite>();
+
+    
+    public Opportunite? Opportunite { get; set; }
+}
 }
