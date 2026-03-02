@@ -1,14 +1,21 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# =============================================================================
+# Dockerfile - CRM Service (.NET 8 Web API)
+# Optimisé pour le DÉVELOPPEMENT
+# =============================================================================
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dev
+
 WORKDIR /app
 
-COPY src/Maka.CRM/Maka.CRM.csproj ./src/Maka.CRM/
-RUN dotnet restore ./src/Maka.CRM/Maka.CRM.csproj
+# --- Copier le fichier projet et restaurer les packages ---
+COPY *.csproj ./
+RUN dotnet restore
 
-COPY src/Maka.CRM/ ./src/Maka.CRM/
-RUN dotnet publish ./src/Maka.CRM/Maka.CRM.csproj -c Release -o /app/publish --no-restore
+# --- Copier le reste du code source ---
+COPY . .
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-WORKDIR /app
-COPY --from=build /app/publish .
-EXPOSE 8002
-ENTRYPOINT ["dotnet", "Maka.CRM.dll"]
+# --- Exposer le port Kestrel ---
+EXPOSE 5000
+
+# --- Lancer en mode watch pour le hot-reload en dev ---
+CMD ["dotnet", "watch", "run", "--urls", "http://+:5000"]
