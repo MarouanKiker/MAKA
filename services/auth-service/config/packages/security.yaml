@@ -1,28 +1,55 @@
+# =============================================================================
+# Symfony Security - Configuration complète JWT + Rôles
+# =============================================================================
+
 security:
+    # --- Hashage des mots de passe ---
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-        App\Entity\User:
-            algorithm: auto
 
+    # --- Providers : d'où viennent les utilisateurs ---
     providers:
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
 
+    # --- Firewalls ---
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        api:
-            pattern: ^/api
-            stateless: true
-            custom_authenticators:
-                - App\Security\JwtAuthenticator
 
+        # Endpoint de login : pas de token requis (stateless)
+        login:
+            pattern: ^/api/auth/login
+            stateless: true
+            json_login:
+                check_path: /api/auth/login
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        # Toutes les autres routes /api/auth/* : protégées par JWT
+        api:
+            pattern: ^/api/auth
+            stateless: true
+            jwt: ~
+
+    # --- Contrôle d'accès ---
+    # L'ordre est important : les règles les plus spécifiques en premier
     access_control:
-        - { path: ^/api/auth/login,    roles: PUBLIC_ACCESS }
+        # Endpoints publics (pas de JWT requis)
+        - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/refresh,  roles: PUBLIC_ACCESS }
-        - { path: ^/api/users,         roles: ROLE_ADMIN }
-        - { path: ^/api,               roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/auth/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/token/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/token/revoke, roles: PUBLIC_ACCESS }
+
+        # Endpoints admin (ROLE_ADMIN requis)
+        - { path: ^/api/auth/admin, roles: ROLE_ADMIN }
+
+        # Tous les autres endpoints auth (authentifié requis)
+        - { path: ^/api/auth, roles: IS_AUTHENTICATED_FULLY }

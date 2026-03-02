@@ -1,28 +1,45 @@
-FROM php:8.2-fpm AS base
+# =============================================================================
+# Dockerfile - Auth Service (Symfony 7 / PHP 8.3-FPM)
+# Optimisé pour le DÉVELOPPEMENT
+# =============================================================================
 
-# Install system dependencies
+FROM php:8.3-fpm
+
+# --- Dépendances système + extensions PHP ---
 RUN apt-get update && apt-get install -y \
-    git curl libpq-dev libzip-dev unzip \
-    librabbitmq-dev libssl-dev \
-    && docker-php-ext-install pdo pdo_mysql zip \
-    && pecl install amqp \
-    && docker-php-ext-enable amqp \
+    git \
+    unzip \
+    libicu-dev \
+    libzip-dev \
+    libpq-dev \
+    openssl \
+    && docker-php-ext-install \
+    pdo_pgsql \
+    pgsql \
+    intl \
+    zip \
+    opcache \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# --- Composer ---
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-FROM base AS dev
+# --- Copier les fichiers du projet ---
 COPY . .
-RUN composer install --no-interaction --optimize-autoloader
-EXPOSE 8001
-CMD ["php", "-S", "0.0.0.0:8001", "-t", "public"]
 
-FROM base AS prod
-COPY . .
-RUN composer install --no-dev --no-interaction --optimize-autoloader
-RUN php bin/console cache:clear --env=prod --no-debug
-EXPOSE 8001
+# --- Installer les dépendances PHP (si composer.json existe) ---
+RUN if [ -f composer.json ]; then \
+    composer install --no-interaction --optimize-autoloader; \
+    fi
+
+# --- Script d'entrypoint : génère les clés JWT si absentes ---
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+# PHP-FPM écoute sur le port 9000 par défaut
+EXPOSE 9000
 CMD ["php-fpm"]
