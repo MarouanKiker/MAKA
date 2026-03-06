@@ -1,7 +1,10 @@
 <div>
     <div class="page-header">
         <div>
-            <h1>🎯 Pipeline Leads</h1>
+            <h1>
+                <i class="fa-solid fa-bullseye page-icon"></i>
+                Pipeline Leads
+            </h1>
             <p class="page-subtitle">Glissez les leads entre les colonnes pour changer leur statut</p>
         </div>
         <div style="display:flex; align-items:center; gap:.75rem;">
@@ -10,7 +13,6 @@
         </div>
     </div>
 
-    <!-- kanban drag & drop -->
     <div class="kanban">
         <div class="kanban-col" *ngFor="let col of columns" (dragover)="onDragOver($event)"
             (drop)="onDrop($event, col.key)">
@@ -35,8 +37,14 @@
                     </div>
 
                     <div class="card-meta">
-                        <span class="card-meta-item">👤 {{ l.responsable }}</span>
-                        <span class="card-meta-item">📅 {{ l.dateCreation }}</span>
+                        <span class="card-meta-item">
+                            <i class="fa-solid fa-user meta-icon"></i>
+                            {{ l.responsable }}
+                        </span>
+                        <span class="card-meta-item">
+                            <i class="fa-regular fa-calendar meta-icon"></i>
+                            {{ l.dateCreation }}
+                        </span>
                     </div>
 
                     <div class="card-bottom">
@@ -51,7 +59,6 @@
         </div>
     </div>
 
-    <!-- modal -->
     <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
         <div class="modal" (click)="$event.stopPropagation()">
             <h2>Nouveau lead</h2>

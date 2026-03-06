@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of, throwError, delay } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
 import { LoginRequest, RegisterRequest, TokenResponse, User } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
@@ -13,30 +13,35 @@ export class AuthService {
     // url de l'api d'authentification
     private api = environment.authApiUrl;
 
-    // si true : on utilise des comptes de test sans backend
-    // si false : on envoie les requetes au vrai backend
-    private mockMode = true;
-
     constructor(private http: HttpClient, private router: Router) { }
 
     // connexion d'un utilisateur
     login(data: LoginRequest): Observable<TokenResponse> {
-        // si on est en mode test, on utilise les comptes locaux
-        if (this.mockMode) {
-            return this.mockLogin(data);
-        }
-        // sinon on appelle le vrai backend
-        return this.http.post<TokenResponse>(this.api + '/login', data).pipe(
+        // appel au vrai backend Symfony (LexikJWT)
+        return this.http.post<any>(this.api + '/login', data).pipe(
+            map((res: any) => {
+                // mapper les noms de champs du backend vers le frontend
+                let mapped: TokenResponse = {
+                    access_token: res.token,
+                    refresh_token: res.refresh_token || '',
+                    expires_in: 3600,
+                    token_type: 'Bearer'
+                };
+                return mapped;
+            }),
             tap((res: TokenResponse) => { this.saveSession(res); })
         );
     }
 
     // inscription d'un nouvel utilisateur
     register(data: RegisterRequest): Observable<any> {
-        if (this.mockMode) {
-            return this.mockRegister(data);
-        }
-        return this.http.post(this.api + '/register', data);
+        let backendData = {
+            email: data.email,
+            password: data.password,
+            first_name: data.prenom,
+            last_name: data.nom
+        };
+        return this.http.post(this.api + '/register', backendData);
     }
 
     // deconnexion : on supprime le token et on redirige vers login
@@ -76,77 +81,24 @@ export class AuthService {
 
         // on decode le token pour recuperer les infos du user
         let parts = res.access_token.split('.');
-        let payload = JSON.parse(atob(parts[1]));
+        // adapter le base64url au base64 standard pour atob
+        let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        // padding '='
+        while (b64.length % 4) {
+            b64 += '=';
+        }
+        let payload = JSON.parse(decodeURIComponent(escape(atob(b64))));
 
-        // on cree l'objet utilisateur
+        // on cree l'objet utilisateur avec mapping des champs
         let user: User = {
-            id: payload.id,
-            nom: payload.nom,
-            prenom: payload.prenom,
+            id: payload.user_id || payload.id,
+            nom: payload.lastName || payload.nom || '',
+            prenom: payload.firstName || payload.prenom || '',
             email: payload.email,
             roles: payload.roles
         };
 
         // on stocke le user dans le localStorage
         localStorage.setItem('user', JSON.stringify(user));
-    }
-
-    // --- simulation de login sans backend ---
-    private mockLogin(data: LoginRequest): Observable<TokenResponse> {
-        // liste des comptes de test
-        let users = [
-            { id: 1, email: 'admin@maka.com', password: 'admin123', nom: 'Kiker', prenom: 'Marwan', roles: ['ROLE_ADMIN'] },
-            { id: 2, email: 'commercial@maka.com', password: 'test123', nom: 'Ajebli', prenom: 'Abdellah', roles: ['ROLE_COMMERCIAL'] },
-            { id: 3, email: 'support@maka.com', password: 'test123', nom: 'Missaoui', prenom: 'Abderahmane', roles: ['ROLE_SUPPORT'] }
-        ];
-
-        // chercher le compte qui correspond
-        let found = null;
-        for (let i = 0; i < users.length; i++) {
-            if (users[i].email === data.email && users[i].password === data.password) {
-                found = users[i];
-                break;
-            }
-        }
-
-        // si aucun compte trouve, on renvoie une erreur
-        if (!found) {
-            return throwError(() => ({ error: { error: 'Email ou mot de passe incorrect.' } })).pipe(delay(500));
-        }
-
-        // generer un faux token JWT
-        let payloadStr = btoa(JSON.stringify({
-            id: found.id,
-            nom: found.nom,
-            prenom: found.prenom,
-            email: found.email,
-            roles: found.roles,
-            exp: Math.floor(Date.now() / 1000) + 3600
-        }));
-        let fakeToken = 'eyJhbGciOiJSUzI1NiJ9.' + payloadStr + '.fakesignature';
-
-        // creer la reponse
-        let response: TokenResponse = {
-            access_token: fakeToken,
-            refresh_token: 'fake-refresh',
-            expires_in: 3600,
-            token_type: 'Bearer'
-        };
-
-        // retourner la reponse avec un delai de 500ms pour simuler le reseau
-        return of(response).pipe(
-            delay(500),
-            tap((res: TokenResponse) => { this.saveSession(res); })
-        );
-    }
-
-    // --- simulation d'inscription sans backend ---
-    private mockRegister(data: RegisterRequest): Observable<any> {
-        // verifier que tous les champs sont remplis
-        if (!data.email || !data.password || !data.nom || !data.prenom) {
-            return throwError(() => ({ error: { error: 'Tous les champs sont obligatoires.' } })).pipe(delay(500));
-        }
-        // simuler une reponse de succes
-        return of({ message: 'Compte cree avec succes' }).pipe(delay(500));
     }
 }

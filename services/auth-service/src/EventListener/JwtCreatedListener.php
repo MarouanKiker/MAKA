@@ -9,7 +9,7 @@ namespace App\EventListener;
 use App\Entity\User;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 
-class JWTCreatedListener
+class JwtCreatedListener
 {
     /**
      * Appelé quand un JWT est créé par LexikJWT.
@@ -21,10 +21,12 @@ class JWTCreatedListener
         $user = $event->getUser();
         $payload = $event->getData();
 
-        // Ajouter l'ID et les rôles dans le payload JWT
+        // Ajouter l'ID, les rôles et les infos utilisateur dans le payload JWT
         $payload['user_id'] = $user->getId();
         $payload['roles'] = $user->getRoles();
         $payload['email'] = $user->getEmail();
+        $payload['firstName'] = $user->getFirstName();
+        $payload['lastName'] = $user->getLastName();
 
         $event->setData($payload);
     }

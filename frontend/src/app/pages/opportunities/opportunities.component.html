@@ -1,7 +1,10 @@
 <div>
     <div class="page-header">
         <div>
-            <h1>💰 Pipeline Opportunites</h1>
+            <h1>
+                <i class="fa-solid fa-arrow-trend-up page-icon"></i>
+                Pipeline Opportunites
+            </h1>
             <p class="page-subtitle">Glissez les opportunites entre les etapes du pipeline</p>
         </div>
         <span class="total-badge">{{ crm.opportunities.length }} opportunites</span>
@@ -24,7 +27,10 @@
                     <div class="card-title">{{ o.titre }}</div>
                     <div class="kanban-value">{{ o.valeur | number }} MAD</div>
                     <div class="card-meta" *ngIf="o.dateCloture">
-                        <span class="card-meta-item">📅 {{ o.dateCloture }}</span>
+                        <span class="card-meta-item">
+                            <i class="fa-regular fa-calendar meta-icon"></i>
+                            {{ o.dateCloture }}
+                        </span>
                     </div>
                 </div>
 

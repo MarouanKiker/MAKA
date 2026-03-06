@@ -57,12 +57,12 @@ export class DashboardComponent {
         );
 
         this.stats = [
-            { letter: 'CO', label: 'Comptes', value: this.crm.accounts.length, bg: 'rgba(74,158,255,.12)', color: '#4a9eff', percent: (this.crm.accounts.length / max) * 100 },
-            { letter: 'CT', label: 'Contacts', value: this.crm.contacts.length, bg: 'rgba(54,197,184,.12)', color: '#36c5b8', percent: (this.crm.contacts.length / max) * 100 },
-            { letter: 'LD', label: 'Leads', value: this.crm.leads.length, bg: 'rgba(245,199,72,.12)', color: '#f5c748', percent: (this.crm.leads.length / max) * 100 },
-            { letter: 'OP', label: 'Opportunites', value: this.crm.opportunities.length, bg: 'rgba(68,212,146,.12)', color: '#44d492', percent: (this.crm.opportunities.length / max) * 100 },
-            { letter: 'TA', label: 'Taches', value: this.crm.tasks.length, bg: 'rgba(147,112,255,.12)', color: '#9370ff', percent: (this.crm.tasks.length / max) * 100 },
-            { letter: 'TK', label: 'Tickets', value: this.crm.tickets.length, bg: 'rgba(240,108,98,.12)', color: '#f06c62', percent: (this.crm.tickets.length / max) * 100 },
+            { icon: 'fa-solid fa-building', label: 'Comptes', value: this.crm.accounts.length, bg: 'rgba(96,165,250,.12)', color: '#60a5fa', percent: (this.crm.accounts.length / max) * 100 },
+            { icon: 'fa-solid fa-address-book', label: 'Contacts', value: this.crm.contacts.length, bg: 'rgba(167,139,250,.12)', color: '#a78bfa', percent: (this.crm.contacts.length / max) * 100 },
+            { icon: 'fa-solid fa-bullseye', label: 'Leads', value: this.crm.leads.length, bg: 'rgba(251,191,36,.12)', color: '#fbbf24', percent: (this.crm.leads.length / max) * 100 },
+            { icon: 'fa-solid fa-arrow-trend-up', label: 'Opportunites', value: this.crm.opportunities.length, bg: 'rgba(52,211,153,.12)', color: '#34d399', percent: (this.crm.opportunities.length / max) * 100 },
+            { icon: 'fa-solid fa-list-check', label: 'Taches', value: this.crm.tasks.length, bg: 'rgba(251,146,60,.12)', color: '#fb923c', percent: (this.crm.tasks.length / max) * 100 },
+            { icon: 'fa-solid fa-ticket', label: 'Tickets', value: this.crm.tickets.length, bg: 'rgba(248,113,113,.12)', color: '#f87171', percent: (this.crm.tickets.length / max) * 100 },
         ];
     }
 

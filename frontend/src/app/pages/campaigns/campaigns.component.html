@@ -1,7 +1,10 @@
 <div>
     <div class="page-header">
         <div>
-            <h1>📢 Campagnes Marketing</h1>
+            <h1>
+                <i class="fa-solid fa-bullhorn page-icon"></i>
+                Campagnes Marketing
+            </h1>
             <p class="page-subtitle">Gerez vos campagnes et budgets</p>
         </div>
         <button class="btn-add" (click)="openForm()">+ Nouvelle campagne</button>
@@ -9,14 +12,18 @@
 
     <div class="page-stats">
         <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--accent-soft)">📢</div>
+            <div class="mini-stat-icon" style="background: var(--accent-soft); color: var(--accent)">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
             <div>
                 <span class="mini-stat-value">{{ crm.campaigns.length }}</span>
                 <span class="mini-stat-label">Campagnes</span>
             </div>
         </div>
         <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--warning-soft)">💵</div>
+            <div class="mini-stat-icon" style="background: var(--warning-soft); color: var(--warning)">
+                <i class="fa-solid fa-coins"></i>
+            </div>
             <div>
                 <span class="mini-stat-value">{{ totalBudget | number }} MAD</span>
                 <span class="mini-stat-label">Budget total</span>
@@ -31,11 +38,12 @@
             </div>
 
             <div class="card-meta">
-                <span class="card-meta-item"><span class="meta-icon">📅</span> {{ c.dateDebut }} → {{ c.dateFin
-                    }}</span>
+                <span class="card-meta-item">
+                    <i class="fa-regular fa-calendar meta-icon"></i>
+                    {{ c.dateDebut }} → {{ c.dateFin }}
+                </span>
             </div>
 
-            <!-- budget bar -->
             <div
                 style="display:flex; align-items:center; justify-content:space-between; margin-bottom:.2rem; margin-top:.4rem;">
                 <span style="font-size:.72rem; color:var(--text-2);">Budget</span>
@@ -52,7 +60,7 @@
     </div>
 
     <div class="empty" *ngIf="crm.campaigns.length === 0">
-        <span class="empty-icon">📢</span>
+        <i class="fa-solid fa-bullhorn" style="font-size:2rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
         Aucune campagne.
     </div>
 

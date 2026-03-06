@@ -10,11 +10,8 @@
 
         <nav class="sidebar-nav">
             <a *ngFor="let item of menuItems" [routerLink]="item.path" routerLinkActive="active" class="nav-link">
-                <span class="nav-icon" [style.background]="item.color + '15'">
-                    <svg viewBox="0 0 20 18" fill="none" [attr.stroke]="item.color" stroke-width="1.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path [attr.d]="item.svg" />
-                    </svg>
+                <span class="nav-icon" [style.background]="item.color + '15'" [style.color]="item.color">
+                    <i [class]="item.icon"></i>
                 </span>
                 <span class="nav-text" *ngIf="sidebarOpen">{{ item.label }}</span>
             </a>
@@ -24,22 +21,13 @@
             <div class="sidebar-section" *ngIf="sidebarOpen">REGLAGES</div>
             <button class="nav-link" (click)="toggleTheme()">
                 <span class="nav-icon theme-btn">
-                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="10" cy="10" r="4" />
-                        <path
-                            d="M10 2v2m0 12v2m8-8h-2M4 10H2m13.1-5.1l-1.4 1.4M7.3 12.7l-1.4 1.4m9.2 0l-1.4-1.4M7.3 7.3L5.9 5.9"
-                            *ngIf="themeSvc.isDark()" />
-                        <path d="M14 10a4 4 0 11-8 0 8 8 0 008 0z" *ngIf="!themeSvc.isDark()" />
-                    </svg>
+                    <i class="fa-solid" [class.fa-sun]="themeSvc.isDark()" [class.fa-moon]="!themeSvc.isDark()"></i>
                 </span>
                 <span class="nav-text" *ngIf="sidebarOpen">{{ themeSvc.isDark() ? 'Mode clair' : 'Mode sombre' }}</span>
             </button>
             <button class="nav-link logout-link" (click)="logout()">
                 <span class="nav-icon logout-btn">
-                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M7 17H4a1 1 0 01-1-1V4a1 1 0 011-1h3m6 12l5-5-5-5m5 5H7" />
-                    </svg>
+                    <i class="fa-solid fa-right-from-bracket"></i>
                 </span>
                 <span class="nav-text" *ngIf="sidebarOpen">Deconnexion</span>
             </button>
@@ -52,10 +40,7 @@
     <div class="main">
         <header class="topbar">
             <button class="topbar-toggle" (click)="toggleSidebar()">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
-                    <path d="M3 5h14M3 10h14M3 15h14" *ngIf="sidebarOpen" />
-                    <path d="M3 5h14M3 10h10M3 15h6" *ngIf="!sidebarOpen" />
-                </svg>
+                <i class="fa-solid fa-bars"></i>
             </button>
             <div class="topbar-spacer"></div>
             <div class="topbar-user" *ngIf="user">

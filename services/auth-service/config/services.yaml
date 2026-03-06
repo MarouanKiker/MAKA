@@ -21,7 +21,7 @@ services:
     # -------------------------------------------------------------------------
 
     # Enrichir le payload JWT avec user_id, roles, email
-    App\EventListener\JWTCreatedListener:
+    App\EventListener\JwtCreatedListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
 

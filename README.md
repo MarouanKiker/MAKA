@@ -1,139 +1,269 @@
-# MAKA ERP
+<p align="center">
+  <img src="frontend/src/assets/logo.jpeg" alt="MAKA ERP" width="120" />
+</p>
 
-MAKA est un ERP modulaire basé sur une architecture microservices. Chaque domaine métier est un service indépendant qui communique via des API REST et des événements RabbitMQ, le tout routé par un API Gateway Nginx.
+<h1 align="center">MAKA — ERP Modulaire Microservices</h1>
+
+<p align="center">
+  <strong>Solution ERP moderne et modulaire pour la gestion d'entreprise</strong><br>
+  CRM · Stock · Ventes & Achats · RH · Finance
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Angular-17+-DD0031?logo=angular&logoColor=white" />
+  <img src="https://img.shields.io/badge/.NET_Core-8-512BD4?logo=dotnet&logoColor=white" />
+  <img src="https://img.shields.io/badge/Symfony-7-000?logo=symfony&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/JWT-Auth-orange?logo=jsonwebtokens&logoColor=white" />
+</p>
 
 ---
 
-## Architecture
+## 📋 Présentation
+
+Le projet **MAKA** est un ERP (Enterprise Resource Planning) conçu pour centraliser la gestion d'une entreprise au sein d'une interface unique. L'architecture repose sur des **microservices indépendants**, chacun utilisant la technologie la plus adaptée à son domaine métier, communiquant via une **API Gateway Nginx**.
+
+### Objectifs
+- Fournir une solution **modulaire** et **scalable**
+- Centraliser les processus critiques : relation client, stocks, ventes, achats et ressources humaines
+- Permettre un accès **multi-rôles** sécurisé (Admin, Commercial, Support, RH, Comptable)
+
+---
+
+## 🏗️ Architecture
 
 ```
-  Navigateur / Mobile
-        │
-        ▼
-  ┌───────────┐       ┌─────────────────────────────────────────────────┐
-  │  Frontend  │ ────▶ │              Nginx (API Gateway :80)            │
-  │ Angular 17 │       └──┬────────┬────────┬────────┬────────┬─────────┘
-  └───────────┘           │        │        │        │        │
-                          ▼        ▼        ▼        ▼        ▼
-                     auth:8001 crm:8002 stock:8003 sales:8004 hr:8005
-                                                          finance:8006
-                          │        │        │        │        │
-                          └────────┴────────┴────────┴────────┘
-                                           │
-                                           ▼
-                                ┌─────────────────────┐
-                                │  RabbitMQ :5672      │
-                                │  (maka.events topic) │
-                                └─────────────────────┘
+    Client Web                    Admin Client
+   (Utilisateurs)              (Administrateur)
+         │                            │
+         └────────────┬───────────────┘
+                      ▼
+            ┌──────────────────┐
+            │  API Gateway     │
+            │  (Nginx :80)     │
+            └────────┬─────────┘
+                     ▼
+            ┌──────────────────┐
+            │  Service Auth    │
+            │  (Symfony / JWT) │
+            └────────┬─────────┘
+                     │
+     ┌───────┬───────┼───────┬───────┐
+     ▼       ▼       ▼       ▼       ▼
+  ┌──────┐┌──────┐┌──────┐┌──────┐┌──────┐
+  │ CRM  ││  RH  ││Finan.││Stock ││Ventes│
+  │.NET  ││Java  ││Java  ││Symf. ││Python│
+  └──┬───┘└──┬───┘└──┬───┘└──┬───┘└──┬───┘
+     ▼       ▼       ▼       ▼       ▼
+    DB       DB      DB      DB      DB
 ```
 
----
-
-## Services
-
-| Service         | Technologie             | Base de données     | Port  |
-|-----------------|-------------------------|---------------------|-------|
-| Auth Service    | Symfony 7 / PHP 8.2     | MySQL 8             | 8001  |
-| CRM Service     | .NET Core 8             | SQL Server 2022     | 8002  |
-| Stock Service   | Symfony 7 / PHP 8.2     | MySQL 8             | 8003  |
-| Sales Service   | Python FastAPI          | PostgreSQL 15       | 8004  |
-| HR Service      | Java Spring Boot 3      | PostgreSQL 15       | 8005  |
-| Finance Service | Java Spring Boot 3      | PostgreSQL 15       | 8006  |
-| Frontend        | Angular 17+             | —                   | 4200  |
-| API Gateway     | Nginx 1.25              | —                   | 80    |
-| Message Broker  | RabbitMQ 3.13           | —                   | 5672  |
+Chaque module est un **microservice indépendant** avec sa propre base de données.
 
 ---
 
-## Prérequis
+## 🧩 Modules
 
-- Docker 24+
-- Docker Compose v2.20+
+| Module | Technologie | Base de données | Port | État |
+|--------|-------------|-----------------|------|------|
+| **Auth Service** | Symfony 7 / PHP 8.3 | PostgreSQL 16 | 9000 (FPM) | ✅ Fonctionnel |
+| **CRM Service** | .NET Core 8 | PostgreSQL 16 | 5000 | 🔧 En cours |
+| **Stock Service** | Symfony 7 / PHP | À définir | — | 📋 Planifié |
+| **Ventes & Achats** | Python FastAPI | À définir | — | 📋 Planifié |
+| **RH Service** | Java Spring Boot 3 | À définir | — | 📋 Planifié |
+| **Finance Service** | Java Spring Boot 3 | À définir | — | 📋 Planifié |
+| **Frontend** | Angular 17+ | — | 4200 | ✅ Fonctionnel |
+| **API Gateway** | Nginx Alpine | — | 80 | ✅ Fonctionnel |
 
 ---
 
-## Démarrage rapide
+## 🚀 Module CRM (Développement actif)
 
+Le module CRM est le cœur de l'activité commerciale. Il gère :
+
+### Fonctionnalités implémentées (Frontend)
+- 📊 **Dashboard** — Vue synthétique avec KPIs (comptes, contacts, leads, opportunités, tickets, tâches)
+- 🏢 **Comptes** — Gestion des clients/entreprises (CRUD)
+- 👤 **Contacts** — Gestion des personnes liées aux comptes
+- 🎯 **Leads** — Capture et qualification des prospects (pipeline Kanban drag & drop)
+- 📈 **Opportunités** — Suivi du pipeline de ventes (Kanban drag & drop)
+- ✅ **Tâches** — Gestion des tâches liées aux leads/opportunités (Kanban drag & drop)
+- 🎫 **Tickets** — Support client avec gestion des priorités (Kanban drag & drop)
+- 📢 **Campagnes** — Campagnes marketing avec suivi
+
+### Rôles et droits (RBAC)
+
+| Fonction | Admin | Commercial | Support |
+|----------|-------|-----------|---------|
+| Comptes (CRUD) | ✅ | ✅ | 👁️ Lecture |
+| Contacts (CRUD) | ✅ | ✅ | 👁️ Lecture |
+| Leads (CRUD) | ✅ | ✅ | 👁️ Lecture |
+| Conversion Lead→Opportunité | ✅ | ✅ | ❌ |
+| Opportunités (CRUD) | ✅ | ✅ | 👁️ Lecture |
+| Tâches (CRUD) | ✅ | ✅ | 👁️ Lecture |
+| Tickets (CRUD) | ✅ | 👁️ Lecture | ✅ |
+| Campagnes (CRUD) | ✅ | 👁️ Lecture | ❌ |
+| Interactions (CRUD) | ✅ | ✅ | ✅ |
+
+---
+
+## 🔐 Authentification
+
+Le système d'authentification est centralisé via le **Auth Service** (Symfony 7 + LexikJWT) :
+
+- **JWT** (JSON Web Token) pour l'authentification stateless
+- **Bcrypt** pour le hashage des mots de passe
+- **Refresh tokens** avec rotation automatique
+- **Hiérarchie des rôles** : `ROLE_ADMIN` → `ROLE_COMMERCIAL` / `ROLE_SUPPORT` → `ROLE_USER`
+
+### Endpoints Auth
+
+| Méthode | Route | Description | Auth |
+|---------|-------|-------------|------|
+| POST | `/api/auth/register` | Inscription | Non |
+| POST | `/api/auth/login` | Connexion (retourne JWT) | Non |
+| GET | `/api/auth/profile` | Profil utilisateur | JWT |
+| PUT | `/api/auth/change-password` | Changer mot de passe | JWT |
+| POST | `/api/auth/forgot-password` | Demande de reset | Non |
+| POST | `/api/auth/reset-password` | Reset avec token | Non |
+| POST | `/api/auth/token/refresh` | Renouveler le JWT | Non |
+| POST | `/api/auth/logout` | Déconnexion | JWT |
+
+---
+
+## ⚙️ Prérequis
+
+- **Docker Desktop** 24+ avec Docker Compose
+- **Node.js** 18+ et **npm** (pour le développement frontend)
+- **Git**
+
+---
+
+## 🏁 Démarrage rapide
+
+### 1. Cloner le projet
 ```bash
-# 1. Cloner le dépôt
 git clone https://github.com/MarouanKiker/MAKA.git
 cd MAKA
-
-# 2. Copier le fichier d'environnement
-cp .env.example .env
-# Renseigner les variables dans .env
-
-# 3. Démarrer tous les services
-docker-compose up -d
-
-# 4. Vérifier l'état des services
-docker-compose ps
 ```
 
----
+### 2. Lancer les microservices (Backend)
+```bash
+cd services
+docker-compose up -d --build
+```
 
-## URLs des services
+### 3. Créer les tables de la base de données
+```bash
+docker exec auth-service php bin/console doctrine:schema:update --force
+```
 
-| Service              | URL                           |
-|----------------------|-------------------------------|
-| Frontend             | http://localhost              |
-| Auth API             | http://localhost/api/auth     |
-| CRM API              | http://localhost/api/crm      |
-| Stock API            | http://localhost/api/stock    |
-| Sales API            | http://localhost/api/sales    |
-| HR API               | http://localhost/api/hr       |
-| Finance API          | http://localhost/api/finance  |
-| RabbitMQ Management  | http://localhost:15672        |
+### 4. Lancer le frontend
+```bash
+cd frontend
+npm install
+npm start
+```
 
----
-
-## Communication inter-services
-
-### REST (synchrone)
-
-Tous les clients externes passent par Nginx sur le port 80. Chaque service expose une API REST sous `/api/<service>/`.
-
-### RabbitMQ (asynchrone)
-
-| Émetteur        | Clé de routage               | Consommateur(s)               |
-|-----------------|------------------------------|-------------------------------|
-| Sales Service   | `stock.commande.validee`     | Stock Service                 |
-| Sales Service   | `finance.vente.conclue`      | Finance Service               |
-| HR Service      | `finance.paie.calculee`      | Finance Service               |
-| Stock Service   | `crm.stock.alerte`           | CRM Service                   |
-| Finance Service | `ventes.paiement.recu`       | Sales Service                 |
-| Stock Service   | `stock.rupture`              | CRM Service, Sales Service    |
-
-Exchange : `maka.events` (type : topic)
+### 5. Accéder à l'application
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:4200 |
+| Auth API | http://localhost/api/auth |
+| CRM API | http://localhost/api/crm |
+| Health Check | http://localhost/health |
 
 ---
 
-## Structure du projet
+## 📁 Structure du projet
 
 ```
 MAKA/
-├── docker-compose.yml
-├── docker-compose.override.yml
+├── README.md
+├── .gitignore
 ├── .env.example
-├── nginx/
-│   └── default.conf
-├── rabbitmq/
-│   └── definitions.json
+│
+├── frontend/                      # Angular 17+ (SPA)
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── core/              # Services, guards, interceptors, modèles
+│   │   │   ├── layout/            # Sidebar, header, layout principal
+│   │   │   └── pages/             # Composants par module CRM
+│   │   │       ├── dashboard/
+│   │   │       ├── accounts/
+│   │   │       ├── contacts/
+│   │   │       ├── leads/
+│   │   │       ├── opportunities/
+│   │   │       ├── tasks/
+│   │   │       ├── tickets/
+│   │   │       ├── campaigns/
+│   │   │       ├── login/
+│   │   │       └── register/
+│   │   └── environments/
+│   └── package.json
+│
 └── services/
-    ├── auth-service/
-    ├── crm-service/
-    ├── stock-service/
-    ├── sales-service/
-    ├── hr-service/
-    ├── finance-service/
-    └── frontend/
+    ├── docker-compose.yml         # Orchestration des microservices
+    ├── gateway/
+    │   └── nginx.conf             # Reverse proxy + CORS
+    ├── auth-service/              # Symfony 7 + LexikJWT + PostgreSQL
+    │   ├── src/
+    │   │   ├── Controller/
+    │   │   ├── Entity/
+    │   │   ├── Service/
+    │   │   ├── DTO/
+    │   │   ├── EventListener/
+    │   │   └── Repository/
+    │   ├── config/
+    │   ├── Dockerfile
+    │   └── docker-entrypoint.sh
+    └── crm-service/               # .NET Core 8 Web API
+        ├── Controllers/
+        ├── Program.cs
+        └── Dockerfile
 ```
 
 ---
 
-## Équipe
+## 👥 Équipe
 
-- Maroun Kiker
-- Abdelilah Hamdaoui
-- Missaoui Abderahman
-- Abdelah Ajebli
+| Membre | Rôle | Responsabilités |
+|--------|------|-----------------|
+| **Marwan Kiker** | Front-end Angular | UI/UX, routing, guards, services HTTP, pages CRM |
+| **Abdellah Ajebli** | Back-end .NET | Leads, Campagnes, Opportunités, conversion lead→opportunité |
+| **Abdelilah Hamdaoui** | Back-end .NET | CRUD comptes/contacts, recherche, pagination |
+| **Abderahmane Missaoui** | Back-end .NET + Qualité | Tâches, Tickets, Interactions, RBAC, Docker, Swagger |
+
+---
+
+## 📅 Planning prévisionnel
+
+| Phase | Période | Livrables |
+|-------|---------|-----------|
+| Conception | Janvier 2026 | Diagrammes de classes, séquences, maquettes |
+| Dév. Lot 1 | Février 2026 | CRM (.NET) + Auth (Symfony) + Frontend Angular |
+| Dév. Lot 2 | Mars 2026 | Stock (Symfony) + Ventes (Python) |
+| Intégration | Avril 2026 | Finance (Java) + API Gateway + Tests |
+| Livraison | Mai 2026 | Documentation, déploiement Docker, soutenance |
+
+---
+
+## 🛠️ Technologies
+
+| Couche | Technologie |
+|--------|-------------|
+| Frontend | Angular 17+, TypeScript, SCSS |
+| Auth Service | PHP 8.3, Symfony 7, LexikJWT |
+| CRM Service | C# .NET 8, Entity Framework Core |
+| Base de données | PostgreSQL 16 |
+| API Gateway | Nginx Alpine |
+| Conteneurisation | Docker, Docker Compose |
+| Sécurité | JWT (RS256), Bcrypt, RBAC |
+| Icons | Font Awesome 6 |
+
+---
+
+## 📄 Licence
+
+Projet universitaire — Décembre 2025 / Mai 2026

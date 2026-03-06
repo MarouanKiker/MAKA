@@ -1,7 +1,10 @@
 <div>
     <div class="page-header">
         <div>
-            <h1>🏢 Comptes</h1>
+            <h1>
+                <i class="fa-solid fa-building page-icon"></i>
+                Comptes
+            </h1>
             <p class="page-subtitle">Gerez vos clients et entreprises</p>
         </div>
         <button class="btn-add" (click)="openForm()">+ Nouveau compte</button>
@@ -9,21 +12,27 @@
 
     <div class="page-stats">
         <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--accent-soft)">🏢</div>
+            <div class="mini-stat-icon" style="background: var(--accent-soft); color: var(--accent)">
+                <i class="fa-solid fa-building"></i>
+            </div>
             <div>
                 <span class="mini-stat-value">{{ crm.accounts.length }}</span>
                 <span class="mini-stat-label">Total comptes</span>
             </div>
         </div>
         <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--blue-soft)">👤</div>
+            <div class="mini-stat-icon" style="background: var(--violet-soft); color: var(--violet)">
+                <i class="fa-solid fa-users"></i>
+            </div>
             <div>
                 <span class="mini-stat-value">{{ crm.contacts.length }}</span>
                 <span class="mini-stat-label">Contacts lies</span>
             </div>
         </div>
         <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--warning-soft)">🎫</div>
+            <div class="mini-stat-icon" style="background: var(--warning-soft); color: var(--warning)">
+                <i class="fa-solid fa-ticket"></i>
+            </div>
             <div>
                 <span class="mini-stat-value">{{ crm.tickets.length }}</span>
                 <span class="mini-stat-label">Tickets ouverts</span>
@@ -31,9 +40,10 @@
         </div>
     </div>
 
-    <!-- recherche -->
-    <div class="champ" style="max-width:300px; margin-bottom:1.25rem;">
-        <input type="text" [(ngModel)]="search" placeholder="🔍 Rechercher un compte..." />
+    <!-- barre de recherche -->
+    <div style="margin-bottom: 1rem;">
+        <input type="text" [(ngModel)]="search" placeholder="Rechercher un compte..."
+            style="width:100%;max-width:400px;padding:.5rem .8rem;border:1px solid var(--glass-border);border-radius:var(--radius-sm);background:var(--bg-2);color:var(--text-0);font-size:.82rem;font-family:inherit;" />
     </div>
 
     <div class="card-grid">
@@ -41,11 +51,22 @@
             <div class="card-top">
                 <span class="card-title">{{ a.nom }}</span>
             </div>
+
             <div class="card-meta">
-                <span class="card-meta-item"><span class="meta-icon">📧</span> {{ a.email }}</span>
-                <span class="card-meta-item"><span class="meta-icon">📞</span> {{ a.telephone }}</span>
-                <span class="card-meta-item"><span class="meta-icon">👤</span> {{ a.responsable }}</span>
+                <span class="card-meta-item">
+                    <i class="fa-solid fa-envelope meta-icon"></i>
+                    {{ a.email }}
+                </span>
+                <span class="card-meta-item">
+                    <i class="fa-solid fa-phone meta-icon"></i>
+                    {{ a.telephone }}
+                </span>
+                <span class="card-meta-item">
+                    <i class="fa-solid fa-user meta-icon"></i>
+                    {{ a.responsable }}
+                </span>
             </div>
+
             <div class="card-actions">
                 <button class="btn-sm danger" (click)="delete(a.id)">Supprimer</button>
             </div>
@@ -53,7 +74,7 @@
     </div>
 
     <div class="empty" *ngIf="filtered.length === 0">
-        <span class="empty-icon">🏢</span>
+        <i class="fa-solid fa-building" style="font-size:2rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
         Aucun compte trouve.
     </div>
 
@@ -64,19 +85,19 @@
                 <label>Nom</label>
                 <input type="text" [(ngModel)]="nom" placeholder="Nom de l'entreprise" />
             </div>
-            <div class="champ">
-                <label>Email</label>
-                <input type="email" [(ngModel)]="email" placeholder="email@entreprise.com" />
-            </div>
             <div class="row">
                 <div class="champ">
-                    <label>Telephone</label>
-                    <input type="text" [(ngModel)]="telephone" placeholder="0522-000000" />
+                    <label>Email</label>
+                    <input type="email" [(ngModel)]="email" placeholder="contact@example.com" />
                 </div>
                 <div class="champ">
-                    <label>Responsable</label>
-                    <input type="text" [(ngModel)]="responsable" placeholder="Nom" />
+                    <label>Telephone</label>
+                    <input type="tel" [(ngModel)]="telephone" placeholder="0522-..." />
                 </div>
+            </div>
+            <div class="champ">
+                <label>Responsable</label>
+                <input type="text" [(ngModel)]="responsable" placeholder="Nom du responsable" />
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" (click)="showForm = false">Annuler</button>
