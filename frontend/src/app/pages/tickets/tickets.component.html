@@ -1,7 +1,10 @@
 <div>
     <div class="page-header">
         <div>
-            <h1>🎫 Tickets Support</h1>
+            <h1>
+                <i class="fa-solid fa-ticket page-icon"></i>
+                Tickets Support
+            </h1>
             <p class="page-subtitle">Glissez les tickets entre les etapes du support</p>
         </div>
         <div style="display:flex; align-items:center; gap:.75rem;">
@@ -30,11 +33,22 @@
                     </div>
 
                     <div class="card-meta">
-                        <span class="card-meta-item">🏢 {{ crm.getAccountName(t.accountId) }}</span>
-                        <span class="card-meta-item">👤 {{ t.agent }}</span>
+                        <span class="card-meta-item">
+                            <i class="fa-solid fa-building meta-icon"></i>
+                            {{ crm.getAccountName(t.accountId) }}
+                        </span>
+                        <span class="card-meta-item">
+                            <i class="fa-solid fa-user meta-icon"></i>
+                            {{ t.agent }}
+                        </span>
                     </div>
 
-                    <div class="card-date">📅 {{ t.dateCreation }}</div>
+                    <div class="card-meta">
+                        <span class="card-meta-item">
+                            <i class="fa-regular fa-calendar meta-icon"></i>
+                            {{ t.dateCreation }}
+                        </span>
+                    </div>
                 </div>
 
                 <div class="kanban-empty" *ngIf="getByStatut(col.key).length === 0">
@@ -44,7 +58,6 @@
         </div>
     </div>
 
-    <!-- modal -->
     <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
         <div class="modal" (click)="$event.stopPropagation()">
             <h2>Nouveau ticket</h2>

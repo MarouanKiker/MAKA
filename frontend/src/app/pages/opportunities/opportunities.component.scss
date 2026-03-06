@@ -1,18 +1,19 @@
-/* Opportunities - Kanban drag & drop */
+/* Opportunities — Kanban Aurora */
 
 .total-badge {
-    font-size: .72rem;
+    font-size: .7rem;
     font-weight: 600;
-    padding: .3rem .65rem;
-    background: var(--bg-2);
-    border: 1px solid var(--border-0);
-    border-radius: 20px;
+    padding: .3rem .7rem;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
     color: var(--text-2);
+    backdrop-filter: blur(8px);
 }
 
 .kanban {
     display: flex;
-    gap: 1rem;
+    gap: .85rem;
     overflow-x: auto;
     padding-bottom: 1rem;
     animation: fadeInUp .4s ease;
@@ -20,17 +21,18 @@
 
 .kanban-col {
     flex: 1;
-    min-width: 220px;
-    max-width: 300px;
+    min-width: 240px;
+    max-width: 320px;
 }
 
 .kanban-col-header {
     display: flex;
     align-items: center;
     gap: .45rem;
-    padding: .6rem .8rem;
-    background: var(--surface);
-    border: 1px solid var(--border-0);
+    padding: .55rem .8rem;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
@@ -39,52 +41,54 @@
     height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
+    box-shadow: 0 0 6px currentColor;
 }
 
 .kanban-col-title {
-    font-size: .78rem;
+    font-size: .72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .3px;
+    letter-spacing: .4px;
     flex: 1;
 }
 
 .kanban-count {
-    font-size: .72rem;
+    font-size: .65rem;
     font-weight: 700;
     background: var(--bg-2);
-    padding: .12rem .45rem;
-    border-radius: 10px;
+    padding: .15rem .45rem;
+    border-radius: var(--radius-sm);
     color: var(--text-2);
 }
 
 .kanban-cards {
-    background: var(--bg-2);
-    border: 1px solid var(--border-0);
+    background: rgba(var(--accent-rgb), .02);
+    border: 1px solid var(--glass-border);
     border-top: none;
     border-radius: 0 0 var(--radius-md) var(--radius-md);
-    padding: .55rem;
-    min-height: 200px;
+    padding: .5rem;
+    min-height: 220px;
     display: flex;
     flex-direction: column;
-    gap: .55rem;
+    gap: .5rem;
 }
 
 .kanban-card {
-    background: var(--surface);
-    border: 1px solid var(--border-0);
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
-    padding: .85rem;
+    padding: .8rem;
     cursor: grab;
-    transition: all .2s;
+    transition: all .25s cubic-bezier(.4, 0, .2, 1);
     animation: fadeInUp .3s ease both;
     user-select: none;
 }
 
 .kanban-card:hover {
     border-color: var(--border-1);
-    box-shadow: var(--shadow);
-    transform: translateY(-2px);
+    box-shadow: var(--shadow-card), var(--shadow-glow);
+    transform: translateY(-3px);
 }
 
 .kanban-card:active {
@@ -92,20 +96,23 @@
 }
 
 .kanban-card.dragging {
-    opacity: .4;
-    transform: scale(.95);
+    opacity: .35;
+    transform: scale(.96);
 }
 
 .card-title {
-    font-size: .85rem;
+    font-size: .84rem;
     font-weight: 700;
     margin-bottom: .3rem;
 }
 
 .kanban-value {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 800;
-    color: var(--accent);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin: .25rem 0;
 }
 
@@ -115,20 +122,30 @@
 }
 
 .card-meta-item {
-    font-size: .72rem;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .7rem;
     color: var(--text-2);
+}
+
+.meta-icon {
+    font-size: .7rem;
+    flex-shrink: 0;
+    color: var(--text-3);
+    width: 14px;
+    text-align: center;
 }
 
 .kanban-empty {
     text-align: center;
     padding: 3rem .5rem;
     color: var(--text-3);
-    font-size: .78rem;
-    border: 2px dashed var(--border-0);
+    font-size: .76rem;
+    border: 2px dashed rgba(var(--accent-rgb), .08);
     border-radius: var(--radius-sm);
 }
 
-/* ========== RESPONSIVE - MOBILE ========== */
 @media (max-width: 768px) {
     .kanban {
         flex-direction: column;

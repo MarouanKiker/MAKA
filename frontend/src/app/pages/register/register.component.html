@@ -7,7 +7,13 @@
 
     <div class="auth-card">
         <button class="theme-toggle" (click)="toggleTheme()">
-            {{ themeSvc.isDark() ? '☀️' : '🌙' }}
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+                <circle cx="10" cy="10" r="4" *ngIf="themeSvc.isDark()" />
+                <path
+                    d="M10 2v2m0 12v2m8-8h-2M4 10H2m13.1-5.1l-1.4 1.4M7.3 12.7l-1.4 1.4m9.2 0l-1.4-1.4M7.3 7.3L5.9 5.9"
+                    *ngIf="themeSvc.isDark()" />
+                <path d="M14 10a4 4 0 11-8 0 8 8 0 008 0z" *ngIf="!themeSvc.isDark()" />
+            </svg>
         </button>
 
         <div class="card-brand">

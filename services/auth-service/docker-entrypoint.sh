@@ -12,10 +12,10 @@ mkdir -p "$JWT_DIR"
 
 # Générer les clés RSA UNIQUEMENT si elles n'existent pas déjà
 if [ ! -f "$JWT_DIR/private.pem" ]; then
-    echo ">>> Génération de la clé privée RSA (4096 bits)..."
+    echo ">>> Génération de la clé privée RSA (2048 bits)..."
     openssl genpkey -algorithm RSA -out "$JWT_DIR/private.pem" \
         -aes-256-cbc -pass "pass:$PASSPHRASE" \
-        -pkeyopt rsa_keygen_bits:4096
+        -pkeyopt rsa_keygen_bits:2048
 
     echo ">>> Extraction de la clé publique..."
     openssl pkey -in "$JWT_DIR/private.pem" \

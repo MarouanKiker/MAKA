@@ -34,24 +34,6 @@ export class LoginComponent {
         this.themeSvc.toggle();
     }
 
-    // remplir les champs avec le compte admin de test
-    fillAdmin(): void {
-        this.email = 'admin@maka.com';
-        this.password = 'admin123';
-    }
-
-    // remplir les champs avec le compte commercial de test
-    fillCommercial(): void {
-        this.email = 'commercial@maka.com';
-        this.password = 'test123';
-    }
-
-    // remplir les champs avec le compte support de test
-    fillSupport(): void {
-        this.email = 'support@maka.com';
-        this.password = 'test123';
-    }
-
     // quand l'utilisateur clique sur "Se connecter"
     onLogin(): void {
         this.loading = true;
@@ -65,7 +47,7 @@ export class LoginComponent {
             },
             // si la connexion echoue, on affiche l'erreur
             error: (err: any) => {
-                this.erreur = err.error?.error || 'Erreur de connexion';
+                this.erreur = err.error?.message || err.error?.error || 'Email ou mot de passe incorrect.';
                 this.loading = false;
             }
         });

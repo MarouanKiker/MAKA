@@ -22,7 +22,8 @@ class AuthController extends AbstractController
 {
     public function __construct(
         private AuthService $authService,
-    ) {}
+    ) {
+    }
 
     // =========================================================================
     // POST /api/auth/login — Connexion (gérée par LexikJWT)

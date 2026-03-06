@@ -1,32 +1,32 @@
 <div>
     <div class="page-header">
         <div>
-            <h1>👤 Contacts</h1>
-            <p class="page-subtitle">Personnes liees a vos comptes clients</p>
+            <h1>
+                <i class="fa-solid fa-address-book page-icon"></i>
+                Contacts
+            </h1>
+            <p class="page-subtitle">Gerez vos contacts et leurs informations</p>
         </div>
         <button class="btn-add" (click)="openForm()">+ Nouveau contact</button>
     </div>
 
     <div class="page-stats">
         <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--accent-soft)">👤</div>
+            <div class="mini-stat-icon" style="background: var(--accent-soft); color: var(--accent)">
+                <i class="fa-solid fa-address-book"></i>
+            </div>
             <div>
                 <span class="mini-stat-value">{{ crm.contacts.length }}</span>
                 <span class="mini-stat-label">Total contacts</span>
             </div>
         </div>
         <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--blue-soft)">🎯</div>
-            <div>
-                <span class="mini-stat-value">{{ countByType('Decideur') }}</span>
-                <span class="mini-stat-label">Decideurs</span>
+            <div class="mini-stat-icon" style="background: var(--violet-soft); color: var(--violet)">
+                <i class="fa-solid fa-building"></i>
             </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--purple-soft)">⚙️</div>
             <div>
-                <span class="mini-stat-value">{{ countByType('Technique') }}</span>
-                <span class="mini-stat-label">Techniques</span>
+                <span class="mini-stat-value">{{ crm.accounts.length }}</span>
+                <span class="mini-stat-label">Comptes lies</span>
             </div>
         </div>
     </div>
@@ -35,15 +35,20 @@
         <div class="item-card" *ngFor="let c of crm.contacts">
             <div class="card-top">
                 <span class="card-title">{{ c.nom }}</span>
-                <span class="badge"
-                    [class]="c.type === 'Decideur' ? 'nouvelle' : c.type === 'Technique' ? 'en_cours' : 'ouvert'">{{
-                    c.type }}</span>
+                <span class="badge" [class]="c.type.toLowerCase()">{{ c.type }}</span>
             </div>
+
             <div class="card-meta">
-                <span class="card-meta-item"><span class="meta-icon">🏢</span> {{ crm.getAccountName(c.accountId)
-                    }}</span>
-                <span class="card-meta-item"><span class="meta-icon">📍</span> {{ c.adresse }}</span>
+                <span class="card-meta-item">
+                    <i class="fa-solid fa-building meta-icon"></i>
+                    {{ crm.getAccountName(c.accountId) }}
+                </span>
+                <span class="card-meta-item" *ngIf="c.adresse">
+                    <i class="fa-solid fa-map-pin meta-icon"></i>
+                    {{ c.adresse }}
+                </span>
             </div>
+
             <div class="card-actions">
                 <button class="btn-sm danger" (click)="delete(c.id)">Supprimer</button>
             </div>
@@ -51,18 +56,18 @@
     </div>
 
     <div class="empty" *ngIf="crm.contacts.length === 0">
-        <span class="empty-icon">👤</span>
+        <i class="fa-solid fa-address-book" style="font-size:2rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
         Aucun contact.
     </div>
 
     <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
         <div class="modal" (click)="$event.stopPropagation()">
             <h2>Nouveau contact</h2>
-            <div class="champ">
-                <label>Nom complet</label>
-                <input type="text" [(ngModel)]="nom" placeholder="Nom complet" />
-            </div>
             <div class="row">
+                <div class="champ">
+                    <label>Nom complet</label>
+                    <input type="text" [(ngModel)]="nom" placeholder="Nom du contact" />
+                </div>
                 <div class="champ">
                     <label>Type</label>
                     <select [(ngModel)]="type">
@@ -71,16 +76,18 @@
                         <option>Autre</option>
                     </select>
                 </div>
+            </div>
+            <div class="row">
                 <div class="champ">
-                    <label>Compte</label>
+                    <label>Adresse / Ville</label>
+                    <input type="text" [(ngModel)]="adresse" placeholder="Casablanca..." />
+                </div>
+                <div class="champ">
+                    <label>Compte client</label>
                     <select [(ngModel)]="accountId">
                         <option *ngFor="let a of crm.accounts" [ngValue]="a.id">{{ a.nom }}</option>
                     </select>
                 </div>
-            </div>
-            <div class="champ">
-                <label>Adresse</label>
-                <input type="text" [(ngModel)]="adresse" placeholder="Ville" />
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" (click)="showForm = false">Annuler</button>

@@ -1,10 +1,9 @@
-/* Dashboard - Design riche + responsive */
+/* Dashboard — Aurora design */
 
 .dashboard {
     max-width: 1100px;
 }
 
-/* en-tete */
 .dash-header {
     margin-bottom: 1.5rem;
     animation: fadeInUp .4s ease;
@@ -12,8 +11,14 @@
 
 .dash-header h1 {
     font-size: 1.4rem;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: -.3px;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% auto;
+    animation: gradient-shift 4s ease infinite;
 }
 
 .dash-subtitle {
@@ -22,62 +27,75 @@
     margin-top: .1rem;
 }
 
-/* grille de stats */
+/* ——— stat cards grid ——— */
 .stat-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: .8rem;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: .75rem;
     margin-bottom: 1.5rem;
 }
 
 .stat-card {
-    padding: .9rem;
-    background: var(--surface);
-    border: 1px solid var(--border-0);
+    padding: .85rem;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow);
-    transition: all .25s;
+    box-shadow: var(--shadow-card);
+    transition: all .3s cubic-bezier(.4, 0, .2, 1);
     animation: fadeInUp .4s ease both;
     overflow: hidden;
+    position: relative;
+
+    /* gradient glow at top */
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), .25), transparent);
+    }
 }
 
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card), var(--shadow-glow);
     border-color: var(--border-1);
 }
 
 .stat-letter {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-xs);
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: .6rem;
+    font-size: .55rem;
     font-weight: 800;
     letter-spacing: .3px;
     margin-bottom: .5rem;
 }
 
 .stat-number {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 800;
     display: block;
     line-height: 1.1;
 }
 
 .stat-name {
-    font-size: .65rem;
+    font-size: .6rem;
     color: var(--text-2);
     text-transform: uppercase;
-    letter-spacing: .3px;
+    letter-spacing: .4px;
     font-weight: 600;
 }
 
 .stat-bar {
     height: 3px;
-    background: var(--border-0);
+    background: var(--glass-border);
     border-radius: 10px;
     margin-top: .55rem;
     overflow: hidden;
@@ -86,14 +104,15 @@
 .stat-bar-fill {
     height: 100%;
     border-radius: 10px;
+    background: var(--gradient-primary);
     transition: width .8s ease .3s;
 }
 
-/* grille 2 colonnes pour les sections */
+/* ——— sections 2 colonnes ——— */
 .dash-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.1rem;
+    gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
@@ -102,17 +121,18 @@
 }
 
 .section-title {
-    font-size: .95rem;
+    font-size: .92rem;
     font-weight: 700;
-    margin-bottom: .65rem;
+    margin-bottom: .6rem;
 }
 
-/* pipeline en barres horizontales */
+/* ——— pipeline ——— */
 .pipeline-chart {
-    background: var(--surface);
-    border: 1px solid var(--border-0);
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-card);
     padding: .85rem;
 }
 
@@ -128,7 +148,7 @@
 }
 
 .pipeline-label {
-    font-size: .75rem;
+    font-size: .72rem;
     font-weight: 600;
     width: 65px;
     color: var(--text-2);
@@ -136,8 +156,8 @@
 
 .pipeline-track {
     flex: 1;
-    height: 8px;
-    background: var(--border-0);
+    height: 7px;
+    background: var(--glass-border);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -150,18 +170,19 @@
 }
 
 .pipeline-val {
-    font-size: .82rem;
+    font-size: .8rem;
     font-weight: 800;
     width: 20px;
     text-align: right;
 }
 
-/* liste de taches */
+/* ——— task list ——— */
 .task-list {
-    background: var(--surface);
-    border: 1px solid var(--border-0);
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
 }
 
@@ -170,7 +191,7 @@
     align-items: center;
     gap: .55rem;
     padding: .6rem .85rem;
-    border-bottom: 1px solid var(--border-0);
+    border-bottom: 1px solid var(--glass-border);
     transition: background .15s;
 }
 
@@ -183,7 +204,7 @@
 }
 
 .task-priority {
-    width: 4px;
+    width: 3px;
     height: 24px;
     border-radius: 2px;
     flex-shrink: 0;
@@ -205,12 +226,13 @@
     color: var(--text-3);
 }
 
-/* liste de leads */
+/* ——— lead list ——— */
 .lead-list {
-    background: var(--surface);
-    border: 1px solid var(--border-0);
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
 }
 
@@ -219,7 +241,7 @@
     align-items: center;
     justify-content: space-between;
     padding: .65rem .85rem;
-    border-bottom: 1px solid var(--border-0);
+    border-bottom: 1px solid var(--glass-border);
     transition: background .15s;
 }
 
@@ -251,23 +273,24 @@
 .mini-progress {
     width: 40px;
     height: 4px;
-    background: var(--border-0);
+    background: var(--glass-border);
     border-radius: 10px;
     overflow: hidden;
 }
 
 .mini-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--blue));
+    background: var(--gradient-primary);
     border-radius: 10px;
 }
 
-/* liste de tickets */
+/* ——— ticket list ——— */
 .ticket-list {
-    background: var(--surface);
-    border: 1px solid var(--border-0);
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
 }
 
@@ -276,7 +299,7 @@
     align-items: center;
     justify-content: space-between;
     padding: .65rem .85rem;
-    border-bottom: 1px solid var(--border-0);
+    border-bottom: 1px solid var(--glass-border);
     transition: background .15s;
 }
 
@@ -304,15 +327,15 @@
     gap: .3rem;
 }
 
-/* badges de statut */
+/* ——— badges ——— */
 .badge {
     display: inline-block;
-    font-size: .62rem;
+    font-size: .58rem;
     font-weight: 700;
-    padding: .17rem .45rem;
-    border-radius: 20px;
+    padding: .18rem .5rem;
+    border-radius: var(--radius-lg);
     text-transform: uppercase;
-    letter-spacing: .3px;
+    letter-spacing: .4px;
 }
 
 .badge.haute {
@@ -351,8 +374,8 @@
 }
 
 .badge.qualifie {
-    background: var(--warning-soft);
-    color: var(--warning);
+    background: var(--violet-soft);
+    color: var(--violet);
 }
 
 .badge.converti {
@@ -370,30 +393,26 @@
     color: var(--success);
 }
 
-/* ========== RESPONSIVE - TABLETTE ========== */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 1024px) {
     .stat-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-/* ========== RESPONSIVE - MOBILE ========== */
 @media (max-width: 768px) {
-
-    /* les stats sur 2 colonnes */
     .stat-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: .55rem;
     }
 
-    /* les sections sur 1 colonne */
     .dash-grid {
         grid-template-columns: 1fr;
         gap: .8rem;
     }
 
     .dash-header h1 {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
     }
 
     .section-title {
@@ -401,7 +420,6 @@
     }
 }
 
-/* ========== RESPONSIVE - PETIT MOBILE ========== */
 @media (max-width: 480px) {
     .stat-grid {
         grid-template-columns: 1fr 1fr;
@@ -413,6 +431,6 @@
     }
 
     .stat-number {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
     }
 }

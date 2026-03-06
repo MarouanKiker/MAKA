@@ -4,8 +4,17 @@
 
 security:
     # --- Hashage des mots de passe ---
+    # cost: 4 en dev pour des register/login rapides (13 par defaut en prod)
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+            algorithm: auto
+            cost: 4
+
+    # --- Hiérarchie des rôles ---
+    role_hierarchy:
+        ROLE_COMMERCIAL: ROLE_USER
+        ROLE_SUPPORT: ROLE_USER
+        ROLE_ADMIN: [ROLE_COMMERCIAL, ROLE_SUPPORT]
 
     # --- Providers : d'où viennent les utilisateurs ---
     providers:

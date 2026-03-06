@@ -9,7 +9,7 @@
     <!-- stat cards -->
     <div class="stat-grid">
         <div class="stat-card" *ngFor="let s of stats; let i = index" [style.animation-delay]="i * 0.06 + 's'">
-            <div class="stat-letter" [style.background]="s.bg" [style.color]="s.color">{{ s.letter }}</div>
+            <div class="stat-letter" [style.background]="s.bg" [style.color]="s.color"><i [class]="s.icon"></i></div>
             <div class="stat-body">
                 <span class="stat-number">{{ s.value }}</span>
                 <span class="stat-name">{{ s.label }}</span>
