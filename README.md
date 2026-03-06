@@ -228,12 +228,10 @@ MAKA/
 
 ## 👥 Équipe
 
-| Membre | Rôle | Responsabilités |
-|--------|------|-----------------|
-| **Marwan Kiker** | Front-end Angular | UI/UX, routing, guards, services HTTP, pages CRM |
-| **Abdellah Ajebli** | Back-end .NET | Leads, Campagnes, Opportunités, conversion lead→opportunité |
-| **Abdelilah Hamdaoui** | Back-end .NET | CRUD comptes/contacts, recherche, pagination |
-| **Abderahmane Missaoui** | Back-end .NET + Qualité | Tâches, Tickets, Interactions, RBAC, Docker, Swagger |
+- **Marwan Kiker**
+- **Abdellah Ajebli**
+- **Abdelilah Hamdaoui**
+- **Abderahmane Missaoui**
 
 ---
 
@@ -266,4 +264,4 @@ MAKA/
 
 ## 📄 Licence
 
-Projet universitaire — Décembre 2025 / Mai 2026
+Projet de fin d'année — Décembre 2025 / Mai 2026
