@@ -1,14 +1,13 @@
-/* Leads — Kanban Aurora */
+/* Kanban — Nano Precision */
 
 .total-badge {
     font-size: .7rem;
     font-weight: 600;
     padding: .3rem .7rem;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    color: var(--text-2);
+    background: var(--bg-2);
     backdrop-filter: blur(8px);
+    border-radius: var(--radius-sm);
+    color: var(--text-2);
 }
 
 .kanban {
@@ -21,7 +20,7 @@
 
 .kanban-col {
     flex: 1;
-    min-width: 240px;
+    min-width: 260px;
 }
 
 .kanban-col-header {
@@ -29,9 +28,8 @@
     align-items: center;
     gap: .45rem;
     padding: .55rem .8rem;
-    background: var(--glass);
+    background: var(--bg-2);
     backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
@@ -44,17 +42,17 @@
 }
 
 .kanban-col-title {
-    font-size: .72rem;
+    font-size: .69rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .4px;
+    letter-spacing: .05em;
     flex: 1;
 }
 
 .kanban-count {
     font-size: .65rem;
     font-weight: 700;
-    background: var(--bg-2);
+    background: var(--bg-3);
     padding: .15rem .45rem;
     border-radius: var(--radius-sm);
     color: var(--text-2);
@@ -66,14 +64,15 @@
     border-top: none;
     border-radius: 0 0 var(--radius-md) var(--radius-md);
     padding: .5rem;
-    min-height: 260px;
+    min-height: 300px;
     display: flex;
     flex-direction: column;
     gap: .5rem;
+    transition: all .2s;
 }
 
 .kanban-card {
-    background: var(--glass);
+    background: var(--bg-2);
     backdrop-filter: blur(8px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
@@ -82,7 +81,6 @@
     transition: all .25s cubic-bezier(.4, 0, .2, 1);
     animation: fadeInUp .3s ease both;
     user-select: none;
-    position: relative;
 }
 
 .kanban-card:hover {
@@ -102,14 +100,80 @@
 
 .card-top {
     display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: .4rem;
+}
+
+.card-title {
+    font-size: .84rem;
+    font-weight: 600;
+}
+
+.priority-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: .25rem;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.card-desc {
+    font-size: .74rem;
+    color: var(--text-1);
+    margin-bottom: .55rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-meta {
+    display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: .45rem;
 }
 
-.card-title {
-    font-size: .84rem;
+.card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .7rem;
+    color: var(--text-1);
+}
+
+.meta-icon {
+    font-size: .7rem;
+    flex-shrink: 0;
+    color: var(--text-2);
+    width: 14px;
+    text-align: center;
+}
+
+.meta-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .6rem;
     font-weight: 700;
+}
+
+.meta-date {
+    font-size: .68rem;
+    color: var(--text-2);
+}
+
+.card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .score-pill {
@@ -124,7 +188,7 @@
 .progress-bar {
     width: 100%;
     height: 3px;
-    background: var(--glass-border);
+    background: var(--bg-4);
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: .5rem;
@@ -137,33 +201,28 @@
     transition: width .5s ease;
 }
 
-.card-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .3rem .6rem;
-    margin-bottom: .35rem;
+.kanban-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: .25rem 0;
 }
 
-.card-meta-item {
-    display: flex;
-    align-items: center;
-    gap: .3rem;
-    font-size: .7rem;
-    color: var(--text-2);
+.badge {
+    font-size: .55rem;
+    font-weight: 700;
+    padding: .18rem .5rem;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: .05em;
 }
 
-.meta-icon {
-    font-size: .7rem;
-    flex-shrink: 0;
-    color: var(--text-3);
-    width: 14px;
-    text-align: center;
-}
-
-.card-bottom {
-    display: flex;
-    justify-content: flex-end;
-}
+.badge.haute { background: var(--danger-soft); color: var(--danger); }
+.badge.moyenne { background: var(--warning-soft); color: var(--warning); }
+.badge.basse { background: var(--success-soft); color: var(--success); }
 
 .btn-del {
     width: 22px;
@@ -192,18 +251,11 @@
     font-size: .76rem;
     border: 2px dashed rgba(var(--accent-rgb), .08);
     border-radius: var(--radius-sm);
+    transition: all .2s;
 }
 
 @media (max-width: 768px) {
-    .kanban {
-        flex-direction: column;
-    }
-
-    .kanban-col {
-        min-width: 100%;
-    }
-
-    .kanban-cards {
-        min-height: 80px;
-    }
+    .kanban { flex-direction: column; }
+    .kanban-col { min-width: 100%; }
+    .kanban-cards { min-height: 100px; }
 }

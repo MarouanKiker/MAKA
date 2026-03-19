@@ -1,31 +1,26 @@
 <div class="dashboard">
     <div class="dash-header">
-        <div>
-            <h1>Bonjour, {{ userName }}</h1>
-            <p class="dash-subtitle">Vue d'ensemble de votre CRM — {{ today }}</p>
-        </div>
+        <h1>Bonjour, {{ userName }}</h1>
+        <p class="dash-subtitle">{{ today }} · Casablanca HQ</p>
     </div>
 
     <!-- stat cards -->
     <div class="stat-grid">
-        <div class="stat-card" *ngFor="let s of stats; let i = index" [style.animation-delay]="i * 0.06 + 's'">
-            <div class="stat-letter" [style.background]="s.bg" [style.color]="s.color"><i [class]="s.icon"></i></div>
-            <div class="stat-body">
-                <span class="stat-number">{{ s.value }}</span>
-                <span class="stat-name">{{ s.label }}</span>
-            </div>
-            <div class="stat-bar">
-                <div class="stat-bar-fill" [style.width.%]="s.percent" [style.background]="s.color"></div>
-            </div>
+        <div class="stat-card" *ngFor="let s of stats; let i = index" [style.animation-delay]="i * 0.05 + 's'">
+            <div class="stat-icon" [style.background]="s.bg" [style.color]="s.color"><i [class]="s.icon"></i></div>
+            <span class="stat-label">{{ s.label }}</span>
+            <span class="stat-number">{{ s.value }}</span>
         </div>
     </div>
 
-    <!-- 2 colonnes -->
+    <!-- pipeline + tasks -->
     <div class="dash-grid">
-        <!-- pipeline -->
         <div class="dash-section">
-            <h2 class="section-title">Pipeline des opportunites</h2>
-            <div class="pipeline-chart">
+            <div class="section-header">
+                <h2 class="section-title">Opportunity Pipeline</h2>
+                <span class="section-action">VIEW KANBAN →</span>
+            </div>
+            <div>
                 <div class="pipeline-bar-row" *ngFor="let p of pipeline">
                     <span class="pipeline-label">{{ p.label }}</span>
                     <div class="pipeline-track">
@@ -36,9 +31,10 @@
             </div>
         </div>
 
-        <!-- taches -->
         <div class="dash-section">
-            <h2 class="section-title">Taches recentes</h2>
+            <div class="section-header">
+                <h2 class="section-title">Taches recentes</h2>
+            </div>
             <div class="task-list">
                 <div class="task-item" *ngFor="let t of crm.tasks.slice(0, 5)">
                     <div class="task-priority"
@@ -46,7 +42,7 @@
                     </div>
                     <div class="task-info">
                         <span class="task-name">{{ t.titre }}</span>
-                        <span class="task-meta">{{ t.assigneA }} — {{ t.dateEcheance }}</span>
+                        <span class="task-meta">{{ t.assigneA }} · {{ t.dateEcheance }}</span>
                     </div>
                     <span class="badge" [class]="t.statut.toLowerCase()">{{ t.statut }}</span>
                 </div>
@@ -57,7 +53,10 @@
     <!-- leads + tickets -->
     <div class="dash-grid">
         <div class="dash-section">
-            <h2 class="section-title">Derniers leads</h2>
+            <div class="section-header">
+                <h2 class="section-title">Incoming Leads</h2>
+                <span class="section-action">View Pipeline</span>
+            </div>
             <div class="lead-list">
                 <div class="lead-item" *ngFor="let l of crm.leads.slice(0, 4)">
                     <div class="lead-main">
@@ -75,7 +74,10 @@
         </div>
 
         <div class="dash-section">
-            <h2 class="section-title">Tickets recents</h2>
+            <div class="section-header">
+                <h2 class="section-title">Tickets recents</h2>
+                <span class="section-badge" style="background:var(--danger-soft);color:var(--danger)">URGENT</span>
+            </div>
             <div class="ticket-list">
                 <div class="ticket-item" *ngFor="let t of crm.tickets.slice(0, 4)">
                     <div class="ticket-main">

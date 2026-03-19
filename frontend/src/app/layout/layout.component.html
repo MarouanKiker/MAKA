@@ -3,10 +3,11 @@
     <aside class="sidebar">
         <div class="sidebar-brand">
             <img src="assets/logo.jpeg" alt="MAKA" class="sidebar-logo" />
-            <span class="sidebar-title" *ngIf="sidebarOpen">MAKA</span>
+            <div *ngIf="sidebarOpen">
+                <span class="sidebar-title">MAKA ERP</span>
+                <span class="sidebar-tagline">OPERATIONAL INTELLIGENCE</span>
+            </div>
         </div>
-
-        <div class="sidebar-section" *ngIf="sidebarOpen">NAVIGATION</div>
 
         <nav class="sidebar-nav">
             <a *ngFor="let item of menuItems" [routerLink]="item.path" routerLinkActive="active" class="nav-link">
@@ -18,23 +19,30 @@
         </nav>
 
         <div class="sidebar-bottom">
-            <div class="sidebar-section" *ngIf="sidebarOpen">REGLAGES</div>
             <button class="nav-link" (click)="toggleTheme()">
-                <span class="nav-icon theme-btn">
+                <span class="nav-icon theme-icon">
                     <i class="fa-solid" [class.fa-sun]="themeSvc.isDark()" [class.fa-moon]="!themeSvc.isDark()"></i>
                 </span>
                 <span class="nav-text" *ngIf="sidebarOpen">{{ themeSvc.isDark() ? 'Mode clair' : 'Mode sombre' }}</span>
             </button>
             <button class="nav-link logout-link" (click)="logout()">
-                <span class="nav-icon logout-btn">
+                <span class="nav-icon logout-icon">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </span>
                 <span class="nav-text" *ngIf="sidebarOpen">Deconnexion</span>
             </button>
+
+            <div class="sidebar-user" *ngIf="user && sidebarOpen">
+                <div class="user-avatar">{{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}</div>
+                <div class="user-info">
+                    <span class="user-name">{{ user.prenom }} {{ user.nom.charAt(0) }}.</span>
+                    <span class="user-role">{{ user.roles[0].replace('ROLE_', '') }}</span>
+                </div>
+            </div>
         </div>
     </aside>
 
-    <!-- overlay sombre sur mobile quand la sidebar est ouverte -->
+    <!-- overlay mobile -->
     <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebar()"></div>
 
     <div class="main">
@@ -44,11 +52,8 @@
             </button>
             <div class="topbar-spacer"></div>
             <div class="topbar-user" *ngIf="user">
-                <div class="user-avatar">{{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}</div>
-                <div class="user-info">
-                    <span class="user-name">{{ user.prenom }} {{ user.nom }}</span>
-                    <span class="user-role">{{ user.roles[0].replace('ROLE_', '') }}</span>
-                </div>
+                <div class="topbar-avatar">{{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}</div>
+                <span class="topbar-user-name">{{ user.prenom }} {{ user.nom.charAt(0) }}.</span>
             </div>
         </header>
 

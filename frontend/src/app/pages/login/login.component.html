@@ -10,7 +10,7 @@
     <div class="auth-card">
 
         <button class="theme-toggle" (click)="toggleTheme()">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
                 <circle cx="10" cy="10" r="4" *ngIf="themeSvc.isDark()" />
                 <path
                     d="M10 2v2m0 12v2m8-8h-2M4 10H2m13.1-5.1l-1.4 1.4M7.3 12.7l-1.4 1.4m9.2 0l-1.4-1.4M7.3 7.3L5.9 5.9"
@@ -25,27 +25,30 @@
         </div>
 
         <h2>Connexion</h2>
-        <p class="card-sub">Accedez a votre espace CRM</p>
+        <p class="card-sub">Entrez vos acces pour piloter vos operations.</p>
 
         <div class="alert alert-error" *ngIf="erreur">{{ erreur }}</div>
 
         <form (ngSubmit)="onLogin()">
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="votre@email.com"
+                <label for="email">EMAIL PROFESSIONNEL</label>
+                <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="nom@entreprise.fr"
                     required />
             </div>
             <div class="form-group">
-                <label for="password">Mot de passe</label>
+                <label for="password">MOT DE PASSE</label>
                 <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••"
                     required />
             </div>
             <button type="submit" class="btn-primary" [disabled]="loading">
-                {{ loading ? 'Connexion...' : 'Se connecter' }}
+                {{ loading ? 'Connexion...' : 'CONNEXION' }}
             </button>
         </form>
 
-        <p class="card-footer">Pas de compte ? <a routerLink="/register">Creer un compte</a></p>
+        <p class="card-footer">Nouveau ? <a routerLink="/register">Creer un compte</a></p>
+    </div>
 
+    <div class="auth-status">
+        <span class="dot"></span> SYSTEM OPERATIONAL &nbsp; V2.4.0-STABLE
     </div>
 </div>

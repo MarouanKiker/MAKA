@@ -1,4 +1,4 @@
-/* Register — Aurora design (meme base que login) */
+/* Login — Nano Precision (glassmorphism card) */
 
 .auth-page {
     min-height: 100vh;
@@ -20,70 +20,73 @@
 .bg-shape {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: .4;
+    filter: blur(90px);
+    opacity: .35;
 }
 
 .bg-shape.s1 {
     width: 500px;
     height: 500px;
-    background: radial-gradient(circle, rgba(139, 92, 246, .35), transparent 70%);
+    background: radial-gradient(circle, rgba(163, 166, 255, .35), transparent 70%);
     top: -15%;
-    left: -10%;
+    right: -10%;
     animation: float 20s ease-in-out infinite;
 }
 
 .bg-shape.s2 {
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(99, 102, 241, .3), transparent 70%);
+    background: radial-gradient(circle, rgba(168, 140, 251, .3), transparent 70%);
     bottom: -10%;
-    right: -10%;
+    left: -10%;
     animation: float 24s ease-in-out infinite reverse;
 }
 
 .bg-shape.s3 {
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle, rgba(34, 211, 238, .2), transparent 70%);
-    top: 50%;
-    right: 35%;
-    animation: float 16s ease-in-out infinite 2s;
+    background: radial-gradient(circle, rgba(125, 233, 255, .15), transparent 70%);
+    top: 40%;
+    left: 30%;
+    animation: float 16s ease-in-out infinite 3s;
 }
 
+/* glass card */
 .auth-card {
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 440px;
-    background: var(--glass);
+    max-width: 420px;
+    background: rgba(18, 19, 26, .7);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, .06);
     border-radius: var(--radius-xl);
-    padding: 2rem 1.75rem;
-    box-shadow: var(--shadow-lg), 0 0 80px rgba(139, 92, 246, .06);
-    animation: scaleIn .5s ease;
+    padding: 2.25rem 2rem;
+    box-shadow: var(--shadow-lg), 0 0 80px rgba(163, 166, 255, .04);
+    animation: scaleIn .45s ease;
 
+    /* signature gradient top border */
     &::before {
         content: '';
         position: absolute;
         top: 0;
-        left: 20%;
-        right: 20%;
+        left: 15%;
+        right: 15%;
         height: 2px;
-        background: linear-gradient(90deg, #8b5cf6, #6366f1, #22d3ee);
+        background: linear-gradient(90deg, var(--accent), var(--violet));
         border-radius: 0 0 4px 4px;
     }
 }
 
+/* theme toggle */
 .theme-toggle {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--glass-border);
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(255, 255, 255, .06);
     border-radius: 50%;
     background: transparent;
     color: var(--text-2);
@@ -100,10 +103,11 @@
     box-shadow: 0 0 12px rgba(var(--accent-rgb), .2);
 }
 
+/* brand */
 .card-brand {
     display: flex;
     align-items: center;
-    gap: .65rem;
+    gap: .6rem;
     margin-bottom: 1.5rem;
 }
 
@@ -115,9 +119,9 @@
 }
 
 .card-brand-text {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 800;
-    letter-spacing: -.3px;
+    letter-spacing: -.2px;
 }
 
 .card-brand-text span {
@@ -128,8 +132,8 @@
 }
 
 .auth-card h2 {
-    font-size: 1.3rem;
-    font-weight: 800;
+    font-size: 1.35rem;
+    font-weight: 700;
     margin-bottom: .15rem;
 }
 
@@ -139,8 +143,9 @@
     margin-bottom: 1.25rem;
 }
 
+/* alert */
 .alert {
-    padding: .55rem .75rem;
+    padding: .5rem .7rem;
     border-radius: var(--radius-sm);
     font-size: .78rem;
     margin-bottom: .85rem;
@@ -149,25 +154,26 @@
 .alert-error {
     background: var(--danger-soft);
     color: var(--danger);
-    border: 1px solid rgba(248, 113, 113, .15);
+    border: 1px solid rgba(255, 110, 132, .12);
 }
 
 .alert-success {
     background: var(--success-soft);
     color: var(--success);
-    border: 1px solid rgba(52, 211, 153, .15);
+    border: 1px solid rgba(52, 211, 153, .12);
 }
 
+/* form */
 .form-group {
     margin-bottom: .85rem;
 }
 
 .form-group label {
     display: block;
-    font-size: .68rem;
+    font-size: .65rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: .4px;
+    letter-spacing: .08em;
     color: var(--text-2);
     margin-bottom: .3rem;
 }
@@ -175,8 +181,8 @@
 .form-group input {
     width: 100%;
     padding: .6rem .85rem;
-    background: var(--bg-2);
-    border: 1px solid var(--glass-border);
+    background: var(--bg-3);
+    border: none;
     border-radius: var(--radius-sm);
     color: var(--text-0);
     font-size: .85rem;
@@ -186,8 +192,7 @@
 
 .form-group input:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12);
+    box-shadow: 0 0 0 2px rgba(var(--accent-rgb), .25);
 }
 
 .form-group input::placeholder {
@@ -203,6 +208,7 @@
     flex: 1;
 }
 
+/* primary button — gradient */
 .btn-primary {
     width: 100%;
     padding: .65rem;
@@ -215,23 +221,24 @@
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    transition: all .3s;
-    box-shadow: 0 4px 20px rgba(var(--accent-rgb), .25);
+    transition: all .25s;
+    box-shadow: 0 4px 20px rgba(var(--accent-rgb), .2);
     margin-top: .25rem;
 }
 
 .btn-primary:hover {
     background-position: right center;
-    box-shadow: 0 6px 28px rgba(var(--accent-rgb), .35);
+    box-shadow: 0 6px 28px rgba(var(--accent-rgb), .3);
     transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
-    opacity: .5;
+    opacity: .45;
     cursor: not-allowed;
     transform: none;
 }
 
+/* footer */
 .card-footer {
     text-align: center;
     margin-top: 1.25rem;
@@ -244,6 +251,31 @@
     font-weight: 600;
 }
 
+/* system status footer */
+.auth-status {
+    position: absolute;
+    bottom: 2rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: .55rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .15em;
+    color: var(--text-3);
+}
+
+.auth-status .dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--success);
+    margin-right: .35rem;
+    vertical-align: middle;
+}
+
+/* ========== RESPONSIVE ========== */
 @media (max-width: 480px) {
     .auth-card {
         padding: 1.5rem 1.25rem;

@@ -1,14 +1,13 @@
-/* Tasks — Kanban Aurora */
+/* Kanban — Nano Precision */
 
 .total-badge {
     font-size: .7rem;
     font-weight: 600;
     padding: .3rem .7rem;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    color: var(--text-2);
+    background: var(--bg-2);
     backdrop-filter: blur(8px);
+    border-radius: var(--radius-sm);
+    color: var(--text-2);
 }
 
 .kanban {
@@ -29,9 +28,8 @@
     align-items: center;
     gap: .45rem;
     padding: .55rem .8rem;
-    background: var(--glass);
+    background: var(--bg-2);
     backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
@@ -44,17 +42,17 @@
 }
 
 .kanban-col-title {
-    font-size: .72rem;
+    font-size: .69rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .4px;
+    letter-spacing: .05em;
     flex: 1;
 }
 
 .kanban-count {
     font-size: .65rem;
     font-weight: 700;
-    background: var(--bg-2);
+    background: var(--bg-3);
     padding: .15rem .45rem;
     border-radius: var(--radius-sm);
     color: var(--text-2);
@@ -74,7 +72,7 @@
 }
 
 .kanban-card {
-    background: var(--glass);
+    background: var(--bg-2);
     backdrop-filter: blur(8px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
@@ -109,7 +107,7 @@
 
 .card-title {
     font-size: .84rem;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .priority-dot {
@@ -123,7 +121,7 @@
 
 .card-desc {
     font-size: .74rem;
-    color: var(--text-2);
+    color: var(--text-1);
     margin-bottom: .55rem;
     line-height: 1.45;
     display: -webkit-box;
@@ -145,13 +143,13 @@
     align-items: center;
     gap: .3rem;
     font-size: .7rem;
-    color: var(--text-2);
+    color: var(--text-1);
 }
 
 .meta-icon {
     font-size: .7rem;
     flex-shrink: 0;
-    color: var(--text-3);
+    color: var(--text-2);
     width: 14px;
     text-align: center;
 }
@@ -169,7 +167,7 @@
 
 .meta-date {
     font-size: .68rem;
-    color: var(--text-3);
+    color: var(--text-2);
 }
 
 .card-bottom {
@@ -178,29 +176,53 @@
     justify-content: space-between;
 }
 
+.score-pill {
+    font-size: .62rem;
+    font-weight: 800;
+    padding: .15rem .45rem;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--bg-4);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: .5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: var(--gradient-primary);
+    transition: width .5s ease;
+}
+
+.kanban-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: .25rem 0;
+}
+
 .badge {
-    font-size: .58rem;
+    font-size: .55rem;
     font-weight: 700;
     padding: .18rem .5rem;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
     text-transform: uppercase;
-    letter-spacing: .4px;
+    letter-spacing: .05em;
 }
 
-.badge.haute {
-    background: var(--danger-soft);
-    color: var(--danger);
-}
-
-.badge.moyenne {
-    background: var(--warning-soft);
-    color: var(--warning);
-}
-
-.badge.basse {
-    background: var(--success-soft);
-    color: var(--success);
-}
+.badge.haute { background: var(--danger-soft); color: var(--danger); }
+.badge.moyenne { background: var(--warning-soft); color: var(--warning); }
+.badge.basse { background: var(--success-soft); color: var(--success); }
 
 .btn-del {
     width: 22px;
@@ -233,15 +255,7 @@
 }
 
 @media (max-width: 768px) {
-    .kanban {
-        flex-direction: column;
-    }
-
-    .kanban-col {
-        min-width: 100%;
-    }
-
-    .kanban-cards {
-        min-height: 100px;
-    }
+    .kanban { flex-direction: column; }
+    .kanban-col { min-width: 100%; }
+    .kanban-cards { min-height: 100px; }
 }
