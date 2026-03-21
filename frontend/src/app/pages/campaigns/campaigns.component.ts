@@ -1,51 +1,49 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CrmService } from '../../core/services/crm.service';
+import { Campaign } from '../../core/models/crm.model';
 
-// composant pour gerer les campagnes marketing
 @Component({
     selector: 'app-campaigns',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, DatePipe],
     templateUrl: './campaigns.component.html',
     styleUrls: ['../shared/crm-page.scss']
 })
-export class CampaignsComponent {
+export class CampaignsComponent implements OnInit {
 
-    // afficher ou non le formulaire
     showForm = false;
-
-    // champs du formulaire
     nom = '';
     budget = 0;
     dateDebut = '';
     dateFin = '';
 
-    constructor(public crm: CrmService) { }
+    campaigns: Campaign[] = [];
 
-    // calculer le budget total de toutes les campagnes
-    get totalBudget(): number {
-        let total = 0;
-        for (let i = 0; i < this.crm.campaigns.length; i++) {
-            total = total + this.crm.campaigns[i].budget;
-        }
-        return total;
+    constructor(private crm: CrmService) { }
+
+    ngOnInit(): void {
+        this.loadCampaigns();
     }
 
-    // calculer le pourcentage du budget par rapport au max
+    loadCampaigns(): void {
+        this.crm.getCampaigns().subscribe({
+            next: (data) => this.campaigns = data,
+            error: (err) => console.error('Erreur chargement campagnes', err)
+        });
+    }
+
+    get totalBudget(): number {
+        return this.campaigns.reduce((sum, c) => sum + c.budget, 0);
+    }
+
     getBudgetPercent(budget: number): number {
-        // trouver le budget le plus grand
-        let max = 1;
-        for (let i = 0; i < this.crm.campaigns.length; i++) {
-            if (this.crm.campaigns[i].budget > max) {
-                max = this.crm.campaigns[i].budget;
-            }
-        }
+        if (this.campaigns.length === 0) return 0;
+        const max = Math.max(...this.campaigns.map(c => c.budget), 1);
         return (budget / max) * 100;
     }
 
-    // ouvrir le formulaire d'ajout
     openForm(): void {
         this.nom = '';
         this.budget = 0;
@@ -54,19 +52,31 @@ export class CampaignsComponent {
         this.showForm = true;
     }
 
-    // sauvegarder une nouvelle campagne
     save(): void {
-        this.crm.addCampaign({
+        const newCampaign: Partial<Campaign> = {
             nom: this.nom,
             budget: this.budget,
-            dateDebut: this.dateDebut,
-            dateFin: this.dateFin
+            dateDebut: this.dateDebut ? new Date(this.dateDebut).toISOString() : new Date().toISOString(),
+            dateFin: this.dateFin ? new Date(this.dateFin).toISOString() : new Date().toISOString()
+        };
+
+        this.crm.createCampaign(newCampaign).subscribe({
+            next: (created) => {
+                this.campaigns.push(created);
+                this.showForm = false;
+            },
+            error: (err) => console.error('Erreur creation campagne', err)
         });
-        this.showForm = false;
     }
 
-    // supprimer une campagne
     delete(id: number): void {
-        this.crm.deleteCampaign(id);
+        if (confirm('Etes-vous sur de supprimer cette campagne ?')) {
+            this.crm.deleteCampaign(id).subscribe({
+                next: () => {
+                    this.campaigns = this.campaigns.filter(c => c.id !== id);
+                },
+                error: (err) => console.error('Erreur suppression campagne', err)
+            });
+        }
     }
 }

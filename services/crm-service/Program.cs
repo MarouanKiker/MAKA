@@ -2,82 +2,115 @@
 // Program.cs - CRM Service (.NET 8)
 // Configure l'authentification JWT en mode STATELESS
 // Lit la clé publique RSA depuis le volume partagé (/app/keys/public.pem)
+// Si la clé n'est pas disponible, l'auth est désactivée (mode dev)
 // =============================================================================
 
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using CrmService.Data;
+using CrmService.Interfaces;
+using CrmService.Repositories;
+using CrmService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Charger la clé publique RSA depuis le fichier PEM partagé ---
-// Cette clé est générée par le service Auth (Symfony) et partagée
-// via un volume Docker. Le CRM n'a JAMAIS besoin d'appeler le service Auth.
 var publicKeyPath = "/app/keys/public.pem";
 
-RSA rsa = RSA.Create();
-
 // Attendre que la clé soit disponible (le conteneur Auth peut démarrer après)
-var maxRetries = 30;
+var maxRetries = 10;
+var keyLoaded = false;
+
 for (int i = 0; i < maxRetries; i++)
 {
     if (File.Exists(publicKeyPath))
+    {
+        keyLoaded = true;
         break;
+    }
     Console.WriteLine($"En attente de la clé publique... tentative {i + 1}/{maxRetries}");
-    Thread.Sleep(2000);  // Attendre 2 secondes entre chaque tentative
+    Thread.Sleep(2000);
 }
 
-if (!File.Exists(publicKeyPath))
+if (keyLoaded)
 {
-    throw new FileNotFoundException(
-        $"Clé publique introuvable à '{publicKeyPath}'. " +
-        "Vérifiez que le service Auth a démarré et généré les clés.");
+    // --- Mode normal : JWT activé avec clé RSA ---
+    RSA rsa = RSA.Create();
+    var publicKeyPem = File.ReadAllText(publicKeyPath);
+    rsa.ImportFromPem(publicKeyPem.ToCharArray());
+    var rsaSecurityKey = new RsaSecurityKey(rsa);
+
+    Console.WriteLine("✅ Clé publique chargée — Authentification JWT activée.");
+
+    builder.Services
+        .AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = rsaSecurityKey,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(1)
+            };
+        });
+
+    builder.Services.AddAuthorization();
+}
+else
+{
+    // --- Mode dégradé : JWT désactivé (clé introuvable) ---
+    Console.WriteLine("⚠️  Clé publique introuvable — Authentification désactivée (mode dev).");
+
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer();
+
+    builder.Services.AddAuthorization(options =>
+    {
+        options.DefaultPolicy = new AuthorizationPolicyBuilder()
+            .RequireAssertion(_ => true)
+            .Build();
+    });
 }
 
-// Lire le contenu PEM et importer la clé publique RSA
-var publicKeyPem = File.ReadAllText(publicKeyPath);
-rsa.ImportFromPem(publicKeyPem.ToCharArray());
-
-// Créer la SecurityKey à partir de la clé RSA
-var rsaSecurityKey = new RsaSecurityKey(rsa);
-
-// --- Configurer l'authentification JWT Bearer ---
-builder.Services
-    .AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            // Valider la signature avec la clé publique RSA
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = rsaSecurityKey,
-
-            // En dev, on désactive la validation issuer/audience
-            // En PRODUCTION, il faudra les configurer !
-            ValidateIssuer = false,
-            ValidateAudience = false,
-
-            // Valider l'expiration du token
-            ValidateLifetime = true,
-
-            // Tolérance d'horloge entre conteneurs (évite les rejets pour
-            // quelques secondes de décalage)
-            ClockSkew = TimeSpan.FromMinutes(1)
-        };
-    });
-
-builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+
+// --- Entity Framework Core + PostgreSQL ---
+builder.Services.AddDbContext<CrmDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// --- Injection de dépendances : Repositories (SOLID - Dependency Inversion) ---
+builder.Services.AddScoped<ILeadRepository, LeadRepository>();
+builder.Services.AddScoped<ICampagneRepository, CampagneRepository>();
+builder.Services.AddScoped<IOpportuniteRepository, OpportuniteRepository>();
+
+// --- Injection de dépendances : Services (Règles métier) ---
+builder.Services.AddScoped<ILeadService, LeadService>();
+builder.Services.AddScoped<ICampagneService, CampagneService>();
+builder.Services.AddScoped<IOpportuniteService, OpportuniteService>();
 
 // --- Swagger pour le dev ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// --- Appliquer les migrations automatiquement au démarrage ---
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CrmDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // --- Pipeline HTTP ---
 if (app.Environment.IsDevelopment())

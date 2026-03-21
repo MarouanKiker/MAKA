@@ -1,69 +1,85 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CrmService } from '../../core/services/crm.service';
+import { Opportunity } from '../../core/models/crm.model';
 
-// composant pour gerer les opportunites (pipeline commercial)
 @Component({
     selector: 'app-opportunities',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, DatePipe],
     templateUrl: './opportunities.component.html',
     styleUrls: ['../shared/crm-page.scss', './opportunities.component.scss']
 })
-export class OpportunitiesComponent {
+export class OpportunitiesComponent implements OnInit {
 
     // colonnes du kanban pipeline
     columns = [
-        { key: 'NOUVELLE', label: 'Nouvelle', color: '#4a9eff' },
-        { key: 'EN_COURS', label: 'En cours', color: '#f5c748' },
-        { key: 'GAGNEE', label: 'Gagnee', color: '#44d492' },
-        { key: 'PERDUE', label: 'Perdue', color: '#f06c62' },
+        { key: 0, label: 'Nouvelle', color: '#4a9eff' },
+        { key: 1, label: 'En cours', color: '#f5c748' },
+        { key: 2, label: 'Gagnée', color: '#44d492' },
+        { key: 3, label: 'Perdue', color: '#f06c62' },
     ];
 
-    // l'opportunite qu'on glisse (drag & drop)
-    draggedOpp: any = null;
+    opportunities: Opportunity[] = [];
+    draggedOpp: Opportunity | null = null;
 
-    constructor(public crm: CrmService) { }
+    constructor(private crm: CrmService) { }
 
-    // recuperer les opportunites d'un certain statut
-    getByStatut(statut: string): any[] {
-        let result = [];
-        for (let i = 0; i < this.crm.opportunities.length; i++) {
-            if (this.crm.opportunities[i].statut === statut) {
-                result.push(this.crm.opportunities[i]);
-            }
-        }
-        return result;
+    ngOnInit(): void {
+        this.loadOpportunities();
+    }
+
+    loadOpportunities(): void {
+        this.crm.getOpportunities().subscribe({
+            next: (data) => this.opportunities = data,
+            error: (err) => console.error('Erreur chargement opportunites', err)
+        });
+    }
+
+    getByStatut(statut: number): Opportunity[] {
+        return this.opportunities.filter(o => o.statut === statut);
     }
 
     // --- drag & drop ---
-
-    // debut du glisser
-    onDragStart(opp: any): void {
+    onDragStart(opp: Opportunity): void {
         this.draggedOpp = opp;
     }
 
-    // autoriser le depot
     onDragOver(event: DragEvent): void {
         event.preventDefault();
     }
 
-    // deposer dans une colonne
-    onDrop(event: DragEvent, statut: string): void {
+    onDrop(event: DragEvent, statut: number): void {
         event.preventDefault();
         if (this.draggedOpp) {
-            // changer le statut de l'opportunite
-            this.draggedOpp.statut = statut;
-            // si gagnee ou perdue, on met la date de cloture
-            if (statut === 'GAGNEE' || statut === 'PERDUE') {
-                this.draggedOpp.dateCloture = new Date().toISOString().split('T')[0];
+            const currentOpp = this.draggedOpp;
+            const oldStatut = currentOpp.statut;
+            
+            if (oldStatut !== statut) {
+                currentOpp.statut = statut;
+                
+                if (statut === 2 || statut === 3) {
+                    currentOpp.dateCloture = new Date().toISOString();
+                }
+
+                this.crm.updateOpportunity(currentOpp.id, { 
+                    statut: statut, 
+                    nom: currentOpp.nom, 
+                    montant: currentOpp.montant,
+                    dateCloture: currentOpp.dateCloture
+                }).subscribe({
+                    next: () => {},
+                    error: (err) => {
+                        console.error('Erreur maj statut opportunite', err);
+                        currentOpp.statut = oldStatut; // revert
+                    }
+                });
             }
             this.draggedOpp = null;
         }
     }
 
-    // fin du glisser
     onDragEnd(): void {
         this.draggedOpp = null;
     }

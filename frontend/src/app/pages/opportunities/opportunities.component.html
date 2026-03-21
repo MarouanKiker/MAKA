@@ -7,7 +7,7 @@
             </h1>
             <p class="page-subtitle">Glissez les opportunites entre les etapes du pipeline</p>
         </div>
-        <span class="total-badge">{{ crm.opportunities.length }} opportunites</span>
+        <span class="total-badge">{{ opportunities.length }} opportunites</span>
     </div>
 
     <div class="kanban">
@@ -24,12 +24,12 @@
                 <div class="kanban-card" *ngFor="let o of getByStatut(col.key)" draggable="true"
                     (dragstart)="onDragStart(o)" (dragend)="onDragEnd()" [class.dragging]="draggedOpp === o">
 
-                    <div class="card-title">{{ o.titre }}</div>
-                    <div class="kanban-value">{{ o.valeur | number }} MAD</div>
-                    <div class="card-meta" *ngIf="o.dateCloture">
+                    <div class="card-title">{{ o.nom }}</div>
+                    <div class="kanban-value">{{ o.montant | number }} MAD</div>
+                    <div class="card-meta" *ngIf="o.dateCloture && o.statut >= 2">
                         <span class="card-meta-item">
                             <i class="fa-regular fa-calendar meta-icon"></i>
-                            {{ o.dateCloture }}
+                            Cloturé le : {{ o.dateCloture | date:'shortDate' }}
                         </span>
                     </div>
                 </div>

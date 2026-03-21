@@ -42,7 +42,7 @@
                     </div>
                     <div class="task-info">
                         <span class="task-name">{{ t.titre }}</span>
-                        <span class="task-meta">{{ t.assigneA }} · {{ t.dateEcheance }}</span>
+                        <span class="task-meta">{{ t.assigneA }} · {{ t.dateEcheance | date:'shortDate' }}</span>
                     </div>
                     <span class="badge" [class]="t.statut.toLowerCase()">{{ t.statut }}</span>
                 </div>
@@ -58,16 +58,15 @@
                 <span class="section-action">View Pipeline</span>
             </div>
             <div class="lead-list">
-                <div class="lead-item" *ngFor="let l of crm.leads.slice(0, 4)">
+                <div class="lead-item" *ngFor="let l of leads.slice(0, 4)">
                     <div class="lead-main">
                         <span class="lead-source">{{ l.source }}</span>
-                        <span class="lead-resp">{{ l.responsable }}</span>
                     </div>
                     <div class="lead-right">
                         <div class="mini-progress">
                             <div class="mini-progress-fill" [style.width.%]="l.score"></div>
                         </div>
-                        <span class="badge" [class]="l.statut.toLowerCase()">{{ l.statut }}</span>
+                        <span class="badge" [class]="l.statut === 0 ? 'nouveau' : l.statut === 3 ? 'converti' : 'en_cours'">Statut: {{ l.statut }}</span>
                     </div>
                 </div>
             </div>

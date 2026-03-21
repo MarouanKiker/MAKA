@@ -16,7 +16,7 @@
                 <i class="fa-solid fa-bullhorn"></i>
             </div>
             <div>
-                <span class="mini-stat-value">{{ crm.campaigns.length }}</span>
+                <span class="mini-stat-value">{{ campaigns.length }}</span>
                 <span class="mini-stat-label">Campagnes</span>
             </div>
         </div>
@@ -32,7 +32,7 @@
     </div>
 
     <div class="card-grid">
-        <div class="item-card" *ngFor="let c of crm.campaigns">
+        <div class="item-card" *ngFor="let c of campaigns">
             <div class="card-top">
                 <span class="card-title">{{ c.nom }}</span>
             </div>
@@ -40,7 +40,7 @@
             <div class="card-meta">
                 <span class="card-meta-item">
                     <i class="fa-regular fa-calendar meta-icon"></i>
-                    {{ c.dateDebut }} → {{ c.dateFin }}
+                    {{ c.dateDebut | date:'shortDate' }} → {{ c.dateFin | date:'shortDate' }}
                 </span>
             </div>
 
@@ -59,7 +59,7 @@
         </div>
     </div>
 
-    <div class="empty" *ngIf="crm.campaigns.length === 0">
+    <div class="empty" *ngIf="campaigns.length === 0">
         <i class="fa-solid fa-bullhorn" style="font-size:2rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
         Aucune campagne.
     </div>

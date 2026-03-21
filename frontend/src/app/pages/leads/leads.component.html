@@ -8,7 +8,7 @@
             <p class="page-subtitle">Glissez les leads entre les colonnes pour changer leur statut</p>
         </div>
         <div style="display:flex; align-items:center; gap:.75rem;">
-            <span class="total-badge">{{ crm.leads.length }} leads</span>
+            <span class="total-badge">{{ leads.length }} leads</span>
             <button class="btn-add" (click)="openForm()">+ Nouveau lead</button>
         </div>
     </div>
@@ -38,12 +38,8 @@
 
                     <div class="card-meta">
                         <span class="card-meta-item">
-                            <i class="fa-solid fa-user meta-icon"></i>
-                            {{ l.responsable }}
-                        </span>
-                        <span class="card-meta-item">
                             <i class="fa-regular fa-calendar meta-icon"></i>
-                            {{ l.dateCreation }}
+                            {{ l.dateCreation | date:'longDate' }}
                         </span>
                     </div>
 
@@ -76,10 +72,6 @@
                     <label>Score</label>
                     <input type="number" [(ngModel)]="score" min="0" max="100" />
                 </div>
-            </div>
-            <div class="champ">
-                <label>Responsable</label>
-                <input type="text" [(ngModel)]="responsable" placeholder="Nom" />
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" (click)="showForm = false">Annuler</button>
