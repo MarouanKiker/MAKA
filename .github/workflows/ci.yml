@@ -1,0 +1,87 @@
+# =============================================================================
+# CI/CD Pipeline — MAKA ERP
+# Se déclenche à chaque push sur dev/* et à chaque Pull Request vers main
+# =============================================================================
+
+name: MAKA ERP — CI Pipeline
+
+# QUAND est-ce que ça se lance ?
+on:
+  push:
+    branches:
+      - 'dev/**'        # Chaque push sur une branche dev/marwan, dev/abdellah, etc.
+  pull_request:
+    branches:
+      - main             # Chaque Pull Request vers main
+
+jobs:
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 1 : Vérifier que le Frontend Angular compile sans erreur
+  # ─────────────────────────────────────────────────────────────────────────────
+  frontend-build:
+    name: 🎨 Frontend Angular — Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Installer les dépendances npm
+        working-directory: frontend
+        run: npm ci
+
+      - name: Compiler le frontend (vérification de non-régression)
+        working-directory: frontend
+        run: npx ng build --configuration=production
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 2 : Compiler + Tests Unitaires du module Finance (Spring Boot)
+  # ─────────────────────────────────────────────────────────────────────────────
+  finance-tests:
+    name: 💰 Finance Service — Build + Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Compiler et lancer les tests unitaires
+        working-directory: services/finance-service
+        run: mvn clean test -B
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 3 : Vérifier la syntaxe PHP de l'Auth Service (Symfony)
+  # ─────────────────────────────────────────────────────────────────────────────
+  auth-check:
+    name: 🔐 Auth Service — Vérification PHP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_pgsql, intl, zip
+
+      - name: Installer les dépendances Composer
+        working-directory: services/auth-service
+        run: composer install --no-interaction --no-progress
+
+      - name: Vérifier la syntaxe PHP (aucune erreur de code)
+        working-directory: services/auth-service
+        run: php -l src/Controller/*.php src/Entity/*.php src/Service/*.php src/Enum/*.php
