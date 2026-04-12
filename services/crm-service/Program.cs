@@ -6,6 +6,7 @@
 // =============================================================================
 
 using System.Security.Cryptography;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -83,7 +84,8 @@ else
     });
 }
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 // --- Entity Framework Core + PostgreSQL ---
 builder.Services.AddDbContext<CrmDbContext>(options =>
@@ -98,6 +100,12 @@ builder.Services.AddScoped<IOpportuniteRepository, OpportuniteRepository>();
 builder.Services.AddScoped<ILeadService, LeadService>();
 builder.Services.AddScoped<ICampagneService, CampagneService>();
 builder.Services.AddScoped<IOpportuniteService, OpportuniteService>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IInteractionRepository, InteractionRepository>();
+builder.Services.AddScoped<IInteractionService, InteractionService>();
 
 // --- Swagger pour le dev ---
 builder.Services.AddEndpointsApiExplorer();
@@ -113,11 +121,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 // --- Pipeline HTTP ---
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // L'ordre est IMPORTANT : Authentication avant Authorization
 app.UseAuthentication();
