@@ -6,9 +6,9 @@ namespace CrmService.Models
     {
         public int Id { get; set; }
 
-        public string Type { get; set; } // Call, Email, Meeting
+        public string Type { get; set; } = string.Empty; // Call, Email, Meeting
 
-        public string Notes { get; set; }
+        public string Notes { get; set; } = string.Empty;
 
         public DateTime Date { get; set; } = DateTime.Now;
 

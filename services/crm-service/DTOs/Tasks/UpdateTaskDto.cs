@@ -1,8 +1,11 @@
-﻿using System;
+namespace CrmService.DTOs.Tasks;
 
-public class Class1
+public class UpdateTaskDto
 {
-	public Class1()
-	{
-	}
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public DateTime? DueDate { get; set; }
+    public bool? IsCompleted { get; set; }
+    public int? LeadId { get; set; }
+    public int? OpportuniteId { get; set; }
 }
