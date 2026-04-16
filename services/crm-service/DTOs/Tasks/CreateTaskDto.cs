@@ -1,8 +1,10 @@
-﻿using System;
+namespace CrmService.DTOs.Tasks;
 
-public class Class1
+public class CreateTaskDto
 {
-	public Class1()
-	{
-	}
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public DateTime DueDate { get; set; }
+    public int? LeadId { get; set; }
+    public int? OpportuniteId { get; set; }
 }
