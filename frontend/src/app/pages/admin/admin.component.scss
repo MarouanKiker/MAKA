@@ -1,0 +1,29 @@
+.role-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.role-badge {
+    background-color: var(--card-bg-light);
+    color: var(--text-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--border-color);
+
+    &.admin {
+        background-color: rgba(#fbbf24, 0.1);
+        color: #fbbf24;
+        border-color: rgba(#fbbf24, 0.3);
+    }
+}
+
+.role-select {
+    width: 250px;
+    height: 80px; /* enough to show multiple options */
+    padding: 0.25rem;
+    font-size: 0.85rem;
+}

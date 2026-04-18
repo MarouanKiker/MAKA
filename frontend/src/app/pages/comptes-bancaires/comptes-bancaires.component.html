@@ -1,0 +1,57 @@
+<div class="page-header">
+    <div>
+        <h1><i class="fa-solid fa-landmark page-icon"></i> Comptes bancaires</h1>
+        <span class="page-subtitle">Gestion des comptes bancaires de l'entreprise</span>
+    </div>
+    <button class="btn-add" (click)="openForm()">
+        <i class="fa-solid fa-plus"></i> Nouveau compte
+    </button>
+</div>
+
+<div class="toast" *ngIf="message" (click)="message = ''">{{ message }}</div>
+
+<div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <h2>Nouveau compte bancaire</h2>
+        <form (ngSubmit)="save()">
+            <div class="form-group">
+                <label>IBAN</label>
+                <input type="text" [(ngModel)]="iban" name="iban" required placeholder="MA76 1234 5678 9012 3456 7890 12" />
+            </div>
+            <div class="form-group">
+                <label>Banque</label>
+                <input type="text" [(ngModel)]="banque" name="banque" required placeholder="Attijariwafa Bank" />
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="showForm = false">Annuler</button>
+                <button type="submit" class="btn-save">Ajouter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>IBAN</th>
+                <th>Banque</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let c of comptes">
+                <td class="cell-main">{{ c.iban }}</td>
+                <td>{{ c.banque }}</td>
+                <td>
+                    <button class="btn-icon delete" (click)="deleteCompte(c.id)" title="Supprimer">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <tr *ngIf="comptes.length === 0">
+                <td colspan="3" class="empty-row">Aucun compte bancaire</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

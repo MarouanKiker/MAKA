@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, adminGuard } from './core/guards/auth.guard';
 import { LayoutComponent } from './layout/layout.component';
 
 // definition de toutes les routes de l'application
@@ -105,6 +105,58 @@ export const routes: Routes = [
                 loadComponent: function () {
                     return import('./pages/campaigns/campaigns.component').then(function (m) {
                         return m.CampaignsComponent;
+                    });
+                }
+            },
+            // module intelligence artificielle
+            {
+                path: 'intelligence',
+                loadComponent: function () {
+                    return import('./pages/intelligence/intelligence.component').then(function (m) {
+                        return m.IntelligenceComponent;
+                    });
+                }
+            },
+            // module d'administration
+            {
+                path: 'admin',
+                loadComponent: function () {
+                    return import('./pages/admin/admin.component').then(function (m) {
+                        return m.AdminComponent;
+                    });
+                },
+                canActivate: [adminGuard]
+            },
+            // --- FINANCES (Nouveaux modules importes) ---
+            {
+                path: 'comptes-bancaires',
+                loadComponent: function () {
+                    return import('./pages/comptes-bancaires/comptes-bancaires.component').then(function (m) {
+                        return m.ComptesBancairesComponent;
+                    });
+                }
+            },
+            {
+                path: 'factures',
+                loadComponent: function () {
+                    return import('./pages/factures/factures.component').then(function (m) {
+                        return m.FacturesComponent;
+                    });
+                }
+            },
+            {
+                path: 'journal',
+                loadComponent: function () {
+                    return import('./pages/journal/journal.component').then(function (m) {
+                        return m.JournalComponent;
+                    });
+                }
+            },
+            {
+                path: 'paiements',
+                loadComponent: function () {
+                    return import('./pages/paiements/paiements.component').then(function (m) {
+                        return m.PaiementsComponent;
                     });
                 }
             },

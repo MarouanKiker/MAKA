@@ -15,6 +15,7 @@ using CrmService.Data;
 using CrmService.Interfaces;
 using CrmService.Repositories;
 using CrmService.Services;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,7 +108,7 @@ builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IInteractionRepository, InteractionRepository>();
 builder.Services.AddScoped<IInteractionService, InteractionService>();
 
-// --- Swagger pour le dev ---
+// --- OpenAPI + Scalar pour tester les API ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -123,6 +124,15 @@ using (var scope = app.Services.CreateScope())
 // --- Pipeline HTTP ---
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// --- Scalar : UI moderne pour tester les API (accessible sur /scalar/v1) ---
+app.MapScalarApiReference(options =>
+{
+    options
+        .WithTitle("CRM Service API")
+        .WithTheme(ScalarTheme.DeepSpace)
+        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+});
 
 // L'ordre est IMPORTANT : Authentication avant Authorization
 app.UseAuthentication();

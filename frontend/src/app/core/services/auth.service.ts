@@ -60,6 +60,20 @@ export class AuthService {
         return false;
     }
 
+    // verifier si l'utilisateur a un role specifique
+    hasRole(role: string): boolean {
+        let user = this.getUser();
+        if (user && user.roles) {
+            return user.roles.includes(role) || user.roles.includes('ROLE_ADMIN');
+        }
+        return false;
+    }
+
+    // verifier si l'utilisateur est admin
+    isAdmin(): boolean {
+        return this.hasRole('ROLE_ADMIN');
+    }
+
     // recuperer les infos de l'utilisateur connecte
     getUser(): User | null {
         let raw = localStorage.getItem('user');

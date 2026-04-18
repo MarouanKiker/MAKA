@@ -31,3 +31,15 @@ export const guestGuard: CanActivateFn = function () {
     router.navigate(['/dashboard']);
     return false;
 };
+
+// garde pour les pages admin exclusives
+export const adminGuard: CanActivateFn = function () {
+    let auth = inject(AuthService);
+    let router = inject(Router);
+
+    if (auth.isAdmin()) {
+        return true;
+    }
+    router.navigate(['/dashboard']);
+    return false;
+};

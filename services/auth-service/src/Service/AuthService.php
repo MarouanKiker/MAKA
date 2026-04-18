@@ -41,7 +41,7 @@ class AuthService
         $user->setEmail($dto->email);
         $user->setFirstName($dto->firstName);
         $user->setLastName($dto->lastName);
-        $user->setRoles(['ROLE_USER']);
+        $user->setRoles(['ROLE_EMPLOYE']);
 
         $hashedPassword = $this->passwordHasher->hashPassword($user, $dto->password);
         $user->setPassword($hashedPassword);

@@ -1,0 +1,40 @@
+/* styles du journal comptable */
+
+.stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    flex: 1;
+    min-width: 180px;
+}
+
+.stat-card i {
+    font-size: 1.3rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.stat-card.credit i { background: rgba(52,211,153,.12); color: #34d399; }
+.stat-card.debit i { background: rgba(248,113,113,.12); color: #f87171; }
+.stat-card.solde i { background: rgba(96,165,250,.12); color: #60a5fa; }
+
+.stat-label { display: block; font-size: .75rem; color: var(--text-2); }
+.stat-value { display: block; font-size: 1.1rem; font-weight: 700; color: var(--text-1); }
+
+.debit-cell { color: #f87171; font-weight: 600; }
+.credit-cell { color: #34d399; font-weight: 600; }
