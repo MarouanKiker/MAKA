@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+// =============================================================================
+// Console Symfony - Commandes CLI (migrations, seed admin, etc.)
+// =============================================================================
+
+use App\Kernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+
+// Le fichier console est a la racine du projet (meme niveau que vendor/)
+$projectDir = __DIR__;
+
+if (is_file($projectDir . '/vendor/autoload_runtime.php')) {
+    require_once $projectDir . '/vendor/autoload_runtime.php';
+
+    return function (array $context) {
+        $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+        return new Application($kernel);
+    };
+} else {
+    require $projectDir . '/vendor/autoload.php';
+    $kernel = new Kernel($_SERVER['APP_ENV'] ?? 'dev', (bool)($_SERVER['APP_DEBUG'] ?? true));
+    $application = new Application($kernel);
+    $application->run();
+}

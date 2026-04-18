@@ -11,6 +11,7 @@ use App\Service\AdminService;
 use App\Service\AuthService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/auth/admin')]
@@ -43,31 +44,10 @@ class AdminController extends AbstractController
     }
 
     // =========================================================================
-    // PUT /api/auth/admin/users/{id}/promote — Promouvoir en ADMIN
+    // PUT /api/auth/admin/users/{id}/roles — Mettre a jour les roles generique
     // =========================================================================
-    #[Route('/users/{id}/promote', name: 'api_admin_promote', methods: ['PUT'])]
-    public function promote(int $id): JsonResponse
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        try {
-            $targetUser = $this->adminService->findUserOrFail($id);
-            $this->adminService->promote($targetUser);
-
-            return $this->json([
-                'message' => 'Utilisateur promu administrateur.',
-                'user' => $this->authService->serializeUser($targetUser)
-            ]);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
-        }
-    }
-
-    // =========================================================================
-    // PUT /api/auth/admin/users/{id}/demote — Rétrograder
-    // =========================================================================
-    #[Route('/users/{id}/demote', name: 'api_admin_demote', methods: ['PUT'])]
-    public function demote(int $id): JsonResponse
+    #[Route('/users/{id}/roles', name: 'api_admin_update_roles', methods: ['PUT'])]
+    public function updateRoles(int $id, Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -75,14 +55,20 @@ class AdminController extends AbstractController
             $targetUser = $this->adminService->findUserOrFail($id);
             /** @var User $currentUser */
             $currentUser = $this->getUser();
-            $this->adminService->demote($targetUser, $currentUser);
+            
+            $data = json_decode($request->getContent(), true) ?? [];
+            if (!isset($data['roles']) || !is_array($data['roles'])) {
+                return $this->json(['error' => 'La cle roles (tableau) est requise.'], 400);
+            }
+
+            $this->adminService->updateRoles($targetUser, $currentUser, $data['roles']);
 
             return $this->json([
-                'message' => 'Rôle ADMIN retiré.',
+                'message' => 'Roles mis a jour avec succes.',
                 'user' => $this->authService->serializeUser($targetUser)
             ]);
         } catch (\InvalidArgumentException $e) {
-            return $this->json(['error' => $e->getMessage()], 403);
+            return $this->json(['error' => $e->getMessage()], 400);
         }
     }
 

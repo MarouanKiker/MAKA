@@ -15,16 +15,16 @@
     display: flex;
     flex-direction: column;
     padding: 1.75rem 0;
-    background: rgba(12, 14, 24, .8);
+    background: var(--surface);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(255, 255, 255, .05);
-    box-shadow: 40px 0 40px rgba(163, 166, 255, .05);
+    border-right: 1px solid var(--border-0);
+    box-shadow: 40px 0 40px var(--shadow-glow);
     position: fixed;
     top: 0;
     left: 0;
     z-index: 100;
-    transition: transform .25s ease, width .25s ease;
+    transition: transform .25s ease, width .25s ease, background .3s;
 }
 
 /* ——— brand — logo + text ——— */
@@ -94,7 +94,7 @@
 
 .nav-link:hover {
     color: var(--text-0);
-    background: rgba(255, 255, 255, .04);
+    background: var(--bg-hover);
     text-decoration: none;
 }
 
@@ -104,7 +104,7 @@
 
 .nav-link.active {
     color: var(--accent);
-    background: rgba(163, 166, 255, .06);
+    background: var(--accent-soft);
 }
 
 /* glowing active bar */
@@ -151,7 +151,7 @@
 .sidebar-bottom {
     margin-top: auto;
     padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, .05);
+    border-top: 1px solid var(--border-0);
 }
 
 .logout-link {
@@ -165,7 +165,7 @@
     gap: .6rem;
     padding: .75rem 1.5rem;
     margin-top: .5rem;
-    border-top: 1px solid rgba(255, 255, 255, .04);
+    border-top: 1px solid var(--border-0);
 }
 
 .user-avatar {
@@ -223,10 +223,10 @@
     align-items: center;
     padding: 0 2rem;
     gap: .75rem;
-    background: rgba(13, 14, 20, .9);
+    background: var(--surface);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, .05);
+    border-bottom: 1px solid var(--border-0);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -296,6 +296,33 @@
 
 .shell.collapsed .main {
     margin-left: 56px;
+}
+
+.shell.hub-mode .main {
+    margin-left: 0;
+}
+
+.maka-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.maka-icon-btn:hover {
+    background: var(--card-hover);
+}
+.maka-icon-btn.dng {
+    color: var(--danger);
+}
+.maka-icon-btn.dng:hover {
+    background: var(--danger-soft);
 }
 
 /* ========== RESPONSIVE ========== */
