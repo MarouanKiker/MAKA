@@ -1,0 +1,56 @@
+<div class="page-header">
+    <div>
+        <h1><i class="fa-solid fa-book page-icon"></i> Journal comptable</h1>
+        <span class="page-subtitle">Ecritures de debit et credit automatiques</span>
+    </div>
+</div>
+
+<!-- cartes de stats -->
+<div class="stats-row">
+    <div class="stat-card credit">
+        <i class="fa-solid fa-arrow-down"></i>
+        <div>
+            <span class="stat-label">Total Credit</span>
+            <span class="stat-value cell-amount">+ {{ stats.totalCredit | number:'1.2-2' }} MAD</span>
+        </div>
+    </div>
+    <div class="stat-card debit">
+        <i class="fa-solid fa-arrow-up"></i>
+        <div>
+            <span class="stat-label">Total Debit</span>
+            <span class="stat-value cell-amount">- {{ stats.totalDebit | number:'1.2-2' }} MAD</span>
+        </div>
+    </div>
+    <div class="stat-card solde">
+        <i class="fa-solid fa-scale-balanced"></i>
+        <div>
+            <span class="stat-label">Solde</span>
+            <span class="stat-value cell-amount" [style.color]="stats.solde >= 0 ? 'var(--accent)' : 'var(--danger)'">{{ stats.solde | number:'1.2-2' }} MAD</span>
+        </div>
+    </div>
+</div>
+
+<!-- tableau du journal -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Debit</th>
+                <th>Credit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let j of journal">
+                <td>{{ j.date }}</td>
+                <td class="cell-main">{{ j.description }}</td>
+                <td class="debit-cell cell-amount">{{ j.debit > 0 ? (j.debit | number:'1.2-2') + ' MAD' : '-' }}</td>
+                <td class="credit-cell cell-amount">{{ j.credit > 0 ? (j.credit | number:'1.2-2') + ' MAD' : '-' }}</td>
+            </tr>
+            <tr *ngIf="journal.length === 0">
+                <td colspan="4" class="empty-row">Aucune ecriture</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

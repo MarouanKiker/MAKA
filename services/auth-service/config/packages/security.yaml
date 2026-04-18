@@ -12,9 +12,15 @@ security:
 
     # --- Hiérarchie des rôles ---
     role_hierarchy:
+        ROLE_EMPLOYE: ROLE_USER
+        ROLE_RH: ROLE_EMPLOYE
         ROLE_COMMERCIAL: ROLE_USER
         ROLE_SUPPORT: ROLE_USER
-        ROLE_ADMIN: [ROLE_COMMERCIAL, ROLE_SUPPORT]
+        ROLE_FINANCIER: ROLE_USER
+        ROLE_MAGASINIER: ROLE_USER
+        ROLE_VENDEUR: ROLE_USER
+        ROLE_ACHETEUR: ROLE_USER
+        ROLE_ADMIN: [ROLE_RH, ROLE_COMMERCIAL, ROLE_SUPPORT, ROLE_FINANCIER, ROLE_MAGASINIER, ROLE_VENDEUR, ROLE_ACHETEUR]
 
     # --- Providers : d'où viennent les utilisateurs ---
     providers:
