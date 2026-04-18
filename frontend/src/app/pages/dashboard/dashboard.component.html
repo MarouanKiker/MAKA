@@ -1,94 +1,111 @@
 <div class="dashboard">
     <div class="dash-header">
-        <h1>Bonjour, {{ userName }}</h1>
-        <p class="dash-subtitle">{{ today }} · Casablanca HQ</p>
+        <h1>Bonjour, {{ userName }} 👋</h1>
+        <div class="dash-subtitle">{{ today }}</div>
+        <div class="hub-badge">SELECTIONNEZ VOTRE DOMAINE D'ACTIVITE</div>
     </div>
 
-    <!-- stat cards -->
-    <div class="stat-grid">
-        <div class="stat-card" *ngFor="let s of stats; let i = index" [style.animation-delay]="i * 0.05 + 's'">
-            <div class="stat-icon" [style.background]="s.bg" [style.color]="s.color"><i [class]="s.icon"></i></div>
-            <span class="stat-label">{{ s.label }}</span>
-            <span class="stat-number">{{ s.value }}</span>
-        </div>
-    </div>
-
-    <!-- pipeline + tasks -->
-    <div class="dash-grid">
-        <div class="dash-section">
-            <div class="section-header">
-                <h2 class="section-title">Opportunity Pipeline</h2>
-                <span class="section-action">VIEW KANBAN →</span>
-            </div>
-            <div>
-                <div class="pipeline-bar-row" *ngFor="let p of pipeline">
-                    <span class="pipeline-label">{{ p.label }}</span>
-                    <div class="pipeline-track">
-                        <div class="pipeline-fill" [style.width.%]="p.percent" [style.background]="p.color"></div>
-                    </div>
-                    <span class="pipeline-val">{{ p.count }}</span>
+    <div class="hub-grid">
+        
+        <!-- CRM Hub -->
+        <div class="hub-card" *ngIf="auth.hasRole('ROLE_COMMERCIAL') || auth.hasRole('ROLE_SUPPORT') || auth.isAdmin()" (click)="goTo('/accounts')" style="--glow-color: #818cf8; --bg-grad: linear-gradient(135deg, #a855f7, #6366f1); --shadow-color: rgba(99, 102, 241, 0.4);">
+            <div class="hub-card-content">
+                <div class="hub-icon-wrapper">
+                    <i class="fa-solid fa-users-viewfinder"></i>
                 </div>
-            </div>
-        </div>
-
-        <div class="dash-section">
-            <div class="section-header">
-                <h2 class="section-title">Taches recentes</h2>
-            </div>
-            <div class="task-list">
-                <div class="task-item" *ngFor="let t of crm.tasks.slice(0, 5)">
-                    <div class="task-priority"
-                        [style.background]="t.priorite === 'Haute' ? 'var(--danger)' : t.priorite === 'Moyenne' ? 'var(--warning)' : 'var(--success)'">
-                    </div>
-                    <div class="task-info">
-                        <span class="task-name">{{ t.titre }}</span>
-                        <span class="task-meta">{{ t.assigneA }} · {{ t.dateEcheance | date:'shortDate' }}</span>
-                    </div>
-                    <span class="badge" [class]="t.statut.toLowerCase()">{{ t.statut }}</span>
+                <h2 class="hub-title">CRM & Ventes</h2>
+                <div class="hub-desc">
+                    Gestion globale de la force de vente, base clients, prospects et suivi des opportunites.
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- leads + tickets -->
-    <div class="dash-grid">
-        <div class="dash-section">
-            <div class="section-header">
-                <h2 class="section-title">Incoming Leads</h2>
-                <span class="section-action">View Pipeline</span>
-            </div>
-            <div class="lead-list">
-                <div class="lead-item" *ngFor="let l of leads.slice(0, 4)">
-                    <div class="lead-main">
-                        <span class="lead-source">{{ l.source }}</span>
+                <div class="hub-stats">
+                    <div class="hub-stat">
+                        <span class="hub-stat-val">{{ crm.accounts.length }}</span>
+                        <span class="hub-stat-label">Comptes</span>
                     </div>
-                    <div class="lead-right">
-                        <div class="mini-progress">
-                            <div class="mini-progress-fill" [style.width.%]="l.score"></div>
-                        </div>
-                        <span class="badge" [class]="l.statut === 0 ? 'nouveau' : l.statut === 3 ? 'converti' : 'en_cours'">Statut: {{ l.statut }}</span>
+                    <div class="hub-stat">
+                        <span class="hub-stat-val">{{ leads.length }}</span>
+                        <span class="hub-stat-label">Leads</span>
                     </div>
                 </div>
             </div>
+            <div class="hub-action">
+                Acceder <i class="fa-solid fa-arrow-right"></i>
+            </div>
         </div>
 
-        <div class="dash-section">
-            <div class="section-header">
-                <h2 class="section-title">Tickets recents</h2>
-                <span class="section-badge" style="background:var(--danger-soft);color:var(--danger)">URGENT</span>
-            </div>
-            <div class="ticket-list">
-                <div class="ticket-item" *ngFor="let t of crm.tickets.slice(0, 4)">
-                    <div class="ticket-main">
-                        <span class="ticket-subject">{{ t.sujet }}</span>
-                        <span class="ticket-account">{{ crm.getAccountName(t.accountId) }}</span>
+        <!-- Finance Hub -->
+        <div class="hub-card" *ngIf="auth.hasRole('ROLE_FINANCIER') || auth.isAdmin()" (click)="goTo('/factures')" style="--glow-color: #34d399; --bg-grad: linear-gradient(135deg, #10b981, #059669); --shadow-color: rgba(16, 185, 129, 0.4);">
+            <div class="hub-card-content">
+                <div class="hub-icon-wrapper">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <h2 class="hub-title">Finance & Compta</h2>
+                <div class="hub-desc">
+                    Facturation, rapports financiers, encaissements et maitrise de la tresorerie.
+                </div>
+                <div class="hub-stats">
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-file-invoice"></i></span>
+                        <span class="hub-stat-label">Factures</span>
                     </div>
-                    <div class="ticket-right">
-                        <span class="badge" [class]="t.priorite.toLowerCase()">{{ t.priorite }}</span>
-                        <span class="badge" [class]="t.statut.toLowerCase()">{{ t.statut }}</span>
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-scale-balanced"></i></span>
+                        <span class="hub-stat-label">Journal</span>
                     </div>
                 </div>
             </div>
+            <div class="hub-action">
+                Acceder <i class="fa-solid fa-arrow-right"></i>
+            </div>
         </div>
+
+        <!-- IA Hub -->
+        <div class="hub-card" (click)="goTo('/intelligence')" style="--glow-color: #22d3ee; --bg-grad: linear-gradient(135deg, #06b6d4, #3b82f6); --shadow-color: rgba(6, 182, 212, 0.4);">
+            <div class="hub-card-content">
+                <div class="hub-icon-wrapper">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <h2 class="hub-title">Intelligence IA</h2>
+                <div class="hub-desc">
+                    Assistant virtuel intelligent, predictions des ventes propulsees par le Machine Learning.
+                </div>
+                <div class="hub-stats">
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-robot"></i></span>
+                        <span class="hub-stat-label">Assistant IA</span>
+                    </div>
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-bolt"></i></span>
+                        <span class="hub-stat-label">Previsions</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hub-action">
+                Acceder <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </div>
+
+        <!-- Admin Hub -->
+        <div class="hub-card" *ngIf="auth.isAdmin()" (click)="goTo('/admin')" style="--glow-color: #fcd34d; --bg-grad: linear-gradient(135deg, #f59e0b, #d97706); --shadow-color: rgba(245, 158, 11, 0.4);">
+            <div class="hub-card-content">
+                <div class="hub-icon-wrapper">
+                    <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <h2 class="hub-title">Administration</h2>
+                <div class="hub-desc">
+                    Gestion absolue des employes, controle des degres de permission et parametrage du reseau.
+                </div>
+                <div class="hub-stats" style="border-top-color: rgba(245, 158, 11, 0.2);">
+                    <div class="hub-stat">
+                        <span class="hub-stat-val" style="color:#f59e0b;"><i class="fa-solid fa-lock"></i></span>
+                        <span class="hub-stat-label">Acces Restreint</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hub-action">
+                Gerer la securite <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </div>
+
     </div>
 </div>

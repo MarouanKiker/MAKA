@@ -1,0 +1,156 @@
+<div class="intel-page">
+
+    <!-- particules en arriere-plan -->
+    <div class="particles">
+        <span *ngFor="let p of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]" class="particle"></span>
+    </div>
+
+    <!-- en-tete -->
+    <div class="intel-header">
+        <div class="intel-title">
+            <span class="intel-icon">🧠</span>
+            <div>
+                <h1>MAKA Intelligence</h1>
+                <p>Module d'Intelligence Artificielle</p>
+            </div>
+        </div>
+        <div class="intel-badge">
+            <span class="dot-pulse"></span>
+            IA Active
+        </div>
+    </div>
+
+    <!-- grille principale : chatbot a gauche, forecast + kpi a droite -->
+    <div class="intel-grid">
+
+        <!-- COLONNE GAUCHE : CHATBOT -->
+        <div class="chat-card">
+            <div class="card-header">
+                <i class="fa-solid fa-robot"></i>
+                <span>Assistant IA</span>
+                <span class="header-badge">Gemini</span>
+            </div>
+
+            <!-- messages du chat -->
+            <div class="chat-messages" #chatContainer>
+                <div *ngFor="let msg of messages"
+                     class="chat-bubble"
+                     [class.user-bubble]="msg.auteur === 'user'"
+                     [class.ai-bubble]="msg.auteur === 'ai'">
+                    <div class="bubble-avatar" *ngIf="msg.auteur === 'ai'">🤖</div>
+                    <div class="bubble-content">
+                        <p>{{ msg.texte }}</p>
+                        <span class="bubble-time">{{ msg.heure }}</span>
+                    </div>
+                    <div class="bubble-avatar user-avatar-icon" *ngIf="msg.auteur === 'user'">👤</div>
+                </div>
+
+                <!-- indicateur de chargement -->
+                <div class="chat-bubble ai-bubble" *ngIf="chatLoading">
+                    <div class="bubble-avatar">🤖</div>
+                    <div class="bubble-content">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- input du chat -->
+            <div class="chat-input-area">
+                <input type="text"
+                       [(ngModel)]="messageInput"
+                       (keydown)="onKeyDown($event)"
+                       placeholder="Posez une question sur vos donnees..."
+                       class="chat-input" />
+                <button class="chat-send" (click)="envoyerMessage()" [disabled]="chatLoading">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- COLONNE DROITE -->
+        <div class="right-column">
+
+            <!-- KPI INTELLIGENTS -->
+            <div class="kpi-row" *ngIf="kpis">
+                <div class="kpi-card">
+                    <div class="kpi-icon green"><i class="fa-solid fa-coins"></i></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value">{{ formatMontant(kpis.ca_actuel) }} DH</span>
+                        <span class="kpi-label">CA Actuel</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon purple"><i class="fa-solid fa-crystal-ball"></i></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value">{{ formatMontant(kpis.ca_prevu) }} DH</span>
+                        <span class="kpi-label">CA Prevu (IA)</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon cyan"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value">+{{ kpis.croissance }}%</span>
+                        <span class="kpi-label">Croissance</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon orange"><i class="fa-solid fa-bullseye"></i></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value">{{ kpis.taux_conversion }}%</span>
+                        <span class="kpi-label">Conversion</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRAPHIQUE PREVISION -->
+            <div class="forecast-card" *ngIf="forecastData">
+                <div class="card-header">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Prevision des Ventes</span>
+                    <span class="header-badge" [class.badge-green]="forecastData.tendance === 'hausse'">
+                        {{ forecastData.tendance === 'hausse' ? '↑' : '↓' }} {{ forecastData.croissance }}%
+                    </span>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-bars">
+                        <div *ngFor="let point of forecastData.donnees"
+                             class="chart-bar-wrapper">
+                            <div class="chart-bar"
+                                 [class.bar-real]="point.type === 'reel'"
+                                 [class.bar-prediction]="point.type === 'prediction'"
+                                 [style.height.%]="getBarHeight(point.valeur)">
+                                <span class="bar-tooltip">{{ formatMontant(point.valeur) }} DH</span>
+                            </div>
+                            <span class="bar-label">{{ point.mois }}</span>
+                        </div>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-dot real"></span> Reel</span>
+                        <span class="legend-item"><span class="legend-dot prediction"></span> Prediction IA</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSIGHTS -->
+            <div class="insights-card" *ngIf="insights.length > 0">
+                <div class="card-header">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>Insights IA</span>
+                </div>
+                <div class="insights-list">
+                    <div *ngFor="let insight of insights"
+                         class="insight-item"
+                         [class.insight-success]="insight.type === 'success'"
+                         [class.insight-warning]="insight.type === 'warning'"
+                         [class.insight-info]="insight.type === 'info'">
+                        <i class="fa-solid" [ngClass]="insight.icone"></i>
+                        <span>{{ insight.texte }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -75,6 +75,25 @@ class AdminService
     }
 
     // =========================================================================
+    // Update Roles
+    // =========================================================================
+    public function updateRoles(User $targetUser, User $currentUser, array $roles): User
+    {
+        if ($currentUser->getId() === $targetUser->getId() && !in_array('ROLE_ADMIN', $roles)) {
+            throw new \InvalidArgumentException('Vous ne pouvez pas retirer votre propre role ADMIN.');
+        }
+
+        if (empty($roles)) {
+            $roles = ['ROLE_EMPLOYE'];
+        }
+
+        $targetUser->setRoles(array_values(array_unique($roles)));
+        $this->entityManager->flush();
+
+        return $targetUser;
+    }
+
+    // =========================================================================
     // Delete — Supprimer un utilisateur
     // =========================================================================
 

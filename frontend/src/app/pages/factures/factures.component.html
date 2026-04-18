@@ -1,0 +1,76 @@
+<div class="page-header">
+    <div>
+        <h1><i class="fa-solid fa-file-invoice page-icon"></i> Factures</h1>
+        <span class="page-subtitle">Gestion des factures et suivi des paiements</span>
+    </div>
+    <button class="btn-add" (click)="openForm()">
+        <i class="fa-solid fa-plus"></i> Nouvelle facture
+    </button>
+</div>
+
+<!-- message de retour -->
+<div class="toast" *ngIf="message" (click)="message = ''">{{ message }}</div>
+
+<!-- formulaire d'ajout -->
+<div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <h2>Nouvelle facture</h2>
+        <form (ngSubmit)="save()">
+            <div class="form-group">
+                <label>Numero</label>
+                <input type="text" [(ngModel)]="numero" name="numero" required />
+            </div>
+            <div class="form-group">
+                <label>Montant HT (MAD)</label>
+                <input type="number" [(ngModel)]="montant" name="montant" required min="1" />
+            </div>
+            <div class="form-group">
+                <label>Taux TVA (%)</label>
+                <input type="number" [(ngModel)]="tauxTVA" name="tauxTVA" required />
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="showForm = false">Annuler</button>
+                <button type="submit" class="btn-save">Creer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- tableau des factures -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Numero</th>
+                <th>Montant HT</th>
+                <th>TVA</th>
+                <th>Taxe</th>
+                <th>Montant TTC</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let f of factures">
+                <td class="cell-main">{{ f.numero }}</td>
+                <td class="cell-amount">{{ f.montant | number:'1.2-2' }} MAD</td>
+                <td>{{ f.tauxTVA }}%</td>
+                <td class="cell-amount">{{ f.taxe | number:'1.2-2' }} MAD</td>
+                <td class="cell-bold cell-amount" style="color:var(--accent)">{{ f.montantTTC | number:'1.2-2' }} MAD</td>
+                <td>
+                    <span class="badge" [class.badge-success]="f.statut === 'VALIDE'" [class.badge-warning]="f.statut === 'IMPAYEE'">
+                        {{ f.statut }}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn-icon delete" (click)="deleteFacture(f.id)" title="Supprimer">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <tr *ngIf="factures.length === 0">
+                <td colspan="7" class="empty-row">Aucune facture</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

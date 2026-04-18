@@ -1,6 +1,6 @@
-<div class="shell" [class.collapsed]="!sidebarOpen">
+<div class="shell" [class.collapsed]="!sidebarOpen" [class.hub-mode]="isHub">
 
-    <aside class="sidebar">
+    <aside class="sidebar" *ngIf="!isHub">
         <div class="sidebar-brand">
             <img src="assets/logo.jpeg" alt="MAKA" class="sidebar-logo" />
             <div *ngIf="sidebarOpen">
@@ -43,14 +43,24 @@
     </aside>
 
     <!-- overlay mobile -->
-    <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebar()"></div>
+    <div class="sidebar-overlay" *ngIf="sidebarOpen && !isHub" (click)="toggleSidebar()"></div>
 
     <div class="main">
         <header class="topbar">
-            <button class="topbar-toggle" (click)="toggleSidebar()">
+            <button class="topbar-toggle" (click)="toggleSidebar()" *ngIf="!isHub">
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div class="topbar-spacer"></div>
+            
+            <div style="display: flex; gap: 1rem; align-items: center;" *ngIf="isHub">
+                <button class="maka-icon-btn" (click)="toggleTheme()">
+                    <i class="fa-solid" [class.fa-sun]="themeSvc.isDark()" [class.fa-moon]="!themeSvc.isDark()"></i>
+                </button>
+                <button class="maka-icon-btn dng" (click)="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+
             <div class="topbar-user" *ngIf="user">
                 <div class="topbar-avatar">{{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}</div>
                 <span class="topbar-user-name">{{ user.prenom }} {{ user.nom.charAt(0) }}.</span>

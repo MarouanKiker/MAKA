@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { CrmService } from '../../core/services/crm.service';
 import { Lead, Opportunity } from '../../core/models/crm.model';
+import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -23,7 +24,7 @@ export class DashboardComponent implements OnInit {
     leads: Lead[] = [];
     opportunities: Opportunity[] = [];
 
-    constructor(private auth: AuthService, public crm: CrmService) {
+    constructor(public auth: AuthService, public crm: CrmService, private router: Router) {
         let user = this.auth.getUser();
         if (user) {
             this.userName = user.prenom;
@@ -95,5 +96,9 @@ export class DashboardComponent implements OnInit {
             { label: 'Gagnee', count: nbGagnee, color: '#44d492', percent: (nbGagnee / total) * 100 },
             { label: 'Perdue', count: nbPerdue, color: '#f06c62', percent: (nbPerdue / total) * 100 },
         ];
+    }
+
+    goTo(path: string): void {
+        this.router.navigate([path]);
     }
 }

@@ -1,0 +1,312 @@
+/* =============================================================
+   FINANCE PAGES — Shared components (Emerald/Gold DA)
+   ============================================================= */
+
+/* --- OVERRIDES DES VARIABLES POUR LA FINANCE --- */
+:host {
+    --accent: #10b981; /* Emerald 500 */
+    --accent-rgb: 16, 185, 129;
+    --accent-soft: rgba(16, 185, 129, 0.15);
+    
+    --gradient-primary: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    
+    /* Plus de gris serieux, moins de bleu violet pour les backgrounds */
+    --bg-1: #0f1115;
+    --bg-2: #16181d;
+    --bg-3: #1e2026;
+    --border: rgba(255, 255, 255, 0.08);
+
+    /* Valeurs cles */
+    --gold: #f59e0b; /* Amber 500 */
+    --gold-soft: rgba(245, 158, 11, 0.15);
+}
+
+/* ——— page header ——— */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeInDown .4s ease;
+}
+
+.page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    color: var(--text-0);
+}
+
+.page-icon {
+    font-size: 1.4rem;
+    opacity: 1;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 0.6rem;
+    border-radius: 12px;
+}
+
+.page-subtitle {
+    display: block;
+    color: var(--text-2);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-weight: 400;
+}
+
+/* ——— add button ——— */
+.btn-add {
+    padding: 0.8rem 1.5rem;
+    background: var(--gradient-primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    white-space: nowrap;
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+    }
+}
+
+/* ——— data table finance ——— */
+.table-container {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0.5rem;
+    overflow-x: auto;
+    animation: fadeIn .5s ease .2s both;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 1rem 1.25rem;
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+    padding: 1.25rem;
+    font-size: .88rem;
+    color: var(--text-1);
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+
+.data-table tr:hover td {
+    background: rgba(255,255,255,0.02);
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.cell-main {
+    font-weight: 600;
+    color: var(--text-0);
+    letter-spacing: 0.5px;
+}
+
+/* Style montant (police monospace) */
+.cell-amount {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-weight: 700;
+    color: var(--text-0);
+    font-size: 0.95rem;
+}
+
+/* ——— Empty state ——— */
+.empty-row {
+    text-align: center;
+    padding: 4rem !important;
+    color: var(--text-3) !important;
+    font-style: italic;
+}
+
+/* ——— toast / alert ——— */
+.toast {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    animation: fadeIn .3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+
+    &::before {
+        content: '\f058'; /* fa-circle-check */
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+    }
+}
+
+/* ——— Formulaires Modaux Finance ——— */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .7);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn .2s ease;
+}
+
+.modal-card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(16, 185, 129, 0.05);
+    animation: scaleIn .25s ease;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+    }
+}
+
+.modal-card h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text-0);
+    letter-spacing: -0.5px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-2);
+    margin-bottom: .4rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: .75rem 1rem;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-0);
+    font-size: .95rem;
+    transition: all .2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.btn-cancel {
+    padding: .6rem 1.2rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-2);
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.btn-cancel:hover {
+    background: var(--bg-3);
+    color: var(--text-0);
+}
+
+.btn-save {
+    padding: .6rem 1.2rem;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+/* Actions in tables */
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.delete:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+}

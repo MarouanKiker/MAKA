@@ -84,4 +84,4 @@ jobs:
 
       - name: Vérifier la syntaxe PHP (aucune erreur de code)
         working-directory: services/auth-service
-        run: php -l src/Controller/*.php src/Entity/*.php src/Service/*.php src/Enum/*.php
+        run: for file in $(find src -name '*.php'); do php -l "$file" || exit 1; done
