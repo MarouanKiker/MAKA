@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  db-finance:
+    image: postgres:15
+    container_name: postgres-finance
+    environment:
+      POSTGRES_USER: user_finance
+      POSTGRES_PASSWORD: password_finance
+      POSTGRES_DB: finance_db
+    ports:
+      - "5432:5432"
