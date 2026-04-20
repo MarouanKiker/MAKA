@@ -15,7 +15,7 @@
 	<description>Microservice Finance - Facturation</description>
 
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
 	</properties>
 
 	<dependencies>
@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<optional>true</optional>
+			<version>1.18.40</version>
 		</dependency>
 
 		<!-- PostgreSQL -->
