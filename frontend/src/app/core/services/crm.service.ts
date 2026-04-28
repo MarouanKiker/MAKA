@@ -3,10 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Lead, Opportunity, Campaign, Account, Contact, Task, Ticket, Interaction } from '../models/crm.model';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({ providedIn: 'root' })
 export class CrmService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost/api/crm';
+  private apiUrl = `${environment.apiUrl}/api/crm`;
 
   // ==========================================================
   // API HTTP (Leads, Campagnes, Opportunites)
@@ -17,7 +19,9 @@ export class CrmService {
   createLead(lead: Partial<Lead>): Observable<Lead> { return this.http.post<Lead>(`${this.apiUrl}/leads`, lead); }
   updateLead(id: number, lead: Partial<Lead>): Observable<any> { return this.http.put(`${this.apiUrl}/leads/${id}`, lead); }
   deleteLead(id: number): Observable<any> { return this.http.delete(`${this.apiUrl}/leads/${id}`); }
-  convertLead(id: number): Observable<Opportunity> { return this.http.post<Opportunity>(`${this.apiUrl}/leads/${id}/convertir`, {}); }
+  convertLead(id: number, titre: string, valeur: number): Observable<Opportunity> { 
+    return this.http.post<Opportunity>(`${this.apiUrl}/leads/${id}/convert`, { titre, valeur }); 
+  }
 
   getCampaigns(): Observable<Campaign[]> { return this.http.get<Campaign[]>(`${this.apiUrl}/campagnes`); }
   getCampaign(id: number): Observable<Campaign> { return this.http.get<Campaign>(`${this.apiUrl}/campagnes/${id}`); }

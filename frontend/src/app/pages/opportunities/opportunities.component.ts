@@ -15,10 +15,10 @@ export class OpportunitiesComponent implements OnInit {
 
     // colonnes du kanban pipeline
     columns = [
-        { key: 0, label: 'Nouvelle', color: '#4a9eff' },
-        { key: 1, label: 'En cours', color: '#f5c748' },
-        { key: 2, label: 'Gagnée', color: '#44d492' },
-        { key: 3, label: 'Perdue', color: '#f06c62' },
+        { key: 'NOUVELLE', label: 'Nouvelle', color: '#4a9eff' },
+        { key: 'EN_COURS', label: 'En cours', color: '#f5c748' },
+        { key: 'GAGNEE', label: 'Gagnée', color: '#44d492' },
+        { key: 'PERDUE', label: 'Perdue', color: '#f06c62' },
     ];
 
     opportunities: Opportunity[] = [];
@@ -37,7 +37,7 @@ export class OpportunitiesComponent implements OnInit {
         });
     }
 
-    getByStatut(statut: number): Opportunity[] {
+    getByStatut(statut: string): Opportunity[] {
         return this.opportunities.filter(o => o.statut === statut);
     }
 
@@ -50,7 +50,7 @@ export class OpportunitiesComponent implements OnInit {
         event.preventDefault();
     }
 
-    onDrop(event: DragEvent, statut: number): void {
+    onDrop(event: DragEvent, statut: string): void {
         event.preventDefault();
         if (this.draggedOpp) {
             const currentOpp = this.draggedOpp;
@@ -59,14 +59,14 @@ export class OpportunitiesComponent implements OnInit {
             if (oldStatut !== statut) {
                 currentOpp.statut = statut;
                 
-                if (statut === 2 || statut === 3) {
+                if (statut === 'GAGNEE' || statut === 'PERDUE') {
                     currentOpp.dateCloture = new Date().toISOString();
                 }
 
                 this.crm.updateOpportunity(currentOpp.id, { 
                     statut: statut, 
-                    nom: currentOpp.nom, 
-                    montant: currentOpp.montant,
+                    titre: currentOpp.titre, 
+                    valeur: currentOpp.valeur,
                     dateCloture: currentOpp.dateCloture
                 }).subscribe({
                     next: () => {},
