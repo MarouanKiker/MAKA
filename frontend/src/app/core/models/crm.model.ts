@@ -19,7 +19,7 @@ export interface Contact {
 export interface Lead {
     id: number;
     source: string;
-    statut: number; // Enum: 0=NOUVEAU, 1=CONTACTE, 2=QUALIFIE, 3=CONVERTI, 4=PERDU
+    statut: number | string; // Enum: 'NOUVEAU', 'QUALIFIE', etc.
     score: number;
     dateCreation: string;
     campagneId: number | null;
@@ -28,9 +28,9 @@ export interface Lead {
 
 export interface Opportunity {
     id: number;
-    nom: string;
-    montant: number;
-    statut: number; // Enum: 0=NOUVELLE, 1=EN_COURS, 2=GAGNEE, 3=PERDUE
+    titre: string;
+    valeur: number;
+    statut: number | string; // Enum: 'NOUVELLE', 'EN_COURS', etc.
     dateCloture: string;
     leadId: number;
 }

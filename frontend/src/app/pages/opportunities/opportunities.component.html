@@ -24,9 +24,9 @@
                 <div class="kanban-card" *ngFor="let o of getByStatut(col.key)" draggable="true"
                     (dragstart)="onDragStart(o)" (dragend)="onDragEnd()" [class.dragging]="draggedOpp === o">
 
-                    <div class="card-title">{{ o.nom }}</div>
-                    <div class="kanban-value">{{ o.montant | number }} MAD</div>
-                    <div class="card-meta" *ngIf="o.dateCloture && o.statut >= 2">
+                    <div class="card-title">{{ o.titre }}</div>
+                    <div class="kanban-value">{{ o.valeur | number }} MAD</div>
+                    <div class="card-meta" *ngIf="o.dateCloture && (o.statut === 'GAGNEE' || o.statut === 'PERDUE')">
                         <span class="card-meta-item">
                             <i class="fa-regular fa-calendar meta-icon"></i>
                             Cloturé le : {{ o.dateCloture | date:'shortDate' }}
