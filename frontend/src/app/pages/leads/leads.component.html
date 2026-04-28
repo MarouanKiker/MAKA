@@ -79,4 +79,28 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal pour la conversion en Opportunité -->
+    <div class="modal-overlay" *ngIf="showConvertForm" (click)="cancelConvert()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h2>Convertir en Opportunité</h2>
+            <p style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+                Vous êtes sur le point de convertir ce Lead en véritable opportunité. Veuillez estimer le projet.
+            </p>
+            <div class="row">
+                <div class="champ">
+                    <label>Nom du projet</label>
+                    <input type="text" [(ngModel)]="oppTitre" placeholder="Ex: Refonte Site Web" />
+                </div>
+                <div class="champ">
+                    <label>Montant estimé (MAD)</label>
+                    <input type="number" [(ngModel)]="oppValeur" min="0" />
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" (click)="cancelConvert()">Annuler</button>
+                <button class="btn-save" (click)="confirmConvert()">Convertir</button>
+            </div>
+        </div>
+    </div>
 </div>
