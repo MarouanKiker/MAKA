@@ -56,6 +56,8 @@ services:
       dockerfile: Dockerfile
       network: host
     container_name: crm-service
+    ports:
+      - "5000:5000"
     volumes:
       - jwt-keys:/app/keys:ro
     environment:
@@ -67,6 +69,45 @@ services:
     networks:
       - hub-network
       - crm-network
+
+  # ---------------------------------------------------------------------------
+  # HR SERVICE (Spoke HR) - Spring Boot 3 + Java 17
+  # ---------------------------------------------------------------------------
+  hr-service:
+    build:
+      context: ./hr-service
+      dockerfile: Dockerfile
+      network: host
+    container_name: hr-service
+    ports:
+      - "8080:8080"
+    volumes:
+      - jwt-keys:/app/keys:ro
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://hr-db:5432/${HR_DB_NAME:-hr_db}"
+      SPRING_DATASOURCE_USERNAME: ${HR_DB_USER:-hr_user}
+      SPRING_DATASOURCE_PASSWORD: ${HR_DB_PASSWORD:-hr_pass}
+    depends_on:
+      - hr-db
+      - auth-service
+    networks:
+      - hub-network
+      - hr-network
+
+  # ---------------------------------------------------------------------------
+  # BASE DE DONNÉES HR - PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  hr-db:
+    image: postgres:16-alpine
+    container_name: hr-db
+    environment:
+      POSTGRES_DB: ${HR_DB_NAME:-hr_db}
+      POSTGRES_USER: ${HR_DB_USER:-hr_user}
+      POSTGRES_PASSWORD: ${HR_DB_PASSWORD:-hr_pass}
+    volumes:
+      - hr-db-data:/var/lib/postgresql/data
+    networks:
+      - hr-network
 
   # ---------------------------------------------------------------------------
   # FINANCE SERVICE (Spoke 3) - Spring Boot 3 + Java 17
@@ -81,12 +122,23 @@ services:
       - jwt-keys:/app/keys:ro
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://finance-db:5432/${FINANCE_DB_NAME:-finance_db}"
+      DB_URL: "jdbc:postgresql://finance-db:5432/${FINANCE_DB_NAME:-finance_db}"
+      DB_USERNAME: ${FINANCE_DB_USER:-finance_user}
+      DB_PASSWORD: ${FINANCE_DB_PASSWORD:-finance_pass}
       SPRING_DATASOURCE_USERNAME: ${FINANCE_DB_USER:-finance_user}
       SPRING_DATASOURCE_PASSWORD: ${FINANCE_DB_PASSWORD:-finance_pass}
       JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AUTH_JWK_SET_URI: http://auth-service:9000/.well-known/jwks.json
     depends_on:
       - finance-db
-      - auth-service
+      - rabbitmq
+      - redis
     networks:
       - hub-network
       - finance-network
@@ -137,6 +189,29 @@ services:
       - finance-network
 
   # ---------------------------------------------------------------------------
+  # RABBITMQ - Message Broker
+  # ---------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - hub-network
+      - finance-network
+
+  # ---------------------------------------------------------------------------
+  # REDIS - Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    networks:
+      - hub-network
+      - finance-network
+
+  # ---------------------------------------------------------------------------
   # SALES & AI SERVICE (Spoke 4) - FastAPI Python 3.11
   # ---------------------------------------------------------------------------
   sales-service:
@@ -180,6 +255,7 @@ volumes:
   jwt-keys:
   auth-db-data:
   crm-db-data:
+  hr-db-data:
   finance-db-data:
   sales-db-data:
   vendor_data:
@@ -193,6 +269,8 @@ networks:
   auth-network:
     driver: bridge
   crm-network:
+    driver: bridge
+  hr-network:
     driver: bridge
   finance-network:
     driver: bridge

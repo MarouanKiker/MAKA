@@ -1,0 +1,67 @@
+.maka-tabs {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0px;
+    margin-top: 1rem;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: .85rem 1rem;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: var(--text-1);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+/* ==========================================================
+   Table Styles pour le CRM/HR (Nano)
+   ========================================================== */
+.maka-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-2);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    animation: fadeInUp .4s ease;
+}
+
+.maka-table th, .maka-table td {
+    padding: .85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+    font-size: .8rem;
+}
+
+.maka-table th {
+    background: var(--bg-3);
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-size: .7rem;
+}
+
+.maka-table tr:hover {
+    background: var(--bg-bright);
+}
+
+.maka-table tr:last-child td {
+    border-bottom: none;
+}

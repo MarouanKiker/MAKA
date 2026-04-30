@@ -59,8 +59,6 @@ export class DashboardComponent implements OnInit {
             this.crm.contacts.length,
             this.leads.length,
             this.opportunities.length,
-            this.crm.tasks.length,
-            this.crm.tickets.length,
             1
         );
 
@@ -69,8 +67,6 @@ export class DashboardComponent implements OnInit {
             { icon: 'fa-solid fa-address-book', label: 'Contacts', value: this.crm.contacts.length, bg: 'rgba(167,139,250,.12)', color: '#a78bfa', percent: (this.crm.contacts.length / max) * 100 },
             { icon: 'fa-solid fa-bullseye', label: 'Leads', value: this.leads.length, bg: 'rgba(251,191,36,.12)', color: '#fbbf24', percent: (this.leads.length / max) * 100 },
             { icon: 'fa-solid fa-arrow-trend-up', label: 'Opportunites', value: this.opportunities.length, bg: 'rgba(52,211,153,.12)', color: '#34d399', percent: (this.opportunities.length / max) * 100 },
-            { icon: 'fa-solid fa-list-check', label: 'Taches', value: this.crm.tasks.length, bg: 'rgba(251,146,60,.12)', color: '#fb923c', percent: (this.crm.tasks.length / max) * 100 },
-            { icon: 'fa-solid fa-ticket', label: 'Tickets', value: this.crm.tickets.length, bg: 'rgba(248,113,113,.12)', color: '#f87171', percent: (this.crm.tickets.length / max) * 100 },
         ];
     }
 
@@ -84,10 +80,10 @@ export class DashboardComponent implements OnInit {
 
         for (let i = 0; i < this.opportunities.length; i++) {
             let opp = this.opportunities[i];
-            if (opp.statut === 0) nbNouvelle++;
-            if (opp.statut === 1) nbEnCours++;
-            if (opp.statut === 2) nbGagnee++;
-            if (opp.statut === 3) nbPerdue++;
+            if (opp.statut === 'NOUVELLE') nbNouvelle++;
+            if (opp.statut === 'EN_COURS') nbEnCours++;
+            if (opp.statut === 'GAGNEE') nbGagnee++;
+            if (opp.statut === 'PERDUE') nbPerdue++;
         }
 
         this.pipeline = [

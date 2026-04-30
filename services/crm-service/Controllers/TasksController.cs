@@ -6,7 +6,7 @@ using CrmService.Interfaces;
 namespace CrmService.Controllers;
 
 [ApiController]
-[Route("api/tasks")]
+[Route("api/crm/tasks")]
 [Authorize]
 public class TasksController : ControllerBase
 {

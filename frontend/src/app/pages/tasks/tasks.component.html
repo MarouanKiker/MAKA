@@ -1,14 +1,19 @@
 <div>
     <div class="page-header">
         <div>
-            <h1>Gestion des taches</h1>
-            <p class="page-subtitle">Glissez les cartes entre les colonnes pour changer le statut</p>
+            <h1>
+                <i class="fa-solid fa-check-square page-icon"></i>
+                Gestion des tâches
+            </h1>
+            <p class="page-subtitle">Glissez les cartes pour marquer les tâches comme terminées</p>
         </div>
         <div style="display:flex; align-items:center; gap:.75rem;">
-            <span class="total-badge">{{ countAll() }} taches</span>
-            <button class="btn-add" (click)="openForm()">+ Nouvelle tache</button>
+            <span class="total-badge">{{ tasks.length }} tâches</span>
+            <button class="btn-add" (click)="openForm()">+ Nouvelle tâche</button>
         </div>
     </div>
+
+    <div class="toast" *ngIf="message" (click)="message = ''">{{ message }}</div>
 
     <!-- kanban drag & drop -->
     <div class="kanban">
@@ -18,38 +23,36 @@
             <div class="kanban-col-header">
                 <span class="kanban-dot" [style.background]="col.color"></span>
                 <span class="kanban-col-title">{{ col.label }}</span>
-                <span class="kanban-count">{{ getByStatut(col.key).length }}</span>
+                <span class="kanban-count">{{ getByCompleted(col.key).length }}</span>
             </div>
 
             <div class="kanban-cards" [class.drag-over]="draggedTask">
-                <div class="kanban-card" *ngFor="let t of getByStatut(col.key)" draggable="true"
-                    (dragstart)="onDragStart(t)" (dragend)="onDragEnd()" [class.dragging]="draggedTask === t">
+                <div class="kanban-card" *ngFor="let t of getByCompleted(col.key)" draggable="true"
+                    (dragstart)="onDragStart(t)" (dragend)="onDragEnd()" [class.dragging]="draggedTask === t"
+                    [class.task-done]="t.isCompleted">
 
                     <div class="card-top">
-                        <span class="card-title">{{ t.titre }}</span>
-                        <span class="priority-dot"
-                            [style.background]="t.priorite === 'Haute' ? '#f06c62' : t.priorite === 'Moyenne' ? '#f5c748' : '#44d492'"></span>
+                        <span class="card-title">{{ t.title }}</span>
+                        <input type="checkbox" [checked]="t.isCompleted" (change)="toggleComplete(t)"
+                            title="Marquer comme terminé" />
                     </div>
 
                     <p class="card-desc">{{ t.description }}</p>
 
                     <div class="card-meta">
-                        <span class="card-meta-item">
-                            <span class="meta-avatar" [style.background]="col.color + '25'" [style.color]="col.color">{{
-                                t.assigneA?.charAt(0) || '?' }}</span>
-                            {{ t.assigneA }}
+                        <span class="card-meta-item meta-date">
+                            <i class="fa-regular fa-calendar meta-icon"></i>
+                            Échéance : {{ t.dueDate | date:'dd/MM/yyyy' }}
                         </span>
-                        <span class="card-meta-item meta-date">{{ t.dateEcheance }}</span>
                     </div>
 
                     <div class="card-bottom">
-                        <span class="badge" [class]="t.priorite.toLowerCase()">{{ t.priorite }}</span>
-                        <button class="btn-del" (click)="delete(t.id)">×</button>
+                        <button class="btn-del" (click)="delete(t.id)" title="Supprimer">×</button>
                     </div>
                 </div>
 
-                <div class="kanban-empty" *ngIf="getByStatut(col.key).length === 0">
-                    Deposez une tache ici
+                <div class="kanban-empty" *ngIf="getByCompleted(col.key).length === 0">
+                    Déposez une tâche ici
                 </div>
             </div>
         </div>
@@ -58,32 +61,18 @@
     <!-- modal ajouter -->
     <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
         <div class="modal" (click)="$event.stopPropagation()">
-            <h2>Nouvelle tache</h2>
+            <h2>Nouvelle tâche</h2>
             <div class="champ">
-                <label>Titre</label>
-                <input type="text" [(ngModel)]="titre" placeholder="Titre" />
+                <label>Titre *</label>
+                <input type="text" [(ngModel)]="title" placeholder="Titre de la tâche" />
             </div>
             <div class="champ">
                 <label>Description</label>
-                <textarea [(ngModel)]="description" placeholder="Details..."></textarea>
-            </div>
-            <div class="row">
-                <div class="champ">
-                    <label>Priorite</label>
-                    <select [(ngModel)]="priorite">
-                        <option>Haute</option>
-                        <option>Moyenne</option>
-                        <option>Basse</option>
-                    </select>
-                </div>
-                <div class="champ">
-                    <label>Echeance</label>
-                    <input type="date" [(ngModel)]="dateEcheance" />
-                </div>
+                <textarea [(ngModel)]="description" placeholder="Détails..."></textarea>
             </div>
             <div class="champ">
-                <label>Assigne a</label>
-                <input type="text" [(ngModel)]="assigneA" placeholder="Nom" />
+                <label>Échéance *</label>
+                <input type="date" [(ngModel)]="dueDate" />
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" (click)="showForm = false">Annuler</button>
