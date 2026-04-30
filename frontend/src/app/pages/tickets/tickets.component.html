@@ -5,13 +5,15 @@
                 <i class="fa-solid fa-ticket page-icon"></i>
                 Tickets Support
             </h1>
-            <p class="page-subtitle">Glissez les tickets entre les etapes du support</p>
+            <p class="page-subtitle">Glissez les tickets entre les étapes du support</p>
         </div>
         <div style="display:flex; align-items:center; gap:.75rem;">
-            <span class="total-badge">{{ crm.tickets.length }} tickets</span>
+            <span class="total-badge">{{ tickets.length }} tickets</span>
             <button class="btn-add" (click)="openForm()">+ Nouveau ticket</button>
         </div>
     </div>
+
+    <div class="toast" *ngIf="message" (click)="message = ''">{{ message }}</div>
 
     <div class="kanban">
         <div class="kanban-col" *ngFor="let col of columns" (dragover)="onDragOver($event)"
@@ -20,39 +22,49 @@
             <div class="kanban-col-header">
                 <span class="kanban-dot" [style.background]="col.color"></span>
                 <span class="kanban-col-title">{{ col.label }}</span>
-                <span class="kanban-count">{{ getByStatut(col.key).length }}</span>
+                <span class="kanban-count">{{ getByStatus(col.key).length }}</span>
             </div>
 
             <div class="kanban-cards">
-                <div class="kanban-card" *ngFor="let t of getByStatut(col.key)" draggable="true"
+                <div class="kanban-card" *ngFor="let t of getByStatus(col.key)" draggable="true"
                     (dragstart)="onDragStart(t)" (dragend)="onDragEnd()" [class.dragging]="draggedTicket === t">
 
                     <div class="card-top">
-                        <span class="card-title">{{ t.sujet }}</span>
-                        <span class="badge" [class]="t.priorite.toLowerCase()">{{ t.priorite }}</span>
+                        <span class="card-title">{{ t.title }}</span>
+                        <span class="badge"
+                            [style.background]="col.color + '25'"
+                            [style.color]="col.color">
+                            {{ col.label }}
+                        </span>
                     </div>
 
-                    <div class="card-meta">
-                        <span class="card-meta-item">
-                            <i class="fa-solid fa-building meta-icon"></i>
-                            {{ crm.getAccountName(t.accountId) }}
-                        </span>
-                        <span class="card-meta-item">
-                            <i class="fa-solid fa-user meta-icon"></i>
-                            {{ t.agent }}
-                        </span>
-                    </div>
+                    <p class="card-desc" *ngIf="t.description">{{ t.description }}</p>
 
                     <div class="card-meta">
                         <span class="card-meta-item">
                             <i class="fa-regular fa-calendar meta-icon"></i>
-                            {{ t.dateCreation }}
+                            {{ t.createdAt | date:'dd/MM/yyyy' }}
                         </span>
+                        <span class="card-meta-item" *ngIf="t.leadId">
+                            <i class="fa-solid fa-bullseye meta-icon"></i>
+                            Lead #{{ t.leadId }}
+                        </span>
+                    </div>
+
+                    <div class="card-bottom">
+                        <select class="statut-mini-select" [value]="t.status"
+                            (change)="changeStatus(t, $any($event.target).value)"
+                            (click)="$event.stopPropagation()">
+                            <option value="Open">Ouvert</option>
+                            <option value="Pending">En cours</option>
+                            <option value="Closed">Fermé</option>
+                        </select>
+                        <button class="btn-del" (click)="delete(t.id)" title="Supprimer">×</button>
                     </div>
                 </div>
 
-                <div class="kanban-empty" *ngIf="getByStatut(col.key).length === 0">
-                    Deposez un ticket ici
+                <div class="kanban-empty" *ngIf="getByStatus(col.key).length === 0">
+                    Déposez un ticket ici
                 </div>
             </div>
         </div>
@@ -62,28 +74,12 @@
         <div class="modal" (click)="$event.stopPropagation()">
             <h2>Nouveau ticket</h2>
             <div class="champ">
-                <label>Sujet</label>
-                <input type="text" [(ngModel)]="sujet" placeholder="Probleme..." />
-            </div>
-            <div class="row">
-                <div class="champ">
-                    <label>Priorite</label>
-                    <select [(ngModel)]="priorite">
-                        <option>Haute</option>
-                        <option>Moyenne</option>
-                        <option>Basse</option>
-                    </select>
-                </div>
-                <div class="champ">
-                    <label>Compte</label>
-                    <select [(ngModel)]="accountId">
-                        <option *ngFor="let a of crm.accounts" [ngValue]="a.id">{{ a.nom }}</option>
-                    </select>
-                </div>
+                <label>Titre *</label>
+                <input type="text" [(ngModel)]="title" placeholder="Description du problème..." />
             </div>
             <div class="champ">
-                <label>Agent</label>
-                <input type="text" [(ngModel)]="agent" placeholder="Nom" />
+                <label>Description</label>
+                <textarea [(ngModel)]="description" placeholder="Détails supplémentaires..."></textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" (click)="showForm = false">Annuler</button>

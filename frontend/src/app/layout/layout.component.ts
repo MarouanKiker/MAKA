@@ -77,6 +77,31 @@ export class LayoutComponent {
             path: '/journal', label: 'Journal Comptable', color: '#6ee7b7',
             icon: 'fa-solid fa-book-journal-whills', roles: ['ROLE_FINANCIER', 'ROLE_ADMIN']
         },
+        // --- RESSOURCES HUMAINES ---
+        {
+            path: '/espace-employe', label: 'Espace Employé', color: '#10b981',
+            icon: 'fa-solid fa-user-tie', roles: ['ROLE_EMPLOYE', 'ROLE_RH', 'ROLE_ADMIN']
+        },
+        {
+            path: '/hr-employes', label: 'Employés', color: '#ec4899',
+            icon: 'fa-solid fa-users', roles: ['ROLE_RH', 'ROLE_ADMIN']
+        },
+        {
+            path: '/hr-contrats', label: 'Contrats', color: '#d946ef',
+            icon: 'fa-solid fa-file-contract', roles: ['ROLE_RH', 'ROLE_ADMIN']
+        },
+        {
+            path: '/hr-conges', label: 'Congés', color: '#f472b6',
+            icon: 'fa-solid fa-calendar-check', roles: ['ROLE_RH', 'ROLE_ADMIN']
+        },
+        {
+            path: '/hr-paie', label: 'Fiches de Paie', color: '#be185d',
+            icon: 'fa-solid fa-money-check-dollar', roles: ['ROLE_RH', 'ROLE_ADMIN']
+        },
+        {
+            path: '/hr-reclamations', label: 'Réclamations', color: '#fb7185',
+            icon: 'fa-solid fa-comment-dots', roles: ['ROLE_RH', 'ROLE_ADMIN']
+        },
         // --- ADMIN ---
         {
             path: '/admin', label: 'Administration', color: '#fbbf24',
@@ -112,6 +137,8 @@ export class LayoutComponent {
                 this.currentModule = 'IA';
             } else if (url.includes('/factures') || url.includes('/paiements') || url.includes('/comptes-bancaires') || url.includes('/journal')) {
                 this.currentModule = 'FINANCE';
+            } else if (url.includes('/espace-employe') || url.includes('/hr-employes') || url.includes('/hr-contrats') || url.includes('/hr-conges') || url.includes('/hr-paie') || url.includes('/hr-reclamations')) {
+                this.currentModule = 'HR';
             } else if (url.includes('/admin')) {
                 this.currentModule = 'ADMIN';
             } else {
@@ -139,6 +166,8 @@ export class LayoutComponent {
             if (this.currentModule === 'IA' && !['/dashboard', '/intelligence'].includes(item.path)) return false;
             
             if (this.currentModule === 'FINANCE' && !['/dashboard', '/factures', '/paiements', '/comptes-bancaires', '/journal'].includes(item.path)) return false;
+
+            if (this.currentModule === 'HR' && !['/dashboard', '/espace-employe', '/hr-employes', '/hr-contrats', '/hr-conges', '/hr-paie', '/hr-reclamations'].includes(item.path)) return false;
 
             if (this.currentModule === 'ADMIN' && !['/dashboard', '/admin'].includes(item.path)) return false;
 

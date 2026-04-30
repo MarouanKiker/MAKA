@@ -1,0 +1,194 @@
+<div>
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fa-solid fa-users page-icon"></i>
+                Ressources Humaines
+            </h1>
+            <p class="page-subtitle">Gestion des employés, congés, fiches de paie et réclamations</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:.75rem;">
+            <button class="btn-add" (click)="showEmployeForm = true" *ngIf="activeTab === 'employes'">+ Nouvel employé</button>
+            <button class="btn-add" (click)="showCongeForm = true" *ngIf="activeTab === 'conges'">+ Nouvelle demande</button>
+            <button class="btn-add" (click)="showReclamationForm = true" *ngIf="activeTab === 'reclamations'">+ Nouvelle réclamation</button>
+        </div>
+    </div>
+
+    <!-- Alertes -->
+    <div class="alert danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+    <!-- Tabs navigation -->
+    <div class="maka-tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'employes'" (click)="setTab('employes')">Employés ({{ employes.length }})</button>
+        <button class="tab-btn" [class.active]="activeTab === 'conges'" (click)="setTab('conges')">Congés ({{ demandesConge.length }})</button>
+        <button class="tab-btn" [class.active]="activeTab === 'paie'" (click)="setTab('paie')">Fiches de Paie ({{ fichesDePaie.length }})</button>
+        <button class="tab-btn" [class.active]="activeTab === 'reclamations'" (click)="setTab('reclamations')">Réclamations ({{ reclamations.length }})</button>
+    </div>
+
+    <!-- Contenu des onglets -->
+    <div class="tab-content" style="margin-top: 1.5rem;">
+
+        <!-- ONGLET : EMPLOYES -->
+        <div *ngIf="activeTab === 'employes'">
+            <div class="card-grid">
+                <div class="item-card" *ngFor="let emp of employes">
+                    <div class="card-top">
+                        <span class="card-title">{{ emp.nom }}</span>
+                        <span class="badge nouvelle">Actif</span>
+                    </div>
+                    <div class="card-meta">
+                        <span class="card-meta-item"><i class="fa-solid fa-envelope"></i> {{ emp.email }}</span>
+                        <span class="card-meta-item"><i class="fa-solid fa-calendar"></i> Embauche: {{ emp.dateEmbauche | date:'shortDate' }}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-sm danger" (click)="deleteEmploye(emp.id)">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+            <div class="empty" *ngIf="employes.length === 0">Aucun employé trouvé.</div>
+        </div>
+
+        <!-- ONGLET : CONGES -->
+        <div *ngIf="activeTab === 'conges'">
+            <table class="maka-table" *ngIf="demandesConge.length > 0">
+                <thead>
+                    <tr>
+                        <th>Employé ID</th>
+                        <th>Date Début</th>
+                        <th>Date Fin</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let c of demandesConge">
+                        <td>ID: {{ c.employeId || c.employe?.id }}</td>
+                        <td>{{ c.dateDebut | date:'shortDate' }}</td>
+                        <td>{{ c.dateFin | date:'shortDate' }}</td>
+                        <td><span class="badge" [ngClass]="getStatutClass(c.statut)">{{ c.statut }}</span></td>
+                        <td>
+                            <button class="btn-sm" (click)="approuver(c.id)" *ngIf="c.statut === 'EN_ATTENTE'">Approuver</button>
+                            <button class="btn-sm danger" (click)="refuser(c.id)" *ngIf="c.statut === 'EN_ATTENTE'">Refuser</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty" *ngIf="demandesConge.length === 0">Aucune demande de congé.</div>
+        </div>
+
+        <!-- ONGLET : FICHES DE PAIE -->
+        <div *ngIf="activeTab === 'paie'">
+            <table class="maka-table" *ngIf="fichesDePaie.length > 0">
+                <thead>
+                    <tr>
+                        <th>Employé ID</th>
+                        <th>Période</th>
+                        <th>Salaire Brut</th>
+                        <th>Salaire Net</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let f of fichesDePaie">
+                        <td>ID: {{ f.employeId || f.employe?.id }}</td>
+                        <td>{{ getMoisLabel(f.mois) }} {{ f.annee }}</td>
+                        <td style="font-weight: 600;">{{ f.salaireBrut }} MAD</td>
+                        <td style="color: var(--success); font-weight: 700;">{{ f.salaireNet }} MAD</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty" *ngIf="fichesDePaie.length === 0">Aucune fiche de paie.</div>
+        </div>
+
+        <!-- ONGLET : RECLAMATIONS -->
+        <div *ngIf="activeTab === 'reclamations'">
+            <div class="card-grid">
+                <div class="item-card" *ngFor="let r of reclamations">
+                    <div class="card-top">
+                        <span class="card-title">Réclamation #{{ r.id }}</span>
+                        <span class="badge" [ngClass]="getStatutClass(r.statut)">{{ r.statut }}</span>
+                    </div>
+                    <div style="font-size:.8rem; margin-bottom:.5rem; color:var(--text-1);">
+                        {{ r.description }}
+                    </div>
+                    <div class="card-meta">
+                        <span class="card-meta-item"><i class="fa-solid fa-user"></i> Employé ID: {{ r.employeId || r.employe?.id }}</span>
+                        <span class="card-meta-item"><i class="fa-solid fa-calendar"></i> {{ r.dateCreation | date:'shortDate' }}</span>
+                    </div>
+                    <div class="card-actions" *ngIf="r.statut === 'EN_ATTENTE'">
+                        <button class="btn-sm" (click)="traiter(r.id)">Marquer comme traitée</button>
+                    </div>
+                </div>
+            </div>
+            <div class="empty" *ngIf="reclamations.length === 0">Aucune réclamation.</div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================= MODAUX ======================= -->
+
+<!-- Modal: Employé -->
+<div class="modal-overlay" *ngIf="showEmployeForm" (click)="showEmployeForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Nouvel employé</h2>
+        <div class="champ">
+            <label>Nom complet</label>
+            <input type="text" [(ngModel)]="newEmploye.nom" placeholder="Ex: Marouan Kiker" />
+        </div>
+        <div class="champ">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="newEmploye.email" placeholder="contact@maka.ma" />
+        </div>
+        <div class="champ">
+            <label>Date d'embauche</label>
+            <input type="date" [(ngModel)]="newEmploye.dateEmbauche" />
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="showEmployeForm = false">Annuler</button>
+            <button class="btn-save" (click)="saveEmploye()">Créer l'employé</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Congé -->
+<div class="modal-overlay" *ngIf="showCongeForm" (click)="showCongeForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Nouvelle demande de congé</h2>
+        <div class="champ">
+            <label>ID de l'employé</label>
+            <input type="number" [(ngModel)]="newConge.employeId" placeholder="ID de l'employé" />
+        </div>
+        <div class="row">
+            <div class="champ">
+                <label>Date de début</label>
+                <input type="date" [(ngModel)]="newConge.dateDebut" />
+            </div>
+            <div class="champ">
+                <label>Date de fin</label>
+                <input type="date" [(ngModel)]="newConge.dateFin" />
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="showCongeForm = false">Annuler</button>
+            <button class="btn-save" (click)="saveConge()">Soumettre</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Réclamation -->
+<div class="modal-overlay" *ngIf="showReclamationForm" (click)="showReclamationForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Nouvelle réclamation</h2>
+        <div class="champ">
+            <label>ID de l'employé</label>
+            <input type="number" [(ngModel)]="newReclamation.employeId" placeholder="ID de l'employé" />
+        </div>
+        <div class="champ">
+            <label>Description du problème</label>
+            <textarea [(ngModel)]="newReclamation.description" rows="3" placeholder="Expliquez la réclamation..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="showReclamationForm = false">Annuler</button>
+            <button class="btn-save" (click)="saveReclamation()">Envoyer</button>
+        </div>
+    </div>
+</div>

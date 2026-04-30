@@ -1,10 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CrmService } from '../../core/services/crm.service';
+import { Task, CreateTaskDto } from '../../core/models/crm.model';
 
-// composant pour gerer les taches
-// les taches sont affichees en kanban avec drag & drop
 @Component({
     selector: 'app-tasks',
     standalone: true,
@@ -12,97 +11,107 @@ import { CrmService } from '../../core/services/crm.service';
     templateUrl: './tasks.component.html',
     styleUrls: ['../shared/crm-page.scss', './tasks.component.scss']
 })
-export class TasksComponent {
+export class TasksComponent implements OnInit {
 
-    // afficher ou non le formulaire
+    tasks: Task[] = [];
     showForm = false;
+    message = '';
 
-    // champs du formulaire
-    titre = '';
+    // Champs du formulaire
+    title = '';
     description = '';
-    dateEcheance = '';
-    priorite = 'Moyenne';
-    assigneA = '';
+    dueDate = '';
+    leadId: number | null = null;
 
-    // colonnes du kanban
+    // Colonnes du kanban : false = à faire, true = terminée
     columns = [
-        { key: 'A_FAIRE', label: 'A faire', color: '#4a9eff' },
-        { key: 'EN_COURS', label: 'En cours', color: '#f5c748' },
-        { key: 'TERMINEE', label: 'Terminee', color: '#44d492' },
+        { key: false, label: 'À faire', color: '#4a9eff' },
+        { key: true, label: 'Terminée', color: '#44d492' },
     ];
 
-    // la tache qu'on glisse (drag & drop)
-    draggedTask: any = null;
+    draggedTask: Task | null = null;
 
-    constructor(public crm: CrmService) { }
+    constructor(private crm: CrmService) {}
 
-    // recuperer les taches d'un certain statut
-    getByStatut(statut: string): any[] {
-        let result = [];
-        for (let i = 0; i < this.crm.tasks.length; i++) {
-            if (this.crm.tasks[i].statut === statut) {
-                result.push(this.crm.tasks[i]);
+    ngOnInit(): void {
+        this.loadTasks();
+    }
+
+    loadTasks(): void {
+        this.crm.getTasks().subscribe({
+            next: (data) => this.tasks = data,
+            error: (err) => {
+                console.error('Erreur chargement tâches', err);
+                this.message = 'Erreur de chargement des tâches';
             }
-        }
-        return result;
-    }
-
-    // compter toutes les taches
-    countAll(): number {
-        return this.crm.tasks.length;
-    }
-
-    // ouvrir le formulaire d'ajout
-    openForm(): void {
-        this.titre = '';
-        this.description = '';
-        this.dateEcheance = '';
-        this.priorite = 'Moyenne';
-        this.assigneA = '';
-        this.showForm = true;
-    }
-
-    // sauvegarder une nouvelle tache
-    save(): void {
-        this.crm.addTask({
-            titre: this.titre,
-            description: this.description,
-            dateEcheance: this.dateEcheance,
-            priorite: this.priorite,
-            statut: 'A_FAIRE',
-            assigneA: this.assigneA
         });
-        this.showForm = false;
     }
 
-    // supprimer une tache
+    getByCompleted(isCompleted: boolean): Task[] {
+        return this.tasks.filter(t => t.isCompleted === isCompleted);
+    }
+
+    openForm(): void {
+        this.title = '';
+        this.description = '';
+        this.dueDate = new Date().toISOString().split('T')[0];
+        this.leadId = null;
+        this.showForm = true;
+        this.message = '';
+    }
+
+    save(): void {
+        if (!this.title) return;
+        const dto: CreateTaskDto = {
+            title: this.title,
+            description: this.description,
+            dueDate: new Date(this.dueDate).toISOString(),
+            leadId: this.leadId || null
+        };
+        this.crm.createTask(dto).subscribe({
+            next: (created) => {
+                this.tasks.push(created);
+                this.showForm = false;
+                this.message = 'Tâche créée !';
+            },
+            error: (err) => {
+                console.error('Erreur création tâche', err);
+                this.message = 'Erreur lors de la création';
+            }
+        });
+    }
+
+    toggleComplete(task: Task): void {
+        const newState = !task.isCompleted;
+        this.crm.updateTask(task.id, {
+            title: task.title,
+            description: task.description,
+            dueDate: task.dueDate,
+            isCompleted: newState
+        }).subscribe({
+            next: () => { task.isCompleted = newState; },
+            error: (err) => console.error('Erreur mise à jour tâche', err)
+        });
+    }
+
     delete(id: number): void {
-        this.crm.deleteTask(id);
+        this.crm.deleteTask(id).subscribe({
+            next: () => { this.tasks = this.tasks.filter(t => t.id !== id); },
+            error: (err) => console.error('Erreur suppression tâche', err)
+        });
     }
 
     // --- drag & drop ---
+    onDragStart(task: Task): void { this.draggedTask = task; }
+    onDragOver(event: DragEvent): void { event.preventDefault(); }
 
-    // debut du glisser
-    onDragStart(task: any): void {
-        this.draggedTask = task;
-    }
-
-    // autoriser le depot
-    onDragOver(event: DragEvent): void {
+    onDrop(event: DragEvent, isCompleted: boolean): void {
         event.preventDefault();
-    }
-
-    // deposer dans une colonne = changer le statut
-    onDrop(event: DragEvent, newStatut: string): void {
-        event.preventDefault();
-        if (this.draggedTask) {
-            this.draggedTask.statut = newStatut;
-            this.draggedTask = null;
+        if (this.draggedTask && this.draggedTask.isCompleted !== isCompleted) {
+            this.toggleComplete(this.draggedTask);
         }
-    }
-
-    // fin du glisser
-    onDragEnd(): void {
         this.draggedTask = null;
     }
+
+    onDragEnd(): void { this.draggedTask = null; }
 }

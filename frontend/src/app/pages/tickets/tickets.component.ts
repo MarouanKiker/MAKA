@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CrmService } from '../../core/services/crm.service';
+import { Ticket, CreateTicketDto } from '../../core/models/crm.model';
 
-// composant pour gerer les tickets de support
 @Component({
     selector: 'app-tickets',
     standalone: true,
@@ -11,91 +11,104 @@ import { CrmService } from '../../core/services/crm.service';
     templateUrl: './tickets.component.html',
     styleUrls: ['../shared/crm-page.scss', './tickets.component.scss']
 })
-export class TicketsComponent {
+export class TicketsComponent implements OnInit {
 
-    // afficher ou non le formulaire
+    tickets: Ticket[] = [];
     showForm = false;
+    message = '';
 
-    // champs du formulaire
-    sujet = '';
-    priorite = 'Moyenne';
-    accountId = 0;
-    agent = '';
+    // Champs du formulaire
+    title = '';
+    description = '';
+    leadId: number | null = null;
 
-    // colonnes du kanban
+    // Colonnes kanban : backend utilise 'Open', 'Pending', 'Closed'
     columns = [
-        { key: 'OUVERT', label: 'Ouvert', color: '#4a9eff' },
-        { key: 'EN_COURS', label: 'En cours', color: '#f5c748' },
-        { key: 'RESOLU', label: 'Resolu', color: '#44d492' },
-        { key: 'FERME', label: 'Ferme', color: '#9370ff' },
+        { key: 'Open', label: 'Ouvert', color: '#4a9eff' },
+        { key: 'Pending', label: 'En cours', color: '#f5c748' },
+        { key: 'Closed', label: 'Fermé', color: '#44d492' },
     ];
 
-    // le ticket qu'on glisse
-    draggedTicket: any = null;
+    draggedTicket: Ticket | null = null;
 
-    constructor(public crm: CrmService) { }
+    constructor(private crm: CrmService) {}
 
-    // recuperer les tickets d'un certain statut
-    getByStatut(statut: string): any[] {
-        let result = [];
-        for (let i = 0; i < this.crm.tickets.length; i++) {
-            if (this.crm.tickets[i].statut === statut) {
-                result.push(this.crm.tickets[i]);
+    ngOnInit(): void {
+        this.loadTickets();
+    }
+
+    loadTickets(): void {
+        this.crm.getTickets().subscribe({
+            next: (data) => this.tickets = data,
+            error: (err) => {
+                console.error('Erreur chargement tickets', err);
+                this.message = 'Erreur de chargement des tickets';
             }
-        }
-        return result;
-    }
-
-    // ouvrir le formulaire d'ajout
-    openForm(): void {
-        this.sujet = '';
-        this.priorite = 'Moyenne';
-        this.agent = '';
-        // prendre le premier compte par defaut
-        if (this.crm.accounts.length > 0) {
-            this.accountId = this.crm.accounts[0].id;
-        } else {
-            this.accountId = 0;
-        }
-        this.showForm = true;
-    }
-
-    // sauvegarder un nouveau ticket
-    save(): void {
-        this.crm.addTicket({
-            sujet: this.sujet,
-            statut: 'OUVERT',
-            priorite: this.priorite,
-            dateCreation: new Date().toISOString().split('T')[0],
-            accountId: this.accountId,
-            agent: this.agent
         });
-        this.showForm = false;
+    }
+
+    getByStatus(status: string): Ticket[] {
+        return this.tickets.filter(t => t.status === status);
+    }
+
+    openForm(): void {
+        this.title = '';
+        this.description = '';
+        this.leadId = null;
+        this.showForm = true;
+        this.message = '';
+    }
+
+    save(): void {
+        if (!this.title) return;
+        const dto: CreateTicketDto = {
+            title: this.title,
+            description: this.description,
+            status: 'Open',
+            leadId: this.leadId || null
+        };
+        this.crm.createTicket(dto).subscribe({
+            next: (created) => {
+                this.tickets.push(created);
+                this.showForm = false;
+                this.message = 'Ticket créé !';
+            },
+            error: (err) => {
+                console.error('Erreur création ticket', err);
+                this.message = 'Erreur lors de la création';
+            }
+        });
+    }
+
+    changeStatus(ticket: Ticket, newStatus: string): void {
+        const oldStatus = ticket.status;
+        ticket.status = newStatus; // optimiste
+        this.crm.updateTicket(ticket.id, { status: newStatus }).subscribe({
+            error: (err) => {
+                console.error('Erreur mise à jour ticket', err);
+                ticket.status = oldStatus; // revert
+            }
+        });
+    }
+
+    delete(id: number): void {
+        this.crm.deleteTicket(id).subscribe({
+            next: () => { this.tickets = this.tickets.filter(t => t.id !== id); },
+            error: (err) => console.error('Erreur suppression ticket', err)
+        });
     }
 
     // --- drag & drop ---
+    onDragStart(ticket: Ticket): void { this.draggedTicket = ticket; }
+    onDragOver(event: DragEvent): void { event.preventDefault(); }
 
-    // debut du glisser
-    onDragStart(ticket: any): void {
-        this.draggedTicket = ticket;
-    }
-
-    // autoriser le depot
-    onDragOver(event: DragEvent): void {
+    onDrop(event: DragEvent, status: string): void {
         event.preventDefault();
-    }
-
-    // deposer pour changer le statut
-    onDrop(event: DragEvent, statut: string): void {
-        event.preventDefault();
-        if (this.draggedTicket) {
-            this.draggedTicket.statut = statut;
-            this.draggedTicket = null;
+        if (this.draggedTicket && this.draggedTicket.status !== status) {
+            this.changeStatus(this.draggedTicket, status);
         }
-    }
-
-    // fin du glisser
-    onDragEnd(): void {
         this.draggedTicket = null;
     }
+
+    onDragEnd(): void { this.draggedTicket = null; }
 }

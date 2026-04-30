@@ -1,0 +1,77 @@
+<div class="page-header">
+    <div>
+        <h1><i class="fa-solid fa-file-contract page-icon"></i> Contrats</h1>
+        <p class="page-subtitle">Gestion des contrats de travail</p>
+    </div>
+    <button class="btn-add" (click)="showForm = true">
+        <i class="fa-solid fa-plus"></i> Nouveau contrat
+    </button>
+</div>
+
+<!-- Alertes -->
+<div class="alert danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+<div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+
+<!-- Liste des contrats -->
+<div class="card-grid">
+    <div class="item-card" *ngFor="let c of contrats">
+        <div class="card-top">
+            <span class="card-title">{{ c.employe?.nom || 'Employé #' + c.employeId }}</span>
+            <span class="badge" [ngClass]="getTypeClass(c.type)">{{ c.type }}</span>
+        </div>
+        <div class="card-meta">
+            <span class="card-meta-item"><i class="fa-solid fa-briefcase"></i> {{ c.poste }}</span>
+            <span class="card-meta-item"><i class="fa-solid fa-coins"></i> {{ c.salaireBrut }} MAD/mois</span>
+            <span class="card-meta-item"><i class="fa-solid fa-calendar"></i> Du {{ c.dateDebut | date:'dd/MM/yyyy' }}</span>
+            <span class="card-meta-item" *ngIf="c.dateFin"><i class="fa-solid fa-calendar-xmark"></i> Au {{ c.dateFin | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="card-actions">
+            <button class="btn-sm danger" (click)="deleteContrat(c.id)">Supprimer</button>
+        </div>
+    </div>
+</div>
+<div class="empty" *ngIf="contrats.length === 0">Aucun contrat. Créez un contrat pour pouvoir générer des fiches de paie.</div>
+
+<!-- Modal: Contrat -->
+<div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Nouveau contrat</h2>
+        <div class="champ">
+            <label>Employé</label>
+            <select [(ngModel)]="newContrat.employeId">
+                <option [ngValue]="undefined" disabled>-- Choisir un employé --</option>
+                <option *ngFor="let e of employes" [ngValue]="e.id">{{ e.nom }} ({{ e.email }})</option>
+            </select>
+        </div>
+        <div class="champ">
+            <label>Type de contrat</label>
+            <select [(ngModel)]="newContrat.type">
+                <option value="CDI">CDI</option>
+                <option value="CDD">CDD</option>
+                <option value="Stage">Stage</option>
+            </select>
+        </div>
+        <div class="champ">
+            <label>Poste</label>
+            <input type="text" [(ngModel)]="newContrat.poste" placeholder="Ex: Développeur Full Stack" />
+        </div>
+        <div class="champ">
+            <label>Salaire Brut (MAD/mois)</label>
+            <input type="number" [(ngModel)]="newContrat.salaireBrut" placeholder="Ex: 12000" />
+        </div>
+        <div class="row">
+            <div class="champ">
+                <label>Date de début</label>
+                <input type="date" [(ngModel)]="newContrat.dateDebut" />
+            </div>
+            <div class="champ">
+                <label>Date de fin (optionnel)</label>
+                <input type="date" [(ngModel)]="newContrat.dateFin" />
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="showForm = false">Annuler</button>
+            <button class="btn-save" (click)="saveContrat()">Créer le contrat</button>
+        </div>
+    </div>
+</div>
