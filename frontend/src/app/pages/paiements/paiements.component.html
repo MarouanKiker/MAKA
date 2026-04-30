@@ -1,7 +1,7 @@
 <div class="page-header">
     <div>
         <h1><i class="fa-solid fa-money-bill-wave page-icon"></i> Paiements</h1>
-        <span class="page-subtitle">Enregistrement des encaissements et reglements</span>
+        <span class="page-subtitle">Enregistrement des encaissements et règlements</span>
     </div>
     <button class="btn-add" (click)="openForm()">
         <i class="fa-solid fa-plus"></i> Nouveau paiement
@@ -13,25 +13,30 @@
 <!-- formulaire d'ajout -->
 <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
     <div class="modal-card" (click)="$event.stopPropagation()">
-        <h2>Nouveau paiement</h2>
+        <h2>Enregistrer un paiement</h2>
         <form (ngSubmit)="save()">
             <div class="form-group">
-                <label>Montant (MAD)</label>
-                <input type="number" [(ngModel)]="montant" name="montant" required min="1" />
-            </div>
-            <div class="form-group">
-                <label>Type</label>
-                <select [(ngModel)]="type" name="type">
-                    <option value="CLIENT">Client</option>
-                    <option value="FOURNISSEUR">Fournisseur</option>
+                <label>Facture concernée *</label>
+                <select [(ngModel)]="factureId" name="factureId" required>
+                    <option [ngValue]="null">-- Sélectionner une facture --</option>
+                    <option *ngFor="let f of factures" [ngValue]="f.id">
+                        {{ f.numero }} — Reste : {{ f.resteAPayer | number:'1.2-2' }} MAD
+                    </option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Facture liee (optionnel)</label>
-                <select [(ngModel)]="factureId" name="factureId">
-                    <option [ngValue]="null">-- Aucune --</option>
-                    <option *ngFor="let f of factures" [ngValue]="f.id">{{ f.numero }} ({{ f.montantTTC }} MAD)</option>
+                <label>Montant (MAD) *</label>
+                <input type="number" [(ngModel)]="montant" name="montant" required min="0.01" step="0.01" />
+            </div>
+            <div class="form-group">
+                <label>Mode de paiement *</label>
+                <select [(ngModel)]="modePaiement" name="modePaiement">
+                    <option *ngFor="let m of modesPaiement" [value]="m">{{ modeLabels[m] }}</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label>Référence de transaction (optionnel)</label>
+                <input type="text" [(ngModel)]="referenceTransaction" name="ref" placeholder="Ex: VIR-2026-0042" />
             </div>
             <div class="form-actions">
                 <button type="button" class="btn-cancel" (click)="showForm = false">Annuler</button>
@@ -48,29 +53,38 @@
             <tr>
                 <th>Date</th>
                 <th>Montant</th>
-                <th>Type</th>
+                <th>Mode</th>
+                <th>Référence</th>
                 <th>Facture</th>
+                <th>Statut</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             <tr *ngFor="let p of paiements">
-                <td>{{ p.date }}</td>
+                <td>{{ p.datePaiement | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td class="cell-main cell-amount">{{ p.montant | number:'1.2-2' }} MAD</td>
+                <td>{{ modeLabels[p.modePaiement] }}</td>
+                <td>{{ p.referenceTransaction || '-' }}</td>
+                <td>{{ getFactureNumero(p.factureId) }}</td>
                 <td>
-                    <span class="badge" [class.badge-client]="p.type === 'CLIENT'" [class.badge-fournisseur]="p.type === 'FOURNISSEUR'">
-                        {{ p.type }}
+                    <span class="badge" [style.background]="statutColors[p.statut]" [style.color]="'white'">
+                        {{ statutLabels[p.statut] }}
                     </span>
                 </td>
-                <td>{{ p.factureId ? getFactureNumero(p.factureId) : '-' }}</td>
-                <td>
-                    <button class="btn-icon delete" (click)="deletePaiement(p.id)" title="Supprimer">
-                        <i class="fa-solid fa-trash"></i>
+                <td class="cell-actions">
+                    <button class="btn-icon success" *ngIf="p.statut === 'EN_ATTENTE'"
+                        (click)="valider(p)" title="Valider">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button class="btn-icon danger" *ngIf="p.statut === 'EN_ATTENTE'"
+                        (click)="rejeter(p)" title="Rejeter">
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
                 </td>
             </tr>
-            <tr *ngIf="paiements.length === 0">
-                <td colspan="5" class="empty-row">Aucun paiement</td>
+            <tr *ngIf="paiements.length === 0 && !isLoading">
+                <td colspan="7" class="empty-row">Aucun paiement enregistré</td>
             </tr>
         </tbody>
     </table>

@@ -160,6 +160,56 @@ export const routes: Routes = [
                     });
                 }
             },
+            // --- ESPACE EMPLOYÉ (Self-Service) ---
+            {
+                path: 'espace-employe',
+                loadComponent: function () {
+                    return import('./pages/hr/espace-employe/espace-employe.component').then(function (m) {
+                        return m.EspaceEmployeComponent;
+                    });
+                }
+            },
+            // --- RESSOURCES HUMAINES ---
+            {
+                path: 'hr-employes',
+                loadComponent: function () {
+                    return import('./pages/hr/employes/employes.component').then(function (m) {
+                        return m.EmployesComponent;
+                    });
+                }
+            },
+            {
+                path: 'hr-contrats',
+                loadComponent: function () {
+                    return import('./pages/hr/contrats/contrats.component').then(function (m) {
+                        return m.ContratsComponent;
+                    });
+                }
+            },
+            {
+                path: 'hr-conges',
+                loadComponent: function () {
+                    return import('./pages/hr/conges/conges.component').then(function (m) {
+                        return m.CongesComponent;
+                    });
+                }
+            },
+            {
+                path: 'hr-paie',
+                loadComponent: function () {
+                    return import('./pages/hr/paie/paie.component').then(function (m) {
+                        return m.PaieComponent;
+                    });
+                }
+            },
+            {
+                path: 'hr-reclamations',
+                loadComponent: function () {
+                    return import('./pages/hr/reclamations/reclamations.component').then(function (m) {
+                        return m.ReclamationsComponent;
+                    });
+                }
+            },
             // redirection par defaut vers le dashboard
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]

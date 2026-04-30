@@ -59,6 +59,58 @@
             </div>
         </div>
 
+        <!-- HR Hub -->
+        <div class="hub-card" *ngIf="auth.hasRole('ROLE_RH') || auth.isAdmin()" (click)="goTo('/hr-employes')" style="--glow-color: #ec4899; --bg-grad: linear-gradient(135deg, #f43f5e, #be185d); --shadow-color: rgba(244, 63, 94, 0.4);">
+            <div class="hub-card-content">
+                <div class="hub-icon-wrapper">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h2 class="hub-title">Ressources Humaines</h2>
+                <div class="hub-desc">
+                    Gestion du personnel, pointages, conges, fiches de paie et requetes RH.
+                </div>
+                <div class="hub-stats">
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-user-tie"></i></span>
+                        <span class="hub-stat-label">Employes</span>
+                    </div>
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-plane-departure"></i></span>
+                        <span class="hub-stat-label">Conges</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hub-action">
+                Acceder <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </div>
+        <!-- Espace Employé Hub -->
+        <div class="hub-card" (click)="goTo('/espace-employe')" style="--glow-color: #10b981; --bg-grad: linear-gradient(135deg, #34d399, #059669); --shadow-color: rgba(16, 185, 129, 0.4);">
+            <div class="hub-card-content">
+                <div class="hub-icon-wrapper">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <h2 class="hub-title">Espace Employé</h2>
+                <div class="hub-desc">
+                    Portail self-service. Consultez vos fiches de paie, demandez des congés et contactez les RH.
+                </div>
+                <div class="hub-stats">
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-plane-departure"></i></span>
+                        <span class="hub-stat-label">Congés</span>
+                    </div>
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-money-check-dollar"></i></span>
+                        <span class="hub-stat-label">Paie</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hub-action">
+                Accéder à mon espace <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </div>
+
+
         <!-- IA Hub -->
         <div class="hub-card" (click)="goTo('/intelligence')" style="--glow-color: #22d3ee; --bg-grad: linear-gradient(135deg, #06b6d4, #3b82f6); --shadow-color: rgba(6, 182, 212, 0.4);">
             <div class="hub-card-content">
