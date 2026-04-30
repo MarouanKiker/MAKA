@@ -419,6 +419,75 @@
     box-shadow: 0 6px 20px rgba(var(--accent-rgb), .3);
 }
 
+/* ——— Search Box ——— */
+.search-box {
+    display: flex;
+    align-items: center;
+    background: var(--bg-2);
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-full);
+    padding: 0.45rem 1rem;
+    transition: all 0.2s ease;
+    width: 300px;
+}
+.search-box:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    background: var(--bg-1);
+}
+.search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    color: var(--text-1);
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+/* ——— Maka Table (Excel Style) ——— */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    animation: fadeInUp .4s ease .15s both;
+    margin-top: 1rem;
+}
+
+.maka-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-2);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+}
+
+.maka-table th, .maka-table td {
+    padding: .85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+    font-size: .8rem;
+    color: var(--text-1);
+}
+
+.maka-table th {
+    background: var(--bg-3);
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-size: .7rem;
+    position: sticky;
+    top: 0;
+}
+
+.maka-table tr:hover {
+    background: var(--bg-bright);
+}
+
+.maka-table tr:last-child td {
+    border-bottom: none;
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .page-header {

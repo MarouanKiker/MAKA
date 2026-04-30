@@ -1,4 +1,4 @@
-// donnees mock pour le module crm
+// Modèles CRM alignés avec les DTOs .NET du backend
 
 export interface Account {
     id: number;
@@ -19,20 +19,21 @@ export interface Contact {
 export interface Lead {
     id: number;
     source: string;
-    statut: number | string; // Enum: 'NOUVEAU', 'QUALIFIE', etc.
+    statut: string; // 'NOUVEAU', 'QUALIFIE', 'EN_COURS', 'CONVERTI', 'PERDU'
     score: number;
     dateCreation: string;
     campagneId: number | null;
-    opportunite?: Opportunity | null; 
+    opportunite?: Opportunity | null;
 }
 
 export interface Opportunity {
     id: number;
     titre: string;
     valeur: number;
-    statut: number | string; // Enum: 'NOUVELLE', 'EN_COURS', etc.
+    statut: string; // 'NOUVELLE', 'EN_COURS', 'GAGNEE', 'PERDUE'
     dateCloture: string;
     leadId: number;
+    leadSource?: string;
 }
 
 export interface Campaign {
@@ -44,54 +45,53 @@ export interface Campaign {
     leads?: Lead[];
 }
 
-export interface Account {
-    id: number;
-    nom: string;
-    email: string;
-    telephone: string;
-    responsable: string;
-}
-
-export interface Contact {
-    id: number;
-    nom: string;
-    type: string;
-    adresse: string;
-    accountId: number;
-}
-
+// Task : aligné avec TaskItem.cs du backend
 export interface Task {
     id: number;
-    titre: string;
+    title: string;
     description: string;
-    dateEcheance: string;
-    priorite: string;
-    statut: string;
-    assigneA: string;
+    dueDate: string;
+    isCompleted: boolean;
+    leadId?: number | null;
+    opportuniteId?: number | null;
 }
 
+export interface CreateTaskDto {
+    title: string;
+    description: string;
+    dueDate: string;
+    leadId?: number | null;
+    opportuniteId?: number | null;
+}
+
+// Ticket : aligné avec Ticket.cs du backend
 export interface Ticket {
     id: number;
-    sujet: string;
-    statut: string;
-    priorite: string;
-    dateCreation: string;
-    accountId: number;
-    agent: string;
+    title: string;
+    description: string;
+    status: string; // 'Open', 'Pending', 'Closed'
+    createdAt: string;
+    leadId?: number | null;
 }
 
-export interface Interaction {
-    id: number;
-    type: string;
-    dateInteraction: string;
-    contactId: number;
-    notes: string;
+export interface CreateTicketDto {
+    title: string;
+    description: string;
+    status?: string;
+    leadId?: number | null;
 }
 
+// Interaction : aligné avec Interaction.cs du backend
 export interface Interaction {
     id: number;
-    type: string;
-    dateInteraction: string;
-    contactId: number;
+    type: string; // 'Call', 'Email', 'Meeting'
     notes: string;
+    date: string;
+    leadId?: number | null;
+}
+
+export interface CreateInteractionDto {
+    type: string;
+    notes: string;
+    leadId?: number | null;
 }

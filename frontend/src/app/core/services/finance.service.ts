@@ -1,75 +1,121 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Facture, Paiement, CompteBancaire, JournalTransaction, FinanceStats } from '../models/finance.model';
+import {
+    Facture, FactureRequest,
+    Paiement, CreatePaiementRequest,
+    JournalTransaction, FinanceStats, StatutFacture,
+    CompteBancaire
+} from '../models/finance.model';
 import { environment } from '../../../environments/environment';
 
-// service qui gere les appels HTTP vers le backend Finance (Spring Boot)
+// Service qui gère les appels HTTP vers le backend Finance (Spring Boot)
+// Gateway Nginx: /api/finance/* → finance-service:6000/api/v1/*
 @Injectable({ providedIn: 'root' })
 export class FinanceService {
 
-    // url de base de l'api finance
     private api = environment.apiUrl + '/api/finance';
 
     constructor(private http: HttpClient) {}
 
-    // --- FACTURES ---
+    // =============================================
+    // FACTURES  →  /api/finance/factures
+    // =============================================
 
-    // recuperer toutes les factures
     getFactures(): Observable<Facture[]> {
-        return this.http.get<Facture[]>(this.api + '/factures');
+        return this.http.get<Facture[]>(`${this.api}/factures`);
     }
 
-    // creer une facture
-    createFacture(facture: Partial<Facture>): Observable<Facture> {
-        return this.http.post<Facture>(this.api + '/factures', facture);
+    getFacture(id: number): Observable<Facture> {
+        return this.http.get<Facture>(`${this.api}/factures/${id}`);
     }
 
-    // modifier une facture
-    updateFacture(id: number, facture: Partial<Facture>): Observable<Facture> {
-        return this.http.put<Facture>(this.api + '/factures/' + id, facture);
+    createFacture(request: FactureRequest): Observable<Facture> {
+        return this.http.post<Facture>(`${this.api}/factures`, request);
     }
 
-    // supprimer une facture
+    updateFacture(id: number, request: FactureRequest): Observable<Facture> {
+        return this.http.put<Facture>(`${this.api}/factures/${id}`, request);
+    }
+
+    changeStatutFacture(id: number, statut: StatutFacture): Observable<Facture> {
+        return this.http.patch<Facture>(`${this.api}/factures/${id}/statut`, { statut });
+    }
+
     deleteFacture(id: number): Observable<void> {
-        return this.http.delete<void>(this.api + '/factures/' + id);
+        return this.http.delete<void>(`${this.api}/factures/${id}`);
     }
 
-    // --- PAIEMENTS ---
+    // =============================================
+    // PAIEMENTS  →  /api/finance/paiements
+    // =============================================
 
     getPaiements(): Observable<Paiement[]> {
-        return this.http.get<Paiement[]>(this.api + '/paiements');
+        return this.http.get<Paiement[]>(`${this.api}/paiements`);
     }
 
-    createPaiement(paiement: Partial<Paiement>): Observable<Paiement> {
-        return this.http.post<Paiement>(this.api + '/paiements', paiement);
+    getPaiement(id: number): Observable<Paiement> {
+        return this.http.get<Paiement>(`${this.api}/paiements/${id}`);
     }
 
-    deletePaiement(id: number): Observable<void> {
-        return this.http.delete<void>(this.api + '/paiements/' + id);
+    getPaiementsByFacture(factureId: number): Observable<Paiement[]> {
+        return this.http.get<Paiement[]>(`${this.api}/paiements/facture/${factureId}`);
     }
 
-    // --- COMPTES BANCAIRES ---
-
-    getComptesBancaires(): Observable<CompteBancaire[]> {
-        return this.http.get<CompteBancaire[]>(this.api + '/comptes-bancaires');
+    createPaiement(request: CreatePaiementRequest): Observable<Paiement> {
+        return this.http.post<Paiement>(`${this.api}/paiements`, request);
     }
 
-    createCompteBancaire(compte: Partial<CompteBancaire>): Observable<CompteBancaire> {
-        return this.http.post<CompteBancaire>(this.api + '/comptes-bancaires', compte);
+    validerPaiement(id: number): Observable<Paiement> {
+        return this.http.patch<Paiement>(`${this.api}/paiements/${id}/valider`, {});
     }
 
-    deleteCompteBancaire(id: number): Observable<void> {
-        return this.http.delete<void>(this.api + '/comptes-bancaires/' + id);
+    rejeterPaiement(id: number): Observable<Paiement> {
+        return this.http.patch<Paiement>(`${this.api}/paiements/${id}/rejeter`, {});
     }
 
-    // --- JOURNAL ---
+    // =============================================
+    // JOURNAL  →  /api/finance/journal
+    // =============================================
 
     getJournal(): Observable<JournalTransaction[]> {
-        return this.http.get<JournalTransaction[]>(this.api + '/journal');
+        return this.http.get<JournalTransaction[]>(`${this.api}/journal`);
     }
 
     getStats(): Observable<FinanceStats> {
-        return this.http.get<FinanceStats>(this.api + '/journal/stats');
+        return this.http.get<FinanceStats>(`${this.api}/journal/stats`);
+    }
+
+    // =============================================
+    // COMPTES BANCAIRES (mock - pas de backend dédié)
+    // =============================================
+    private _comptes: CompteBancaire[] = [];
+
+    getComptesBancaires(): Observable<CompteBancaire[]> {
+        return new Observable(observer => {
+            observer.next(this._comptes);
+            observer.complete();
+        });
+    }
+
+    createCompteBancaire(compte: Partial<CompteBancaire>): Observable<CompteBancaire> {
+        return new Observable(observer => {
+            const newCompte: CompteBancaire = {
+                id: this._comptes.length + 1,
+                iban: compte.iban || '',
+                banque: compte.banque || ''
+            };
+            this._comptes.push(newCompte);
+            observer.next(newCompte);
+            observer.complete();
+        });
+    }
+
+    deleteCompteBancaire(id: number): Observable<void> {
+        return new Observable(observer => {
+            this._comptes = this._comptes.filter(c => c.id !== id);
+            observer.next();
+            observer.complete();
+        });
     }
 }

@@ -1,0 +1,190 @@
+<div class="page-header">
+    <div>
+        <h1><i class="fa-solid fa-user-tie page-icon"></i> Espace Employé</h1>
+        <p class="page-subtitle" *ngIf="monProfil">Bienvenue, {{ monProfil.nom }}</p>
+        <p class="page-subtitle" *ngIf="!monProfil">Portail en libre-service</p>
+    </div>
+</div>
+
+<div class="alert danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+<div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+
+<!-- Si profil non trouvé -->
+<div class="empty" *ngIf="!monProfil && !errorMsg">
+    Chargement de votre profil en cours...
+</div>
+
+<!-- Contenu principal -->
+<div *ngIf="monProfil">
+    
+    <!-- Résumé du Contrat Actif -->
+    <div class="card-grid" style="margin-bottom: 2rem;">
+        <div class="item-card" style="border-left: 4px solid var(--primary);">
+            <div class="card-top">
+                <span class="card-title">Mon Profil</span>
+                <span class="badge nouvelle" *ngIf="mesContrats.length > 0">{{ mesContrats[0].type }}</span>
+            </div>
+            <div class="card-meta">
+                <span class="card-meta-item"><i class="fa-solid fa-envelope"></i> {{ monProfil.email }}</span>
+                <span class="card-meta-item" *ngIf="mesContrats.length > 0"><i class="fa-solid fa-briefcase"></i> Poste : {{ mesContrats[0].poste }}</span>
+                <span class="card-meta-item"><i class="fa-solid fa-calendar"></i> Embauche : {{ monProfil.dateEmbauche | date:'dd/MM/yyyy' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation par Onglets (Style inspiré du CRM) -->
+    <div class="tabs" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
+        <button (click)="setTab('conges')" [class.active]="activeTab === 'conges'" style="background:none; border:none; padding:0.5rem 1rem; font-weight:600; cursor:pointer; color: var(--text-2);" [style.color]="activeTab === 'conges' ? 'var(--primary)' : ''" [style.borderBottom]="activeTab === 'conges' ? '2px solid var(--primary)' : 'none'">
+            <i class="fa-solid fa-calendar-check"></i> Mes Congés
+        </button>
+        <button (click)="setTab('fiches')" [class.active]="activeTab === 'fiches'" style="background:none; border:none; padding:0.5rem 1rem; font-weight:600; cursor:pointer; color: var(--text-2);" [style.color]="activeTab === 'fiches' ? 'var(--primary)' : ''" [style.borderBottom]="activeTab === 'fiches' ? '2px solid var(--primary)' : 'none'">
+            <i class="fa-solid fa-money-check-dollar"></i> Fiches de Paie
+        </button>
+        <button (click)="setTab('reclamations')" [class.active]="activeTab === 'reclamations'" style="background:none; border:none; padding:0.5rem 1rem; font-weight:600; cursor:pointer; color: var(--text-2);" [style.color]="activeTab === 'reclamations' ? 'var(--primary)' : ''" [style.borderBottom]="activeTab === 'reclamations' ? '2px solid var(--primary)' : 'none'">
+            <i class="fa-solid fa-comment-dots"></i> Réclamations
+        </button>
+    </div>
+
+    <!-- ONGLET : CONGÉS -->
+    <div *ngIf="activeTab === 'conges'">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Historique de mes congés</h3>
+            <button class="btn-add" (click)="showCongeForm = true">Demander un congé</button>
+        </div>
+        
+        <div class="table-container">
+            <table class="maka-table" *ngIf="mesConges.length > 0">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Date Début</th>
+                        <th>Date Fin</th>
+                        <th>État</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let c of mesConges">
+                        <td><strong>{{ c.type }}</strong></td>
+                        <td>{{ c.dateDebut | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ c.dateFin | date:'dd/MM/yyyy' }}</td>
+                        <td><span class="badge" [ngClass]="getStatutClass(c.etat)">{{ c.etat }}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" *ngIf="mesConges.length === 0">Vous n'avez soumis aucune demande de congé.</div>
+    </div>
+
+    <!-- ONGLET : FICHES DE PAIE -->
+    <div *ngIf="activeTab === 'fiches'">
+        <h3 style="margin-bottom: 1rem;">Mes fiches de paie</h3>
+        <div class="table-container">
+            <table class="maka-table" *ngIf="mesFiches.length > 0">
+                <thead>
+                    <tr>
+                        <th>Période</th>
+                        <th>Salaire Brut</th>
+                        <th>Cotisations</th>
+                        <th>Salaire Net</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let f of mesFiches">
+                        <td><strong>{{ getMoisLabel(f.mois) }} {{ f.annee }}</strong></td>
+                        <td>{{ f.salaireBrut | number:'1.2-2' }} MAD</td>
+                        <td style="color:var(--danger);">-{{ f.cotisations | number:'1.2-2' }} MAD</td>
+                        <td style="color:var(--success); font-weight:700;">{{ f.salaireNet | number:'1.2-2' }} MAD</td>
+                        <td><button class="btn-sm" style="background: var(--bg-3); color: var(--text-1);"><i class="fa-solid fa-download"></i> PDF</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" *ngIf="mesFiches.length === 0">Aucune fiche de paie disponible.</div>
+    </div>
+
+    <!-- ONGLET : RÉCLAMATIONS -->
+    <div *ngIf="activeTab === 'reclamations'">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Mes réclamations / communications RH</h3>
+            <button class="btn-add" (click)="showReclamationForm = true">Envoyer un message</button>
+        </div>
+        
+        <div class="card-grid">
+            <div class="item-card" *ngFor="let r of mesReclamations">
+                <div class="card-top">
+                    <span class="card-title">{{ r.sujet }}</span>
+                    <span class="badge" [ngClass]="getStatutClass(r.statut)">{{ r.statut }}</span>
+                </div>
+                <div style="font-size:.8rem; margin-bottom:.5rem; color:var(--text-1);">
+                    {{ r.description }}
+                </div>
+                <div class="card-meta" style="margin-bottom: 0.5rem;">
+                    <span class="card-meta-item"><i class="fa-solid fa-calendar"></i> {{ r.dateEnvoi | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <!-- Réponse RH -->
+                <div *ngIf="r.reponseRH" style="padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; border-radius: 4px; font-size: 0.85rem;">
+                    <strong style="color: #3b82f6; display: block; margin-bottom: 0.25rem;"><i class="fa-solid fa-reply"></i> Réponse RH :</strong>
+                    {{ r.reponseRH }}
+                </div>
+            </div>
+        </div>
+        <div class="empty" *ngIf="mesReclamations.length === 0">Aucune réclamation envoyée.</div>
+    </div>
+
+</div> <!-- Fin if monProfil -->
+
+
+<!-- MODALS -->
+
+<!-- Modal: Demande de Congé -->
+<div class="modal-overlay" *ngIf="showCongeForm" (click)="showCongeForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Demander un congé</h2>
+        <div class="champ">
+            <label>Type de congé</label>
+            <select [(ngModel)]="newConge.type">
+                <option value="CP">Congé Payé</option>
+                <option value="Maladie">Congé Maladie</option>
+                <option value="RTT">Récupération (RTT)</option>
+            </select>
+        </div>
+        <div class="row">
+            <div class="champ">
+                <label>Date de début</label>
+                <input type="date" [(ngModel)]="newConge.dateDebut" />
+            </div>
+            <div class="champ">
+                <label>Date de fin</label>
+                <input type="date" [(ngModel)]="newConge.dateFin" />
+            </div>
+        </div>
+        <div class="champ">
+            <label>Motif (optionnel)</label>
+            <textarea [(ngModel)]="newConge.motif" rows="2" placeholder="Raison de la demande..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="showCongeForm = false">Annuler</button>
+            <button class="btn-save" (click)="soumettreConge()">Soumettre au RH</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Réclamation -->
+<div class="modal-overlay" *ngIf="showReclamationForm" (click)="showReclamationForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Contacter les Ressources Humaines</h2>
+        <div class="champ">
+            <label>Sujet</label>
+            <input type="text" [(ngModel)]="newReclamation.sujet" placeholder="Ex: Problème de fiche de paie" />
+        </div>
+        <div class="champ">
+            <label>Description</label>
+            <textarea [(ngModel)]="newReclamation.description" rows="4" placeholder="Expliquez votre situation..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="showReclamationForm = false">Annuler</button>
+            <button class="btn-save" (click)="soumettreReclamation()">Envoyer au RH</button>
+        </div>
+    </div>
+</div>

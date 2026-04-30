@@ -1,0 +1,43 @@
+<div class="page-header">
+    <div>
+        <h1><i class="fa-solid fa-users page-icon"></i> Employés</h1>
+        <p class="page-subtitle">Liste des employés enregistrés dans le système</p>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="search-box">
+            <i class="fa-solid fa-search" style="color:var(--text-2); margin-right:8px;"></i>
+            <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher (Nom, Email, ID)..." style="border:none; background:transparent; outline:none; color:var(--text-1);" />
+        </div>
+        <button class="btn-add" (click)="exportExcel()" style="background:var(--success); color:white;">
+            <i class="fa-solid fa-file-excel"></i> Exporter
+        </button>
+    </div>
+</div>
+
+<!-- Alertes -->
+<div class="alert danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+<!-- Liste des employés (Format Excel / Table) -->
+<div class="table-container">
+    <table class="maka-table" *ngIf="filteredEmployes.length > 0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom Complet</th>
+                <th>Email</th>
+                <th>Date d'Embauche</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let emp of filteredEmployes">
+                <td><strong>#{{ emp.id }}</strong></td>
+                <td>{{ emp.nom }}</td>
+                <td><i class="fa-solid fa-envelope" style="color:var(--text-2); margin-right:5px;"></i> {{ emp.email }}</td>
+                <td>{{ emp.dateEmbauche | date:'dd/MM/yyyy' }}</td>
+                <td><span class="badge nouvelle">Actif</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="empty" *ngIf="filteredEmployes.length === 0">Aucun employé trouvé.</div>
