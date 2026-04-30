@@ -14,3 +14,11 @@ lexik_jwt_authentication:
     pass_phrase: '%env(JWT_PASSPHRASE)%'
     token_ttl: 3600
     user_id_claim: email   # <-- Remplace user_identity_field par user_id_claim
+    token_extractors:
+        authorization_header:
+            enabled: true
+            prefix: Bearer
+            name: Authorization
+        cookie:
+            enabled: true
+            name: maka_jwt

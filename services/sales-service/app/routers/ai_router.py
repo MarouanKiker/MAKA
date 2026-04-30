@@ -1,35 +1,88 @@
-from fastapi import APIRouter
-from app.schemas import ChatRequest, ChatResponse
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.schemas import ChatRequest, LeadScoreRequest, LeadBatchRequest
 from app.ai.chatbot import chat
 from app.ai.forecaster import generer_forecast, generer_kpis, generer_insights
+from app.ai.lead_scoring import entrainer_modele, scorer_lead, scorer_leads_batch
+from app.ai.segmentation import segmenter_clients
 
 # ============================================================
 # Router IA — Endpoints pour le module MAKA Intelligence
+# Inclut : Chatbot RAG, Forecast, Lead Scoring, Segmentation
 # ============================================================
 
 router = APIRouter(prefix="/api/sales/ai", tags=["Intelligence IA"])
 
 
+# --- CHATBOT RAG ---
+
 @router.post("/chat")
-async def chatbot(req: ChatRequest):
-    """chatbot IA — pose une question sur l'ERP"""
-    result = await chat(req.message)
+async def chatbot(req: ChatRequest, db: Session = Depends(get_db)):
+    """chatbot IA avec RAG — interroge la BDD puis repond avec les vrais chiffres"""
+    result = await chat(req.message, db)
     return result
 
 
+# --- FORECASTING ---
+
 @router.get("/forecast")
-async def forecast():
-    """prevision des ventes (regression lineaire)"""
-    return generer_forecast()
+def forecast(db: Session = Depends(get_db)):
+    """prevision des ventes (Gradient Boosting sur donnees BDD)"""
+    return generer_forecast(db)
 
 
 @router.get("/kpis")
-async def kpis():
-    """KPI intelligents avec predictions"""
-    return generer_kpis()
+def kpis(db: Session = Depends(get_db)):
+    """KPI calcules dynamiquement depuis la BDD"""
+    return generer_kpis(db)
 
 
 @router.get("/insights")
-async def insights():
-    """recommandations et insights generes par l'IA"""
-    return generer_insights()
+def insights(db: Session = Depends(get_db)):
+    """recommandations generees par analyse des donnees reelles"""
+    return generer_insights(db)
+
+
+# --- LEAD SCORING (ML) ---
+
+@router.post("/lead-score")
+def lead_score(req: LeadScoreRequest):
+    """
+    Predit le score de conversion d'un lead (0 a 100).
+    Utilise un RandomForest entraine sur l'historique.
+    """
+    return scorer_lead(
+        source=req.source,
+        nb_interactions=req.nb_interactions,
+        anciennete_jours=req.anciennete_jours,
+        montant_estime=req.montant_estime,
+        priorite=req.priorite,
+    )
+
+
+@router.post("/lead-score/batch")
+def lead_score_batch(req: LeadBatchRequest):
+    """score plusieurs leads d'un coup"""
+    leads = [lead.model_dump() for lead in req.leads]
+    return scorer_leads_batch(leads)
+
+
+@router.post("/lead-score/train")
+def train_model():
+    """
+    Re-entraine le modele de lead scoring.
+    Retourne les metriques (accuracy, importance des features).
+    """
+    return entrainer_modele()
+
+
+# --- SEGMENTATION CLIENTS (K-MEANS) ---
+
+@router.get("/segmentation")
+def segmentation(db: Session = Depends(get_db)):
+    """
+    Segmente automatiquement les clients en groupes (VIP, Regulier, etc.)
+    avec K-Means clustering sur les donnees de ventes reelles.
+    """
+    return segmenter_clients(db)

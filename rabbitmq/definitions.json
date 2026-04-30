@@ -29,16 +29,18 @@
       "auto_delete": false,
       "internal": false,
       "arguments": {}
+    },
+    {
+      "name": "finance.exchange",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
     }
   ],
   "queues": [
-    {
-      "name": "stock.commande.validee",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    },
     {
       "name": "finance.vente.conclue",
       "vhost": "/",
@@ -47,14 +49,14 @@
       "arguments": {}
     },
     {
-      "name": "finance.paie.calculee",
+      "name": "finance.invoices",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "crm.stock.alerte",
+      "name": "finance.payments",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -68,7 +70,28 @@
       "arguments": {}
     },
     {
+      "name": "stock.commande.validee",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "crm.stock.alerte",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "stock.rupture",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "finance.paie.calculee",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -79,33 +102,9 @@
     {
       "source": "maka.events",
       "vhost": "/",
-      "destination": "stock.commande.validee",
-      "destination_type": "queue",
-      "routing_key": "stock.commande.validee",
-      "arguments": {}
-    },
-    {
-      "source": "maka.events",
-      "vhost": "/",
       "destination": "finance.vente.conclue",
       "destination_type": "queue",
       "routing_key": "finance.vente.conclue",
-      "arguments": {}
-    },
-    {
-      "source": "maka.events",
-      "vhost": "/",
-      "destination": "finance.paie.calculee",
-      "destination_type": "queue",
-      "routing_key": "finance.paie.calculee",
-      "arguments": {}
-    },
-    {
-      "source": "maka.events",
-      "vhost": "/",
-      "destination": "crm.stock.alerte",
-      "destination_type": "queue",
-      "routing_key": "crm.stock.alerte",
       "arguments": {}
     },
     {
@@ -119,9 +118,49 @@
     {
       "source": "maka.events",
       "vhost": "/",
+      "destination": "stock.commande.validee",
+      "destination_type": "queue",
+      "routing_key": "stock.commande.validee",
+      "arguments": {}
+    },
+    {
+      "source": "maka.events",
+      "vhost": "/",
+      "destination": "crm.stock.alerte",
+      "destination_type": "queue",
+      "routing_key": "crm.stock.alerte",
+      "arguments": {}
+    },
+    {
+      "source": "maka.events",
+      "vhost": "/",
       "destination": "stock.rupture",
       "destination_type": "queue",
       "routing_key": "stock.rupture",
+      "arguments": {}
+    },
+    {
+      "source": "maka.events",
+      "vhost": "/",
+      "destination": "finance.paie.calculee",
+      "destination_type": "queue",
+      "routing_key": "finance.paie.calculee",
+      "arguments": {}
+    },
+    {
+      "source": "finance.exchange",
+      "vhost": "/",
+      "destination": "finance.invoices",
+      "destination_type": "queue",
+      "routing_key": "invoice.*",
+      "arguments": {}
+    },
+    {
+      "source": "finance.exchange",
+      "vhost": "/",
+      "destination": "finance.payments",
+      "destination_type": "queue",
+      "routing_key": "payment.*",
       "arguments": {}
     }
   ]

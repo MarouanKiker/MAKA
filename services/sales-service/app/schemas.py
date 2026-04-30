@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 # ============================================================
@@ -71,3 +71,19 @@ class InsightItem(BaseModel):
     icone: str
     texte: str
     type: str  # "success", "warning", "info"
+
+# --- Lead Scoring ---
+class LeadScoreRequest(BaseModel):
+    source: int = 0         # 0=Site Web, 1=LinkedIn, 2=Salon, 3=Recommandation, 4=Cold Call, 5=Email
+    nb_interactions: int = 0
+    anciennete_jours: int = 30
+    montant_estime: float = 10000
+    priorite: int = 3       # 1 (basse) a 5 (haute)
+
+class LeadScoreResponse(BaseModel):
+    score: float
+    niveau: str
+    probabilite_conversion: float
+
+class LeadBatchRequest(BaseModel):
+    leads: List[LeadScoreRequest]
