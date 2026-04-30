@@ -9,7 +9,7 @@ from app.routers import ai_router, sales_router
 app = FastAPI(
     title="MAKA ERP — Sales & Intelligence",
     description="Service de gestion des ventes et module IA de MAKA ERP",
-    version="1.0.0",
+    version="2.0.0",
 )
 
 # NOTE: Le middleware CORS est retire d'ici car la Gateway Nginx 
@@ -28,6 +28,21 @@ for i in range(5):
 else:
     print("La base de donnees n'a pas pu etre contactee.")
 
+# generer les donnees de demonstration (si la base est vide)
+try:
+    from app.seed import generer_donnees_demo
+    generer_donnees_demo()
+except Exception as e:
+    print(f"Seed data non genere: {e}")
+
+# pre-entrainer le modele de lead scoring au demarrage
+try:
+    from app.ai.lead_scoring import entrainer_modele
+    resultat = entrainer_modele()
+    print(f"Modele Lead Scoring entraine (accuracy: {resultat['accuracy']}%)")
+except Exception as e:
+    print(f"Lead Scoring non entraine: {e}")
+
 # enregistrer les routers
 app.include_router(sales_router.router)
 app.include_router(ai_router.router)
@@ -37,10 +52,20 @@ app.include_router(ai_router.router)
 def root():
     return {
         "service": "MAKA ERP — Sales & Intelligence",
-        "version": "1.0.0",
-        "endpoints": {
-            "ventes": "/api/sales/",
-            "intelligence_ia": "/api/sales/ai/",
-            "documentation": "/docs"
+        "version": "2.0.0",
+        "modules_ia": {
+            "chatbot_rag": "/api/sales/ai/chat",
+            "lead_scoring": "/api/sales/ai/lead-score",
+            "segmentation": "/api/sales/ai/segmentation",
+            "forecast": "/api/sales/ai/forecast",
+            "kpis": "/api/sales/ai/kpis",
+            "insights": "/api/sales/ai/insights",
+        },
+        "endpoints_ventes": {
+            "produits": "/api/sales/produits",
+            "devis": "/api/sales/devis",
+            "commandes_vente": "/api/sales/commandes-vente",
+            "commandes_achat": "/api/sales/commandes-achat",
+            "documentation": "/docs",
         }
     }
