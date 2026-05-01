@@ -18,8 +18,9 @@ namespace CrmService.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .UseIdentityByDefaultColumns();
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("CrmService.Models.CampagneMarketing", b =>
             {
@@ -33,6 +34,99 @@ namespace CrmService.Migrations
                 b.Property<string>("Nom").IsRequired().HasMaxLength(200).HasColumnType("character varying(200)");
                 b.HasKey("Id");
                 b.ToTable("campagnes_marketing", (string)null);
+            });
+
+            modelBuilder.Entity("CrmService.Models.Compte", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
+
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                b.Property<string>("Adresse")
+                    .HasMaxLength(500)
+                    .HasColumnType("character varying(500)");
+
+                b.Property<DateTime>("DateCreation")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("NOW()");
+
+                b.Property<string>("Email")
+                    .HasMaxLength(180)
+                    .HasColumnType("character varying(180)");
+
+                b.Property<string>("Nom")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
+
+                b.Property<string>("SecteurActivite")
+                    .HasMaxLength(150)
+                    .HasColumnType("character varying(150)");
+
+                b.Property<string>("Telephone")
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
+
+                b.HasKey("Id");
+
+                b.HasIndex("Nom");
+
+                b.ToTable("comptes", (string)null);
+            });
+
+            modelBuilder.Entity("CrmService.Models.Contact", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
+
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                b.Property<string>("Adresse")
+                    .HasMaxLength(300)
+                    .HasColumnType("character varying(300)");
+
+                b.Property<int>("CompteId")
+                    .HasColumnType("integer");
+
+                b.Property<DateTime>("DateCreation")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("NOW()");
+
+                b.Property<string>("Email")
+                    .HasMaxLength(180)
+                    .HasColumnType("character varying(180)");
+
+                b.Property<string>("Nom")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("character varying(100)");
+
+                b.Property<string>("Prenom")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("character varying(100)");
+
+                b.Property<string>("Telephone")
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
+
+                b.Property<string>("Type")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasMaxLength(50)
+                    .HasColumnType("character varying(50)")
+                    .HasDefaultValue("Autre");
+
+                b.HasKey("Id");
+
+                b.HasIndex("CompteId");
+
+                b.ToTable("contacts", (string)null);
             });
 
             modelBuilder.Entity("CrmService.Models.Lead", b =>
@@ -69,6 +163,17 @@ namespace CrmService.Migrations
                 b.HasKey("Id");
                 b.HasIndex("LeadId").IsUnique();
                 b.ToTable("opportunites", (string)null);
+            });
+
+            modelBuilder.Entity("CrmService.Models.Contact", b =>
+            {
+                b.HasOne("CrmService.Models.Compte", "Compte")
+                    .WithMany("Contacts")
+                    .HasForeignKey("CompteId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Compte");
             });
 
             modelBuilder.Entity("CrmService.Models.TaskItem", b =>
@@ -179,14 +284,19 @@ namespace CrmService.Migrations
             });
 
             modelBuilder.Entity("CrmService.Models.CampagneMarketing", b =>
-            {
-                b.Navigation("Leads");
-            });
+                {
+                    b.Navigation("Leads");
+                });
+
+            modelBuilder.Entity("CrmService.Models.Compte", b =>
+                {
+                    b.Navigation("Contacts");
+                });
 
             modelBuilder.Entity("CrmService.Models.Lead", b =>
-            {
-                b.Navigation("Opportunite");
-            });
+                {
+                    b.Navigation("Opportunite");
+                });
 #pragma warning restore 612, 618
         }
     }

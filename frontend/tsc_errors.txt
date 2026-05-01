@@ -1,0 +1,12 @@
+﻿src/app/pages/dashboard/dashboard.component.ts(57,22): error TS2339: Property 'accounts' does not exist on type 'CrmService'.
+src/app/pages/dashboard/dashboard.component.ts(58,22): error TS2339: Property 'contacts' does not exist on type 'CrmService'.
+src/app/pages/dashboard/dashboard.component.ts(67,79): error TS2339: Property 'accounts' does not exist on type 'CrmService'.
+src/app/pages/dashboard/dashboard.component.ts(67,161): error TS2339: Property 'accounts' does not exist on type 'CrmService'.
+src/app/pages/dashboard/dashboard.component.ts(68,84): error TS2339: Property 'contacts' does not exist on type 'CrmService'.
+src/app/pages/dashboard/dashboard.component.ts(68,167): error TS2339: Property 'contacts' does not exist on type 'CrmService'.
+src/app/pages/leads/leads.component.ts(76,18): error TS2554: Expected 3 arguments, but got 1.
+src/app/pages/opportunities/opportunities.component.ts(68,21): error TS2353: Object literal may only specify known properties, and 'nom' does not exist in type 'Partial<Opportunity>'.
+src/app/pages/opportunities/opportunities.component.ts(68,37): error TS2339: Property 'nom' does not exist on type 'Opportunity'.
+src/app/pages/opportunities/opportunities.component.ts(69,41): error TS2339: Property 'montant' does not exist on type 'Opportunity'.
+src/app/pages/tickets/tickets.component.ts(55,22): error TS2339: Property 'accounts' does not exist on type 'CrmService'.
+src/app/pages/tickets/tickets.component.ts(56,39): error TS2339: Property 'accounts' does not exist on type 'CrmService'.

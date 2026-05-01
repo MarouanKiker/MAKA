@@ -5,6 +5,7 @@ import { CrmService } from '../../core/services/crm.service';
 import { Lead, Opportunity } from '../../core/models/crm.model';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 @Component({
     selector: 'app-dashboard',
@@ -23,6 +24,8 @@ export class DashboardComponent implements OnInit {
 
     leads: Lead[] = [];
     opportunities: Opportunity[] = [];
+    nbAccounts = 0;
+    nbContacts = 0;
 
     constructor(public auth: AuthService, public crm: CrmService, private router: Router) {
         let user = this.auth.getUser();
@@ -39,32 +42,36 @@ export class DashboardComponent implements OnInit {
 
     ngOnInit(): void {
         forkJoin({
-            leads: this.crm.getLeads(),
-            opps: this.crm.getOpportunities()
+            leads: this.crm.getLeads().pipe(catchError(() => of([]))),
+            opps:  this.crm.getOpportunities().pipe(catchError(() => of([]))),
+            accounts: this.crm.getAccounts(undefined, 1, 1).pipe(catchError(() => of({ total: 0, data: [], page: 1, pageSize: 1, totalPages: 1 }))),
+            contacts: this.crm.getContacts().pipe(catchError(() => of([])))
         }).subscribe({
             next: (data) => {
-                this.leads = data.leads;
-                this.opportunities = data.opps;
-                
+                this.leads        = data.leads as Lead[];
+                this.opportunities = data.opps as Opportunity[];
+                this.nbAccounts   = (data.accounts as any).total ?? 0;
+                this.nbContacts   = (data.contacts as any[]).length ?? 0;
+
                 this.buildStats();
                 this.buildPipeline();
             },
-            error: (err) => console.error('Erreur forcJoin dashboard', err)
+            error: (err) => console.error('Erreur forkJoin dashboard', err)
         });
     }
 
     buildStats(): void {
         let max = Math.max(
-            this.crm.accounts.length,
-            this.crm.contacts.length,
+            this.nbAccounts,
+            this.nbContacts,
             this.leads.length,
             this.opportunities.length,
             1
         );
 
         this.stats = [
-            { icon: 'fa-solid fa-building', label: 'Comptes', value: this.crm.accounts.length, bg: 'rgba(96,165,250,.12)', color: '#60a5fa', percent: (this.crm.accounts.length / max) * 100 },
-            { icon: 'fa-solid fa-address-book', label: 'Contacts', value: this.crm.contacts.length, bg: 'rgba(167,139,250,.12)', color: '#a78bfa', percent: (this.crm.contacts.length / max) * 100 },
+            { icon: 'fa-solid fa-building', label: 'Comptes', value: this.nbAccounts, bg: 'rgba(96,165,250,.12)', color: '#60a5fa', percent: (this.nbAccounts / max) * 100 },
+            { icon: 'fa-solid fa-address-book', label: 'Contacts', value: this.nbContacts, bg: 'rgba(167,139,250,.12)', color: '#a78bfa', percent: (this.nbContacts / max) * 100 },
             { icon: 'fa-solid fa-bullseye', label: 'Leads', value: this.leads.length, bg: 'rgba(251,191,36,.12)', color: '#fbbf24', percent: (this.leads.length / max) * 100 },
             { icon: 'fa-solid fa-arrow-trend-up', label: 'Opportunites', value: this.opportunities.length, bg: 'rgba(52,211,153,.12)', color: '#34d399', percent: (this.opportunities.length / max) * 100 },
         ];
@@ -80,10 +87,10 @@ export class DashboardComponent implements OnInit {
 
         for (let i = 0; i < this.opportunities.length; i++) {
             let opp = this.opportunities[i];
-            if (opp.statut === 'NOUVELLE') nbNouvelle++;
-            if (opp.statut === 'EN_COURS') nbEnCours++;
-            if (opp.statut === 'GAGNEE') nbGagnee++;
-            if (opp.statut === 'PERDUE') nbPerdue++;
+            if (opp.statut === 0) nbNouvelle++;
+            if (opp.statut === 1) nbEnCours++;
+            if (opp.statut === 2) nbGagnee++;
+            if (opp.statut === 3) nbPerdue++;
         }
 
         this.pipeline = [

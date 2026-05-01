@@ -1,11 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
-    Lead, Opportunity, Campaign, Account, Contact,
-    Task, CreateTaskDto,
-    Ticket, CreateTicketDto,
-    Interaction, CreateInteractionDto
+  Lead, Opportunity, Campaign, Account, Contact,
+  Task, CreateTaskDto,
+  Ticket, CreateTicketDto,
+  Interaction, CreateInteractionDto,
+  CreateAccountPayload, PaginatedAccounts,
+  CreateContactPayload
 } from '../models/crm.model';
 import { environment } from '../../../environments/environment';
 
@@ -13,6 +15,33 @@ import { environment } from '../../../environments/environment';
 export class CrmService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.apiUrl}/api/crm`;
+
+    // ==========================================================
+    // COMPTES (Accounts) — API réelle
+    // ==========================================================
+    getAccounts(search?: string, page = 1, pageSize = 10): Observable<PaginatedAccounts> {
+        let params = new HttpParams().set('page', page).set('pageSize', pageSize);
+        if (search) params = params.set('search', search);
+        return this.http.get<PaginatedAccounts>(`${this.apiUrl}/accounts`, { params });
+    }
+    getAccount(id: number): Observable<Account> { return this.http.get<Account>(`${this.apiUrl}/accounts/${id}`); }
+    createAccount(payload: CreateAccountPayload): Observable<Account> { return this.http.post<Account>(`${this.apiUrl}/accounts`, payload); }
+    updateAccount(id: number, payload: Partial<CreateAccountPayload>): Observable<Account> { return this.http.put<Account>(`${this.apiUrl}/accounts/${id}`, payload); }
+    deleteAccount(id: number): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/accounts/${id}`); }
+
+    // ==========================================================
+    // CONTACTS — API réelle
+    // ==========================================================
+    getContacts(compteId?: number, search?: string): Observable<Contact[]> {
+        let params = new HttpParams();
+        if (compteId) params = params.set('compteId', compteId);
+        if (search)   params = params.set('search', search);
+        return this.http.get<Contact[]>(`${this.apiUrl}/contacts`, { params });
+    }
+    getContact(id: number): Observable<Contact> { return this.http.get<Contact>(`${this.apiUrl}/contacts/${id}`); }
+    createContact(payload: CreateContactPayload): Observable<Contact> { return this.http.post<Contact>(`${this.apiUrl}/contacts`, payload); }
+    updateContact(id: number, payload: Partial<CreateContactPayload>): Observable<Contact> { return this.http.put<Contact>(`${this.apiUrl}/contacts/${id}`, payload); }
+    deleteContact(id: number): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/contacts/${id}`); }
 
     // ==========================================================
     // LEADS
@@ -81,28 +110,4 @@ export class CrmService {
         return this.http.put<Interaction>(`${this.apiUrl}/interactions/${id}`, interaction);
     }
     deleteInteraction(id: number): Observable<any> { return this.http.delete(`${this.apiUrl}/interactions/${id}`); }
-
-    // ==========================================================
-    // ACCOUNTS & CONTACTS (mock en attendant un service dédié)
-    // ==========================================================
-    accounts: Account[] = [
-        { id: 1, nom: 'TechnoMaroc SARL', email: 'contact@technomaroc.ma', telephone: '0522-112233', responsable: 'Marwan Kiker' }
-    ];
-    contacts: Contact[] = [
-        { id: 1, nom: 'Ahmed Bennani', type: 'Decideur', adresse: 'Casablanca', accountId: 1 }
-    ];
-
-    getAccountName(id: number): string {
-        const acc = this.accounts.find(a => a.id === id);
-        return acc ? acc.nom : 'Inconnu';
-    }
-    getContactName(id: number): string {
-        const c = this.contacts.find(c => c.id === id);
-        return c ? c.nom : 'Inconnu';
-    }
-    private nextId(list: any[]): number { return list.length > 0 ? Math.max(...list.map(i => i.id)) + 1 : 1; }
-    addAccount(account: Partial<Account>): void { this.accounts.push({ ...account, id: this.nextId(this.accounts) } as Account); }
-    deleteAccount(id: number): void { this.accounts = this.accounts.filter(a => a.id !== id); }
-    addContact(contact: Partial<Contact>): void { this.contacts.push({ ...contact, id: this.nextId(this.contacts) } as Contact); }
-    deleteContact(id: number): void { this.contacts = this.contacts.filter(c => c.id !== id); }
 }

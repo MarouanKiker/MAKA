@@ -1,22 +1,26 @@
 <div>
+    <!-- ========== EN-TÊTE ========== -->
     <div class="page-header">
         <div>
             <h1>
                 <i class="fa-solid fa-building page-icon"></i>
                 Comptes
             </h1>
-            <p class="page-subtitle">Gerez vos clients et entreprises</p>
+            <p class="page-subtitle">Gérez vos clients et entreprises partenaires</p>
         </div>
-        <button class="btn-add" (click)="openForm()">+ Nouveau compte</button>
+        <button class="btn-add" (click)="openForm()">
+            <i class="fa-solid fa-plus"></i> Nouveau compte
+        </button>
     </div>
 
+    <!-- ========== MINI STATS ========== -->
     <div class="page-stats">
         <div class="mini-stat">
             <div class="mini-stat-icon" style="background: var(--accent-soft); color: var(--accent)">
                 <i class="fa-solid fa-building"></i>
             </div>
             <div>
-                <span class="mini-stat-value">{{ crm.accounts.length }}</span>
+                <span class="mini-stat-value">{{ total }}</span>
                 <span class="mini-stat-label">Total comptes</span>
             </div>
         </div>
@@ -25,84 +29,415 @@
                 <i class="fa-solid fa-users"></i>
             </div>
             <div>
-                <span class="mini-stat-value">{{ crm.contacts.length }}</span>
-                <span class="mini-stat-label">Contacts lies</span>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--warning-soft); color: var(--warning)">
-                <i class="fa-solid fa-ticket"></i>
-            </div>
-            <div>
-                <span class="mini-stat-value">{{ crm.contacts.length }}</span>
+                <span class="mini-stat-value">{{ totalContacts }}</span>
                 <span class="mini-stat-label">Contacts liés</span>
             </div>
         </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--success-soft); color: var(--success)">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div>
+                <span class="mini-stat-value">{{ availableSectors.length }}</span>
+                <span class="mini-stat-label">Secteurs</span>
+            </div>
+        </div>
     </div>
 
-    <!-- barre de recherche -->
-    <div style="margin-bottom: 1rem;">
-        <input type="text" [(ngModel)]="search" placeholder="Rechercher un compte..."
-            style="width:100%;max-width:400px;padding:.5rem .8rem;border:1px solid var(--glass-border);border-radius:var(--radius-sm);background:var(--bg-2);color:var(--text-0);font-size:.82rem;font-family:inherit;" />
+    <!-- ========== BARRE DE RECHERCHE INTELLIGENTE + FILTRES ========== -->
+    <div class="search-filter-bar">
+        <div class="search-input-wrapper">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input
+                id="search-accounts"
+                type="text"
+                [value]="searchFormControl"
+                (input)="onSearchInput($event)"
+                (keyup.enter)="onSearch()"
+                placeholder="Rechercher par nom, email, secteur..."
+                class="search-input"
+            />
+            <span class="results-count" *ngIf="searchFormControl">{{ total }} résultat(s)</span>
+        </div>
+
+        <!-- Filtres rapides par secteur -->
+        <div class="quick-filters" *ngIf="availableSectors.length > 0">
+            <button
+                *ngFor="let sector of availableSectors.slice(0, 5)"
+                class="filter-chip"
+                [class.active]="activeSectorFilter === sector"
+                (click)="filterBySector(sector)">
+                {{ sector }}
+            </button>
+            <button class="filter-chip clear" *ngIf="activeSectorFilter" (click)="filterBySector('')">
+                <i class="fa-solid fa-xmark"></i> Effacer
+            </button>
+        </div>
+
+        <!-- Info pagination -->
+        <span class="pagination-info" *ngIf="totalPages > 1">
+            Page {{ currentPage }} / {{ totalPages }}
+        </span>
     </div>
 
-    <div class="card-grid">
-        <div class="item-card" *ngFor="let a of filtered">
-            <div class="card-top">
-                <span class="card-title">{{ a.nom }}</span>
+    <!-- ========== MESSAGE ERREUR ========== -->
+    <div class="error-banner" *ngIf="errorMsg">
+        <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMsg }}
+        <button class="error-close" (click)="errorMsg = ''">×</button>
+    </div>
+
+    <!-- ========== LOADING ========== -->
+    <div class="loading-state" *ngIf="isLoading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <p>Chargement des comptes...</p>
+    </div>
+
+    <!-- ========== GRILLE DES CARTES ========== -->
+    <div class="card-grid" *ngIf="!isLoading">
+        <div class="item-card account-card" *ngFor="let a of accounts">
+
+            <div class="card-type-badge blue">COMPTE CLIENT</div>
+
+            <div class="card-header">
+                <div class="account-avatar">{{ a.nom[0] }}</div>
+                <div class="account-info">
+                    <h3 class="card-title">{{ a.nom }}</h3>
+                    <span class="card-subtitle">ID: #{{ a.id }}</span>
+                </div>
             </div>
 
+            <div class="divider"></div>
+
+            <!-- Meta informations -->
             <div class="card-meta">
-                <span class="card-meta-item">
+                <div class="card-meta-item" *ngIf="a.secteurActivite">
+                    <i class="fa-solid fa-briefcase meta-icon"></i>
+                    <span class="sector-badge">{{ a.secteurActivite }}</span>
+                </div>
+                <div class="card-meta-item" *ngIf="a.email">
                     <i class="fa-solid fa-envelope meta-icon"></i>
-                    {{ a.email }}
-                </span>
-                <span class="card-meta-item">
+                    <span style="text-transform: lowercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ a.email }}</span>
+                </div>
+                <div class="card-meta-item" *ngIf="a.telephone">
                     <i class="fa-solid fa-phone meta-icon"></i>
-                    {{ a.telephone }}
-                </span>
-                <span class="card-meta-item">
-                    <i class="fa-solid fa-user meta-icon"></i>
-                    {{ a.responsable }}
-                </span>
+                    <span>{{ a.telephone }}</span>
+                </div>
+                <div class="card-meta-item" *ngIf="a.adresse">
+                    <i class="fa-solid fa-location-dot meta-icon"></i>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ a.adresse }}</span>
+                </div>
+                <div class="card-meta-item">
+                    <i class="fa-regular fa-calendar meta-icon"></i>
+                    <span>{{ a.dateCreation | date:'dd/MM/yyyy' }}</span>
+                </div>
             </div>
 
-            <div class="card-actions">
-                <button class="btn-sm danger" (click)="delete(a.id)">Supprimer</button>
+            <!-- AVATAR STACK des contacts liés -->
+            <div class="card-stats-row">
+                <!-- Badge Contacts Liés (cliquable pour voir l'overlay) -->
+                <span class="stat-badge blue" (click)="toggleExpand(a); $event.stopPropagation()">
+                    <i class="fa-solid fa-users"></i>
+                    {{ a.nombreContacts }} contact{{ a.nombreContacts !== 1 ? 's' : '' }}
+                </span>
+
+                <!-- Avatar Stack (affiché après expansion) -->
+                <div class="avatar-stack" *ngIf="expandedAccountId === a.id && contactsOfSelectedAccount.length > 0">
+                    <div
+                        *ngFor="let c of contactsOfSelectedAccount.slice(0, 3); let i = index"
+                        class="avatar-stack-item"
+                        [style]="getAvatarStyle(i)"
+                        [title]="c.prenom + ' ' + c.nom"
+                        [style.z-index]="3 - i">
+                        {{ c.prenom[0] }}{{ c.nom[0] }}
+                    </div>
+                    <div class="avatar-stack-more" *ngIf="a.nombreContacts > 3">
+                        +{{ a.nombreContacts - 3 }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overlay Contacts (dropdown panel) -->
+            <div class="contacts-overlay" *ngIf="expandedAccountId === a.id">
+                <div class="contacts-overlay-header">
+                    <span><i class="fa-solid fa-users" style="color: #3b82f6;"></i> Équipe</span>
+                    <i class="fa-solid fa-xmark close-overlay" (click)="toggleExpand(a); $event.stopPropagation()"></i>
+                </div>
+                <div *ngIf="isHistoryLoading" class="overlay-loading">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+                <div *ngIf="!isHistoryLoading && contactsOfSelectedAccount.length === 0" class="overlay-empty">
+                    Aucun contact lié
+                </div>
+                <div class="overlay-contact-list">
+                    <div *ngFor="let c of contactsOfSelectedAccount" class="overlay-contact-item">
+                        <div class="overlay-avatar">{{ c.prenom[0] }}{{ c.nom[0] }}</div>
+                        <div>
+                            <div style="font-size: 0.78rem; font-weight: 600; color: #1f2937;">{{ c.prenom }} {{ c.nom }}</div>
+                            <div style="font-size: 0.68rem; color: #6b7280;">{{ c.type }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== BOUTONS D'ACTION ========== -->
+            <div class="card-actions-row">
+                <button class="btn-action blue-outline" (click)="openDetailPanel(a); $event.stopPropagation()">
+                    <i class="fa-solid fa-eye"></i> DÉTAILS
+                </button>
+                <button class="btn-action gray-outline" (click)="openForm(a)">
+                    <i class="fa-solid fa-pen"></i> MODIFIER
+                </button>
+                <button class="btn-action red-outline" (click)="confirmDelete(a)">
+                    <i class="fa-solid fa-trash"></i> SUPPR.
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="empty" *ngIf="filtered.length === 0">
-        <i class="fa-solid fa-building" style="font-size:2rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
-        Aucun compte trouve.
+    <!-- ========== ÉTAT VIDE ========== -->
+    <div class="empty" *ngIf="!isLoading && accounts.length === 0">
+        <i class="fa-solid fa-building empty-icon" style="opacity:.3;"></i>
+        <p>Aucun compte trouvé.</p>
+        <button class="btn-add" style="margin-top: 1rem;" (click)="openForm()">
+            Créer votre premier compte
+        </button>
     </div>
 
+    <!-- ========== PAGINATION ========== -->
+    <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="btn-sm" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="btn-sm page-num"
+            *ngFor="let p of pages"
+            (click)="goToPage(p)"
+            [class.active]="p === currentPage">
+            {{ p }}
+        </button>
+        <button class="btn-sm" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- ================================================================
+         MODAL : Créer / Modifier un Compte
+    ================================================================= -->
     <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
-        <div class="modal" (click)="$event.stopPropagation()">
-            <h2>Nouveau compte</h2>
-            <div class="champ">
-                <label>Nom</label>
-                <input type="text" [(ngModel)]="nom" placeholder="Nom de l'entreprise" />
+        <div class="modal modal-large" (click)="$event.stopPropagation()">
+            <div class="modal-top-bar">
+                <h2>
+                    <i class="fa-solid fa-building" style="opacity:.6; margin-right:.5rem;"></i>
+                    {{ editingAccountId ? 'Modifier le compte' : 'Nouveau compte' }}
+                </h2>
+                <button class="modal-close-btn" (click)="showForm = false">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <div class="row">
+
+            <div class="error-banner" *ngIf="errorMsg" style="margin-bottom:1rem;">
+                {{ errorMsg }}
+            </div>
+
+            <form [formGroup]="accountForm" (ngSubmit)="save()">
+                <!-- Infos de base -->
+                <div class="form-section-title">Informations de base</div>
                 <div class="champ">
-                    <label>Email</label>
-                    <input type="email" [(ngModel)]="email" placeholder="contact@example.com" />
+                    <label>Nom de l'entreprise *</label>
+                    <input id="account-nom" type="text" formControlName="nom" placeholder="Ex: TechnoMaroc SARL" />
+                    <span class="field-error" *ngIf="accountForm.get('nom')?.invalid && accountForm.get('nom')?.touched">
+                        Le nom est requis (min. 2 caractères)
+                    </span>
                 </div>
-                <div class="champ">
-                    <label>Telephone</label>
-                    <input type="tel" [(ngModel)]="telephone" placeholder="0522-..." />
+                <div class="row">
+                    <div class="champ">
+                        <label>Email</label>
+                        <input id="account-email" type="email" formControlName="email" placeholder="contact@example.ma" />
+                    </div>
+                    <div class="champ">
+                        <label>Téléphone</label>
+                        <input id="account-tel" type="tel" formControlName="telephone" placeholder="0522-..." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="champ">
+                        <label>Secteur d'activité</label>
+                        <input id="account-secteur" type="text" formControlName="secteurActivite" placeholder="IT, Finance, Santé..." />
+                    </div>
+                    <div class="champ">
+                        <label>Adresse</label>
+                        <input id="account-adresse" type="text" formControlName="adresse" placeholder="Casablanca, Maroc" />
+                    </div>
+                </div>
+
+                <!-- Contacts liés -->
+                <div class="form-section-title" style="margin-top: 1.25rem;">
+                    <i class="fa-solid fa-users" style="color: var(--violet);"></i> Contacts liés
+                    <button type="button" class="btn-sm" style="margin-left: auto;" (click)="addNewContact()">
+                        <i class="fa-solid fa-plus"></i> Ajouter
+                    </button>
+                </div>
+
+                <!-- Contacts existants (mode édition) -->
+                <div *ngIf="editingAccountId && isExistingContactsLoading" class="overlay-loading" style="margin-bottom: 0.75rem;">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Chargement...
+                </div>
+                <div *ngIf="editingAccountId && !isExistingContactsLoading && existingContacts.length > 0" class="existing-contacts-list">
+                    <div *ngFor="let c of existingContacts" class="existing-contact-row">
+                        <i class="fa-solid fa-user" style="opacity:.5; font-size: 0.75rem;"></i>
+                        <span>{{ c.prenom }} {{ c.nom }}</span>
+                        <span class="contact-type-badge">{{ c.type }}</span>
+                        <button type="button" class="btn-sm danger" (click)="deleteExistingContact(c.id)">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nouveaux contacts à ajouter -->
+                <div formArrayName="newContacts">
+                    <div *ngFor="let contactCtrl of newContacts.controls; let i = index"
+                         [formGroupName]="i"
+                         class="new-contact-block">
+                        <div class="new-contact-header">
+                            <span>Nouveau Contact #{{ i + 1 }}</span>
+                            <button type="button" class="btn-sm danger" (click)="removeNewContact(i)">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="champ" style="margin-bottom:.4rem;">
+                                <input type="text" formControlName="prenom" placeholder="Prénom *" />
+                            </div>
+                            <div class="champ" style="margin-bottom:.4rem;">
+                                <input type="text" formControlName="nom" placeholder="Nom *" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="champ" style="margin-bottom:.4rem;">
+                                <input type="email" formControlName="email" placeholder="Email" />
+                            </div>
+                            <div class="champ" style="margin-bottom:0;">
+                                <select formControlName="type">
+                                    <option value="Decideur">Décideur</option>
+                                    <option value="Technique">Technique</option>
+                                    <option value="Commercial">Commercial</option>
+                                    <option value="Support">Support</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" (click)="showForm = false" [disabled]="isSubmitting">Annuler</button>
+                    <button id="save-account" type="submit" class="btn-save" [disabled]="isSubmitting || accountForm.invalid">
+                        <i class="fa-solid fa-circle-notch fa-spin" *ngIf="isSubmitting"></i>
+                        <span *ngIf="!isSubmitting">{{ editingAccountId ? 'Mettre à jour' : 'Créer le compte' }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         PANNEAU LATÉRAL : Voir Détails d'un Compte
+    ================================================================= -->
+    <div class="side-panel-overlay" *ngIf="showDetailPanel" (click)="closeDetailPanel()">
+        <div class="side-panel" (click)="$event.stopPropagation()">
+            <div class="side-panel-header">
+                <div>
+                    <h2 class="side-panel-title">{{ selectedAccount?.nom }}</h2>
+                    <span class="side-panel-subtitle">Profil du compte client</span>
+                </div>
+                <button class="modal-close-btn" (click)="closeDetailPanel()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="side-panel-body" *ngIf="selectedAccount">
+                <!-- Identité -->
+                <div class="detail-section">
+                    <div class="detail-section-title">
+                        <i class="fa-solid fa-id-card"></i> Identité
+                    </div>
+                    <div class="detail-item" *ngIf="selectedAccount.secteurActivite">
+                        <span class="detail-label">Secteur</span>
+                        <span class="sector-badge">{{ selectedAccount.secteurActivite }}</span>
+                    </div>
+                    <div class="detail-item" *ngIf="selectedAccount.email">
+                        <span class="detail-label">Email</span>
+                        <a [href]="'mailto:' + selectedAccount.email" class="detail-link">{{ selectedAccount.email }}</a>
+                    </div>
+                    <div class="detail-item" *ngIf="selectedAccount.telephone">
+                        <span class="detail-label">Téléphone</span>
+                        <a [href]="'tel:' + selectedAccount.telephone" class="detail-link">{{ selectedAccount.telephone }}</a>
+                    </div>
+                    <div class="detail-item" *ngIf="selectedAccount.adresse">
+                        <span class="detail-label">Adresse</span>
+                        <span>{{ selectedAccount.adresse }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Créé le</span>
+                        <span>{{ selectedAccount.dateCreation | date:'dd MMMM yyyy':'':'fr' }}</span>
+                    </div>
+                </div>
+
+                <!-- Contacts liés -->
+                <div class="detail-section">
+                    <div class="detail-section-title">
+                        <i class="fa-solid fa-users"></i>
+                        Contacts liés ({{ selectedAccount.nombreContacts }})
+                    </div>
+                    <div *ngIf="isDetailLoading" class="overlay-loading">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Chargement...
+                    </div>
+                    <div *ngIf="!isDetailLoading && detailContacts.length === 0" class="overlay-empty">
+                        Aucun contact associé à ce compte.
+                    </div>
+                    <div *ngFor="let c of detailContacts" class="detail-contact-card">
+                        <div class="detail-contact-avatar">{{ c.prenom[0] }}{{ c.nom[0] }}</div>
+                        <div class="detail-contact-info">
+                            <div class="detail-contact-name">{{ c.prenom }} {{ c.nom }}</div>
+                            <div class="detail-contact-role">{{ c.type }}</div>
+                            <div class="detail-contact-email" *ngIf="c.email">{{ c.email }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="champ">
-                <label>Responsable</label>
-                <input type="text" [(ngModel)]="responsable" placeholder="Nom du responsable" />
-            </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" (click)="showForm = false">Annuler</button>
-                <button class="btn-save" (click)="save()">Enregistrer</button>
+
+            <div class="side-panel-footer">
+                <button class="btn-cancel" (click)="closeDetailPanel()">Fermer</button>
+                <button class="btn-save" (click)="openForm(selectedAccount!); closeDetailPanel()">
+                    <i class="fa-solid fa-pen"></i> Modifier
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- ================================================================
+         MODAL : Confirmation de Suppression Élégante
+    ================================================================= -->
+    <div class="modal-overlay delete-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+        <div class="modal delete-modal" (click)="$event.stopPropagation()">
+            <div class="delete-icon-wrapper">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="delete-title">Supprimer ce compte ?</h3>
+            <p class="delete-message">
+                Vous êtes sur le point de supprimer <strong>{{ accountToDelete?.nom }}</strong>.
+                <br>
+                <span class="delete-warning">
+                    <i class="fa-solid fa-circle-info"></i>
+                    {{ accountToDelete?.nombreContacts }} contact(s) associé(s) seront également supprimés (cascade).
+                </span>
+            </p>
+            <div class="delete-actions">
+                <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+                <button class="btn-delete-confirm" (click)="executeDelete()">
+                    <i class="fa-solid fa-trash"></i> Oui, supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>

@@ -21,11 +21,11 @@ export class LeadsComponent implements OnInit {
 
     // colonnes du kanban (chaque colonne = un statut string enum)
     columns = [
-        { key: 'NOUVEAU', label: 'Nouveau', color: '#4a9eff' },
-        { key: 'QUALIFIE', label: 'Qualifié', color: '#a0a0a0' },
-        { key: 'EN_COURS', label: 'En cours', color: '#f5c748' },
-        { key: 'CONVERTI', label: 'Converti', color: '#44d492' },
-        { key: 'PERDU', label: 'Perdu', color: '#e84c3d' },
+        { key: 0, label: 'Nouveau', color: '#4a9eff' },
+        { key: 2, label: 'Qualifié', color: '#a0a0a0' },
+        { key: 1, label: 'Contacté', color: '#f5c748' },
+        { key: 3, label: 'Converti', color: '#44d492' },
+        { key: 4, label: 'Perdu', color: '#e84c3d' },
     ];
 
     draggedLead: Lead | null = null;
@@ -43,7 +43,7 @@ export class LeadsComponent implements OnInit {
         });
     }
 
-    getByStatut(statut: string): Lead[] {
+    getByStatut(statut: number): Lead[] {
         return this.leads.filter(l => l.statut === statut);
     }
 
@@ -56,7 +56,7 @@ export class LeadsComponent implements OnInit {
     save(): void {
         const newLead: Partial<Lead> = {
             source: this.source,
-            statut: 'NOUVEAU', 
+            statut: 0, // NOUVEAU
             score: this.score,
             dateCreation: new Date().toISOString()
         };
@@ -88,7 +88,7 @@ export class LeadsComponent implements OnInit {
         const lead = this.leadToConvert;
         this.crm.convertLead(lead.id, this.oppTitre, this.oppValeur).subscribe({
             next: (newOpp) => {
-                lead.statut = 'CONVERTI';
+                lead.statut = 3; // CONVERTI
                 this.showConvertForm = false;
                 this.leadToConvert = null;
             },
@@ -96,7 +96,7 @@ export class LeadsComponent implements OnInit {
                 console.error('Erreur conversion', err);
                 if (err.status === 409) {
                     alert('Ce Lead a déjà été converti en Opportunité !');
-                    lead.statut = 'CONVERTI'; // Synchroniser l'UI
+                    lead.statut = 3; // Synchroniser l'UI
                 } else {
                     alert('Une erreur est survenue lors de la conversion.');
                 }
@@ -129,13 +129,13 @@ export class LeadsComponent implements OnInit {
         event.preventDefault();
     }
 
-    onDrop(event: DragEvent, statut: string): void {
+    onDrop(event: DragEvent, statut: number): void {
         event.preventDefault();
         if (this.draggedLead) {
             const currentLead = this.draggedLead;
             const previousStatut = currentLead.statut;
             
-            if (statut === 'CONVERTI' && previousStatut !== 'CONVERTI') {
+            if (statut === 3 && previousStatut !== 3) {
                 this.openConvertForm(currentLead);
             } else if (previousStatut !== statut) {
                 const oldStatut = currentLead.statut;

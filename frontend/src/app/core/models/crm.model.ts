@@ -1,41 +1,81 @@
-// Modèles CRM alignés avec les DTOs .NET du backend
+// Modèles du module CRM — alignés avec les DTOs du backend .NET 8
 
+// ---- Compte (Account) ----
 export interface Account {
     id: number;
     nom: string;
-    email: string;
-    telephone: string;
-    responsable: string;
+    email?: string;
+    telephone?: string;
+    secteurActivite?: string;
+    adresse?: string;
+    dateCreation: string;
+    nombreContacts: number;
 }
 
+export interface CreateAccountPayload {
+    nom: string;
+    email?: string;
+    telephone?: string;
+    secteurActivite?: string;
+    adresse?: string;
+}
+
+export interface PaginatedAccounts {
+    data: Account[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+}
+
+// ---- Contact ----
 export interface Contact {
     id: number;
+    prenom: string;
     nom: string;
+    email?: string;
+    telephone?: string;
     type: string;
-    adresse: string;
-    accountId: number;
+    adresse?: string;
+    dateCreation: string;
+    compteId: number;
+    compteNom: string;
 }
 
+export interface CreateContactPayload {
+    prenom: string;
+    nom: string;
+    email?: string;
+    telephone?: string;
+    type: string;
+    adresse?: string;
+    compteId: number;
+}
+
+// ---- Lead ----
 export interface Lead {
     id: number;
     source: string;
-    statut: string; // 'NOUVEAU', 'QUALIFIE', 'EN_COURS', 'CONVERTI', 'PERDU'
+    statut: number; // 0=NOUVEAU, 1=CONTACTE, 2=QUALIFIE, 3=CONVERTI, 4=PERDU
     score: number;
     dateCreation: string;
     campagneId: number | null;
+    campagneNom?: string;
     opportunite?: Opportunity | null;
 }
 
+// ---- Opportunity ----
 export interface Opportunity {
     id: number;
     titre: string;
     valeur: number;
-    statut: string; // 'NOUVELLE', 'EN_COURS', 'GAGNEE', 'PERDUE'
-    dateCloture: string;
+    statut: number; // 0=NOUVELLE, 1=EN_COURS, 2=GAGNEE, 3=PERDUE
+    dateCloture?: string;
     leadId: number;
     leadSource?: string;
 }
 
+// ---- Campaign ----
 export interface Campaign {
     id: number;
     nom: string;
@@ -45,7 +85,7 @@ export interface Campaign {
     leads?: Lead[];
 }
 
-// Task : aligné avec TaskItem.cs du backend
+// ---- Task ----
 export interface Task {
     id: number;
     title: string;
@@ -64,7 +104,7 @@ export interface CreateTaskDto {
     opportuniteId?: number | null;
 }
 
-// Ticket : aligné avec Ticket.cs du backend
+// ---- Ticket ----
 export interface Ticket {
     id: number;
     title: string;
@@ -81,7 +121,7 @@ export interface CreateTicketDto {
     leadId?: number | null;
 }
 
-// Interaction : aligné avec Interaction.cs du backend
+// ---- Interaction ----
 export interface Interaction {
     id: number;
     type: string; // 'Call', 'Email', 'Meeting'

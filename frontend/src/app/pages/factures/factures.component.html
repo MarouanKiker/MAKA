@@ -111,7 +111,7 @@
                     </select>
                 </td>
                 <td>
-                    <span class="badge-count">{{ f.lignes?.length || 0 }} ligne(s)</span>
+                    <span class="badge-count">{{ f.lignes ? f.lignes.length : 0 }} ligne(s)</span>
                 </td>
                 <td>
                     <button class="btn-icon delete" (click)="deleteFacture(f.id)" title="Supprimer">

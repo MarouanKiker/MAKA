@@ -26,7 +26,7 @@
 
                     <div class="card-title">{{ o.titre }}</div>
                     <div class="kanban-value">{{ o.valeur | number }} MAD</div>
-                    <div class="card-meta" *ngIf="o.dateCloture && (o.statut === 'GAGNEE' || o.statut === 'PERDUE')">
+                    <div class="card-meta" *ngIf="o.dateCloture && o.statut >= 2">
                         <span class="card-meta-item">
                             <i class="fa-regular fa-calendar meta-icon"></i>
                             Cloturé le : {{ o.dateCloture | date:'shortDate' }}

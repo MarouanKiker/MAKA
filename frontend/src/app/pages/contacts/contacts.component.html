@@ -1,98 +1,343 @@
 <div>
+    <!-- ========== EN-TÊTE ========== -->
     <div class="page-header">
         <div>
             <h1>
                 <i class="fa-solid fa-address-book page-icon"></i>
                 Contacts
             </h1>
-            <p class="page-subtitle">Gerez vos contacts et leurs informations</p>
+            <p class="page-subtitle">Gérez vos contacts et leurs informations</p>
         </div>
-        <button class="btn-add" (click)="openForm()">+ Nouveau contact</button>
+        <button class="btn-add" (click)="openForm()">
+            <i class="fa-solid fa-plus"></i> Nouveau contact
+        </button>
     </div>
 
+    <!-- ========== MINI STATS ========== -->
     <div class="page-stats">
         <div class="mini-stat">
             <div class="mini-stat-icon" style="background: var(--accent-soft); color: var(--accent)">
                 <i class="fa-solid fa-address-book"></i>
             </div>
             <div>
-                <span class="mini-stat-value">{{ crm.contacts.length }}</span>
+                <span class="mini-stat-value">{{ contacts.length }}</span>
                 <span class="mini-stat-label">Total contacts</span>
             </div>
         </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--violet-soft); color: var(--violet)">
-                <i class="fa-solid fa-building"></i>
+        <div class="mini-stat" *ngFor="let type of types.slice(0,3)">
+            <div class="mini-stat-icon" [style.background]="getTypeColor(type) + '18'" [style.color]="getTypeColor(type)">
+                <i class="fa-solid fa-user"></i>
             </div>
             <div>
-                <span class="mini-stat-value">{{ crm.accounts.length }}</span>
-                <span class="mini-stat-label">Comptes lies</span>
+                <span class="mini-stat-value">{{ countByType(type) }}</span>
+                <span class="mini-stat-label">{{ type }}s</span>
             </div>
         </div>
     </div>
 
-    <div class="card-grid">
-        <div class="item-card" *ngFor="let c of crm.contacts">
-            <div class="card-top">
-                <span class="card-title">{{ c.nom }}</span>
-                <span class="badge" [class]="c.type.toLowerCase()">{{ c.type }}</span>
+    <!-- ========== BARRE DE RECHERCHE + FILTRES ========== -->
+    <div class="search-filter-bar">
+        <div class="search-input-wrapper">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input
+                id="search-contacts"
+                type="text"
+                [value]="search"
+                (input)="onSearchInput($event)"
+                (keyup.enter)="onSearch()"
+                placeholder="Rechercher par nom, email..."
+                class="search-input"
+            />
+        </div>
+
+        <!-- Filtre par compte -->
+        <select id="filter-compte" [(ngModel)]="filterCompteId" (change)="onFilterChange()" class="filter-select">
+            <option [ngValue]="null">Tous les comptes</option>
+            <option *ngFor="let a of accounts" [ngValue]="a.id">{{ a.nom }}</option>
+        </select>
+
+        <!-- Filtres rapides par type -->
+        <div class="quick-filters">
+            <button *ngFor="let type of types"
+                class="filter-chip type-chip"
+                [class.active]="activeTypeFilter === type"
+                [style.--chip-color]="getTypeColor(type)"
+                (click)="filterByType(type)">
+                {{ type }}
+            </button>
+            <button class="filter-chip clear" *ngIf="activeTypeFilter" (click)="filterByType('')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========== MESSAGE ERREUR ========== -->
+    <div class="error-banner" *ngIf="errorMsg">
+        <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMsg }}
+        <button class="error-close" (click)="errorMsg = ''">×</button>
+    </div>
+
+    <!-- ========== LOADING ========== -->
+    <div class="loading-state" *ngIf="isLoading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <p>Chargement des contacts...</p>
+    </div>
+
+    <!-- ========== GRILLE DES CARTES ========== -->
+    <div class="card-grid" *ngIf="!isLoading">
+        <div class="item-card contact-card" *ngFor="let c of contacts">
+
+            <!-- Badge type coloré dynamiquement -->
+            <div class="card-type-badge contact-type-badge"
+                 [style.background]="getTypeColor(c.type)">
+                {{ c.type | uppercase }}
             </div>
 
+            <div class="card-header" style="margin-top: 2.5rem;">
+                <!-- Grand avatar avec initiales -->
+                <div class="contact-avatar" [style.background]="getTypeColor(c.type) + '20'" [style.color]="getTypeColor(c.type)">
+                    {{ c.prenom[0] }}{{ c.nom[0] }}
+                </div>
+                <div>
+                    <h3 class="card-title">{{ c.prenom }} {{ c.nom }}</h3>
+                    <span class="card-subtitle">ID: CONTACT-{{ c.id }}</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Meta informations -->
             <div class="card-meta">
-                <span class="card-meta-item">
-                    <i class="fa-solid fa-building meta-icon"></i>
-                    {{ crm.getAccountName(c.accountId) }}
-                </span>
-                <span class="card-meta-item" *ngIf="c.adresse">
-                    <i class="fa-solid fa-map-pin meta-icon"></i>
-                    {{ c.adresse }}
-                </span>
+                <div class="card-meta-item">
+                    <i class="fa-solid fa-user meta-icon"></i>
+                    <span>{{ c.prenom | uppercase }} {{ c.nom | uppercase }}</span>
+                </div>
+                <div class="card-meta-item">
+                    <i class="fa-solid fa-briefcase meta-icon"></i>
+                    <span>{{ c.type }}</span>
+                </div>
+                <div class="card-meta-item" *ngIf="c.email">
+                    <i class="fa-solid fa-envelope meta-icon"></i>
+                    <span style="text-transform: lowercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.email }}</span>
+                </div>
+                <div class="card-meta-item" *ngIf="c.telephone">
+                    <i class="fa-solid fa-phone meta-icon"></i>
+                    <span>{{ c.telephone }}</span>
+                </div>
+                <div class="card-meta-item">
+                    <i class="fa-regular fa-calendar meta-icon"></i>
+                    <span>{{ c.dateCreation | date:'dd/MM/yyyy' }}</span>
+                </div>
             </div>
 
-            <div class="card-actions">
-                <button class="btn-sm danger" (click)="delete(c.id)">Supprimer</button>
+            <!-- BADGE COMPTE LIÉ CLIQUABLE -->
+            <div class="card-stats-row">
+                <button
+                    class="compte-link-badge"
+                    (click)="goToAccount(c.compteId); $event.stopPropagation()"
+                    [title]="'Voir le compte : ' + c.compteNom">
+                    <i class="fa-solid fa-building"></i>
+                    {{ c.compteNom || 'Compte #' + c.compteId }}
+                    <i class="fa-solid fa-arrow-up-right-from-square link-icon"></i>
+                </button>
+            </div>
+
+            <!-- ========== BOUTONS D'ACTION ========== -->
+            <div class="card-actions-row">
+                <button class="btn-action purple-outline" (click)="openDetailPanel(c); $event.stopPropagation()">
+                    <i class="fa-solid fa-eye"></i> DÉTAILS
+                </button>
+                <button class="btn-action gray-outline" (click)="openForm(c)">
+                    <i class="fa-solid fa-pen"></i> MODIFIER
+                </button>
+                <button class="btn-action red-outline" (click)="confirmDelete(c)">
+                    <i class="fa-solid fa-trash"></i> SUPPR.
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="empty" *ngIf="crm.contacts.length === 0">
-        <i class="fa-solid fa-address-book" style="font-size:2rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
-        Aucun contact.
+    <!-- ========== ÉTAT VIDE ========== -->
+    <div class="empty" *ngIf="!isLoading && contacts.length === 0">
+        <i class="fa-solid fa-address-book empty-icon" style="opacity:.3;"></i>
+        <p>Aucun contact trouvé.</p>
+        <button class="btn-add" style="margin-top: 1rem;" (click)="openForm()">
+            Créer votre premier contact
+        </button>
     </div>
 
+    <!-- ================================================================
+         PANNEAU LATÉRAL : Voir Détails d'un Contact
+    ================================================================= -->
+    <div class="side-panel-overlay" *ngIf="showDetailPanel" (click)="closeDetailPanel()">
+        <div class="side-panel" (click)="$event.stopPropagation()">
+            <div class="side-panel-header" *ngIf="selectedContact">
+                <div class="panel-header-identity">
+                    <div class="panel-avatar"
+                         [style.background]="getTypeColor(selectedContact.type) + '20'"
+                         [style.color]="getTypeColor(selectedContact.type)">
+                        {{ selectedContact.prenom[0] }}{{ selectedContact.nom[0] }}
+                    </div>
+                    <div>
+                        <h2 class="side-panel-title">{{ selectedContact.prenom }} {{ selectedContact.nom }}</h2>
+                        <span class="side-panel-subtitle" [style.color]="getTypeColor(selectedContact.type)">
+                            {{ selectedContact.type }}
+                        </span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" (click)="closeDetailPanel()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="side-panel-body" *ngIf="selectedContact">
+                <div class="detail-section">
+                    <div class="detail-section-title">
+                        <i class="fa-solid fa-id-card"></i> Coordonnées
+                    </div>
+                    <div class="detail-item" *ngIf="selectedContact.email">
+                        <span class="detail-label">Email</span>
+                        <a [href]="'mailto:' + selectedContact.email" class="detail-link">{{ selectedContact.email }}</a>
+                    </div>
+                    <div class="detail-item" *ngIf="selectedContact.telephone">
+                        <span class="detail-label">Téléphone</span>
+                        <a [href]="'tel:' + selectedContact.telephone" class="detail-link">{{ selectedContact.telephone }}</a>
+                    </div>
+                    <div class="detail-item" *ngIf="selectedContact.adresse">
+                        <span class="detail-label">Adresse</span>
+                        <span>{{ selectedContact.adresse }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Créé le</span>
+                        <span>{{ selectedContact.dateCreation | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                </div>
+
+                <!-- Compte lié dans le panneau -->
+                <div class="detail-section">
+                    <div class="detail-section-title">
+                        <i class="fa-solid fa-building"></i> Compte Associé
+                    </div>
+                    <div class="detail-account-card" (click)="goToAccount(selectedContact.compteId); closeDetailPanel()">
+                        <div class="detail-account-avatar">
+                            {{ selectedContact.compteNom ? selectedContact.compteNom[0] : '#' }}
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85rem; font-weight: 700;">{{ selectedContact.compteNom || 'Compte #' + selectedContact.compteId }}</div>
+                            <div style="font-size: 0.7rem; color: var(--accent);">Cliquer pour voir le compte →</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-panel-footer">
+                <button class="btn-cancel" (click)="closeDetailPanel()">Fermer</button>
+                <button class="btn-save" (click)="openForm(selectedContact!); closeDetailPanel()">
+                    <i class="fa-solid fa-pen"></i> Modifier
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         MODAL : Créer / Modifier un Contact
+    ================================================================= -->
     <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
         <div class="modal" (click)="$event.stopPropagation()">
-            <h2>Nouveau contact</h2>
-            <div class="row">
-                <div class="champ">
-                    <label>Nom complet</label>
-                    <input type="text" [(ngModel)]="nom" placeholder="Nom du contact" />
-                </div>
-                <div class="champ">
-                    <label>Type</label>
-                    <select [(ngModel)]="type">
-                        <option>Decideur</option>
-                        <option>Technique</option>
-                        <option>Autre</option>
-                    </select>
-                </div>
+            <div class="modal-top-bar">
+                <h2>
+                    <i class="fa-solid fa-user-plus" style="opacity:.6; margin-right:.4rem;"></i>
+                    {{ editingContactId ? 'Modifier le contact' : 'Nouveau contact' }}
+                </h2>
+                <button class="modal-close-btn" (click)="showForm = false">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <div class="row">
+
+            <div class="error-banner" *ngIf="errorMsg" style="margin-bottom:1rem;">
+                {{ errorMsg }}
+            </div>
+
+            <form [formGroup]="contactForm" (ngSubmit)="save()">
+                <div class="row">
+                    <div class="champ">
+                        <label>Prénom *</label>
+                        <input id="contact-prenom" type="text" formControlName="prenom" placeholder="Ahmed" />
+                        <span class="field-error" *ngIf="contactForm.get('prenom')?.invalid && contactForm.get('prenom')?.touched">
+                            Requis (min. 2 caractères)
+                        </span>
+                    </div>
+                    <div class="champ">
+                        <label>Nom *</label>
+                        <input id="contact-nom" type="text" formControlName="nom" placeholder="Bennani" />
+                        <span class="field-error" *ngIf="contactForm.get('nom')?.invalid && contactForm.get('nom')?.touched">
+                            Requis (min. 2 caractères)
+                        </span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="champ">
+                        <label>Email</label>
+                        <input id="contact-email" type="email" formControlName="email" placeholder="ahmed@exemple.ma" />
+                    </div>
+                    <div class="champ">
+                        <label>Téléphone</label>
+                        <input id="contact-tel" type="tel" formControlName="telephone" placeholder="0661-..." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="champ">
+                        <label>Type *</label>
+                        <select id="contact-type" formControlName="type">
+                            <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+                        </select>
+                    </div>
+                    <div class="champ">
+                        <label>Compte client *</label>
+                        <select id="contact-compte" formControlName="compteId">
+                            <option *ngFor="let a of accounts" [ngValue]="a.id">{{ a.nom }}</option>
+                        </select>
+                        <span class="field-error" *ngIf="contactForm.get('compteId')?.invalid && contactForm.get('compteId')?.touched">
+                            Sélectionner un compte
+                        </span>
+                    </div>
+                </div>
                 <div class="champ">
                     <label>Adresse / Ville</label>
-                    <input type="text" [(ngModel)]="adresse" placeholder="Casablanca..." />
+                    <input id="contact-adresse" type="text" formControlName="adresse" placeholder="Casablanca, Maroc" />
                 </div>
-                <div class="champ">
-                    <label>Compte client</label>
-                    <select [(ngModel)]="accountId">
-                        <option *ngFor="let a of crm.accounts" [ngValue]="a.id">{{ a.nom }}</option>
-                    </select>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" (click)="showForm = false" [disabled]="isSubmitting">Annuler</button>
+                    <button id="save-contact" type="submit" class="btn-save" [disabled]="isSubmitting || contactForm.invalid">
+                        <i class="fa-solid fa-circle-notch fa-spin" *ngIf="isSubmitting"></i>
+                        <span *ngIf="!isSubmitting">{{ editingContactId ? 'Mettre à jour' : 'Créer' }}</span>
+                    </button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         MODAL : Confirmation de Suppression Élégante
+    ================================================================= -->
+    <div class="modal-overlay delete-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+        <div class="modal delete-modal" (click)="$event.stopPropagation()">
+            <div class="delete-icon-wrapper">
+                <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" (click)="showForm = false">Annuler</button>
-                <button class="btn-save" (click)="save()">Enregistrer</button>
+            <h3 class="delete-title">Supprimer ce contact ?</h3>
+            <p class="delete-message">
+                Vous êtes sur le point de supprimer
+                <strong>{{ contactToDelete?.prenom }} {{ contactToDelete?.nom }}</strong>.
+                <br>Cette action est irréversible.
+            </p>
+            <div class="delete-actions">
+                <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+                <button class="btn-delete-confirm" (click)="executeDelete()">
+                    <i class="fa-solid fa-trash"></i> Oui, supprimer
+                </button>
             </div>
         </div>
     </div>
+
 </div>

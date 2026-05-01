@@ -119,117 +119,262 @@
     font-weight: 400;
 }
 
-/* ——— card grid ——— */
+/* ——— card grid & list ——— */
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: .85rem;
-    animation: fadeInUp .4s ease .15s both;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.5rem;
+    animation: fadeInUp 0.4s ease both;
 }
 
 .item-card {
-    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
     background: var(--bg-2);
-    border-radius: var(--radius-md);
-    transition: all .2s ease;
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    aspect-ratio: 1 / 1;
+    box-shadow: var(--shadow-card);
     overflow: hidden;
 
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), .25), transparent);
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        border-color: rgba(var(--accent-rgb), 0.2);
+        background: var(--bg-3);
     }
 }
 
-.item-card:hover {
-    transform: translateY(-3px);
-    background: var(--bg-bright);
-    box-shadow: var(--shadow-card);
+/* On permet à la partie du milieu (meta) de scroller s'il y a trop d'infos dans le carré */
+.card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    flex: 1;
+    margin-bottom: 1rem;
+    overflow-y: auto;
+    padding-right: 0.5rem; /* Espace pour une éventuelle barre de défilement */
 }
 
-.card-top {
+/* Styliser la barre de défilement pour les cartes carrées */
+.card-meta::-webkit-scrollbar {
+    width: 4px;
+}
+.card-meta::-webkit-scrollbar-track {
+    background: transparent;
+}
+.card-meta::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+.card-type-badge {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.75rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    z-index: 2;
+}
+
+.card-type-badge.blue { background: #3b82f6; }
+.card-type-badge.orange { background: #f59e0b; }
+
+.card-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: .55rem;
+    align-items: flex-start;
+    margin-top: 1.75rem; /* Space for the absolute badge */
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+    text-align: left;
 }
 
 .card-title {
-    font-size: .88rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-0);
+    letter-spacing: -0.3px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.card-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-2);
+    margin-top: 0.3rem;
+    display: block;
+}
+
+.avatar-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--bg-3);
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.avatar-large.jm {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.06);
+    margin: 1rem 0;
+    width: 100%;
 }
 
 /* ——— meta ——— */
-.card-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .3rem .65rem;
-    margin-bottom: .45rem;
-}
-
+/* L'ancienne classe a été fusionnée en haut avec les styles de scroll */
 .card-meta-item {
     display: flex;
     align-items: center;
-    gap: .35rem;
-    font-size: .76rem;
-    color: var(--text-1);
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-0);
     line-height: 1.4;
+    text-transform: uppercase;
+    font-weight: 500;
 }
 
 .meta-icon {
-    font-size: .7rem;
+    font-size: 0.85rem;
     flex-shrink: 0;
-    color: var(--text-2);
-    width: 14px;
+    color: #6b7280;
+    width: 16px;
     text-align: center;
 }
 
-.card-row {
+.card-stats-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.card-stats-row.end {
+    justify-content: flex-end;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.5rem 0.85rem;
+    border-radius: 20px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.stat-badge.blue { background: #3b82f6; }
+.stat-badge.orange { background: #f59e0b; }
+
+.avatar-mini {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 /* ——— card actions ——— */
-.card-actions {
+.card-actions-row {
     display: flex;
-    justify-content: flex-end;
-    gap: .35rem;
-    margin-top: .55rem;
-    padding-top: .55rem;
-    border-top: 1px solid var(--glass-border);
+    justify-content: space-between;
+    gap: 0.4rem;
+    margin-top: auto;
 }
 
-.btn-sm {
-    font-size: .68rem;
-    font-weight: 600;
-    padding: .25rem .55rem;
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--text-2);
+.btn-action {
+    flex: 1;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.5rem 0;
+    border-radius: 8px;
+    border: none;
     cursor: pointer;
-    transition: all .2s;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-family: inherit;
 }
 
-.btn-sm:hover {
-    border-color: var(--border-1);
-    color: var(--text-0);
+/* Bouton VOIR / DÉTAILS : bleu maté */
+.btn-action.blue-outline {
+    background: rgba(96, 165, 250, 0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.25);
+    &:hover {
+        background: rgba(96, 165, 250, 0.22);
+        border-color: #60a5fa;
+        transform: translateY(-1px);
+    }
 }
 
-.btn-sm.danger {
-    border-color: rgba(255, 110, 132, .12);
-    color: var(--danger);
+/* Bouton DÉTAILS violet (Contacts) */
+.btn-action.purple-outline {
+    background: rgba(139, 92, 246, 0.12);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    &:hover {
+        background: rgba(139, 92, 246, 0.22);
+        border-color: #a78bfa;
+        transform: translateY(-1px);
+    }
 }
 
-.btn-sm.danger:hover {
-    background: var(--danger-soft);
-    border-color: rgba(255, 110, 132, .25);
+/* Bouton MODIFIER : gris neutre */
+.btn-action.gray-outline {
+    background: rgba(var(--accent-rgb), 0.06);
+    color: var(--text-1);
+    border: 1px solid var(--glass-border);
+    &:hover {
+        background: rgba(var(--accent-rgb), 0.12);
+        color: var(--accent);
+        border-color: rgba(var(--accent-rgb), 0.3);
+        transform: translateY(-1px);
+    }
+}
+
+/* Bouton SUPPRIMER : rouge maté */
+.btn-action.red-outline {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    &:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: #ef4444;
+        transform: translateY(-1px);
+    }
 }
 
 /* ——— badges ——— */
@@ -505,5 +650,33 @@
 
     .row {
         flex-direction: column;
+    }
+
+    /* Amélioration de l'affichage des cartes sur mobile */
+    .item-card.row-layout {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.25rem;
+        gap: 0.8rem;
+    }
+
+    .item-card.row-layout .card-top {
+        margin-right: 0;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .item-card.row-layout .card-meta {
+        flex-direction: column;
+        gap: 0.6rem;
+        width: 100%;
+    }
+
+    .item-card.row-layout .card-actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.8rem;
+        padding-top: 0.8rem;
+        border-top: 1px dashed var(--glass-border);
     }
 }

@@ -17,9 +17,6 @@ services:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - auth-service
-      - crm-service
-      - finance-service
-      - sales-service
     networks:
       - hub-network
 
@@ -149,6 +146,8 @@ services:
   auth-db:
     image: postgres:16-alpine
     container_name: auth-db
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_DB: ${AUTH_DB_NAME:-auth_db}
       POSTGRES_USER: ${AUTH_DB_USER:-auth_user}
@@ -164,6 +163,8 @@ services:
   crm-db:
     image: postgres:16-alpine
     container_name: crm-db
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: ${CRM_DB_NAME:-crm_db}
       POSTGRES_USER: ${CRM_DB_USER:-crm_user}

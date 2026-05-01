@@ -9,6 +9,9 @@ WORKDIR /app
 
 # --- Copier le fichier projet et restaurer les packages ---
 COPY *.csproj ./
+
+
+
 RUN dotnet restore
 
 # --- Copier le reste du code source ---

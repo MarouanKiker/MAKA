@@ -1,0 +1,122 @@
+Structure du dossier
+Le numéro de série du volume est 52C1-A52E
+D:\PROJET_PFA\PROJET\MAKA\SERVICES\CRM-SERVICE
+¦   appsettings.json
+¦   CrmService.csproj
+¦   Dockerfile
+¦   EXPLICATION.md
+¦   Program.cs
+¦   tree_output.txt
+¦   
++---.vs
+¦   ¦   slnx.sqlite
+¦   ¦   
+¦   +---crm-service
+¦       +---FileContentIndex
+¦       ¦       4538802f-ac62-4f36-9e12-bc70900930cb.vsidx
+¦       ¦       efcf58b3-a14e-42ad-8b9c-3ba7d3c440de.vsidx
+¦       ¦       
+¦       +---v17
++---bin
+¦   +---Debug
+¦   ¦   +---net8.0
+¦   +---Release
+¦       +---net8.0
++---Controllers
+¦       CampagnesController.cs
+¦       CrmController.cs
+¦       LeadsController.cs
+¦       OpportunitesController.cs
+¦       TasksController.cs
+¦       
++---Data
+¦       CrmDbContext.cs
+¦       CrmDbContextFactory.cs
+¦       
++---DTOs
+¦   +---Campagnes
+¦   ¦       CampagneResponseDto.cs
+¦   ¦       CreateCampagneDto.cs
+¦   ¦       UpdateCampagneDto.cs
+¦   ¦       
+¦   +---Leads
+¦   ¦       CreateLeadDto.cs
+¦   ¦       LeadResponseDto.cs
+¦   ¦       UpdateLeadDto.cs
+¦   ¦       
+¦   +---Opportunites
+¦   ¦       CreateOpportuniteDto.cs
+¦   ¦       OpportuniteResponseDto.cs
+¦   ¦       UpdateOpportuniteDto.cs
+¦   ¦       
+¦   +---Tasks
+¦           CreateTaskDto.cs
+¦           TaskResponseDto.cs
+¦           UpdateTaskDto.cs
+¦           
++---Enums
+¦       LeadStatut.cs
+¦       OpportuniteStatut.cs
+¦       
++---Interfaces
+¦       ICampagneRepository.cs
+¦       ICampagneService.cs
+¦       ILeadRepository.cs
+¦       ILeadService.cs
+¦       IOpportuniteRepository.cs
+¦       IOpportuniteService.cs
+¦       
++---Mappers
+¦       CampagneMapper.cs
+¦       LeadMapper.cs
+¦       OpportuniteMapper.cs
+¦       
++---Migrations
+¦       20260308010000_InitialCreate.cs
+¦       20260308010000_InitialCreate.Designer.cs
+¦       CrmDbContextModelSnapshot.cs
+¦       
++---Models
+¦       CampagneMarketing.cs
+¦       Interaction.cs
+¦       Lead.cs
+¦       Opportunite.cs
+¦       TaskItem.cs
+¦       Ticket.cs
+¦       
++---obj
+¦   +---Debug
+¦   ¦   +---net8.0
+¦   ¦       ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+¦   ¦       ¦   CrmService.AssemblyInfo.cs
+¦   ¦       ¦   CrmService.AssemblyInfoInputs.cache
+¦   ¦       ¦   CrmService.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦   CrmService.GlobalUsings.g.cs
+¦   ¦       ¦   
+¦   ¦       +---ref
+¦   ¦       +---refint
+¦   +---Release
+¦       +---net8.0
+¦           ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+¦           ¦   CrmService.AssemblyInfo.cs
+¦           ¦   CrmService.AssemblyInfoInputs.cache
+¦           ¦   CrmService.GeneratedMSBuildEditorConfig.editorconfig
+¦           ¦   CrmService.GlobalUsings.g.cs
+¦           ¦   
+¦           +---ref
+¦           +---refint
++---Properties
+¦       launchSettings.json
+¦       
++---Repositories
+¦       CampagneRepository.cs
+¦       LeadRepository.cs
+¦       OpportuniteRepository.cs
+¦       TaskRepository.cs
+¦       
++---Services
+        CampagneService.cs
+        LeadService.cs
+        OpportuniteService.cs
+        TaskService.cs
+        

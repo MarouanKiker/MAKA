@@ -2,11 +2,11 @@
   "profiles": {
     "CrmService": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:61346;http://localhost:61347"
+      "applicationUrl": "http://127.0.0.1:5000"
     }
   }
-}
+}

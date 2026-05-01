@@ -85,6 +85,17 @@ else
     });
 }
 
+// --- CORS : autoriser Angular (localhost:4200) à appeler l'API ---
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCors", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
@@ -101,12 +112,16 @@ builder.Services.AddScoped<IOpportuniteRepository, OpportuniteRepository>();
 builder.Services.AddScoped<ILeadService, LeadService>();
 builder.Services.AddScoped<ICampagneService, CampagneService>();
 builder.Services.AddScoped<IOpportuniteService, OpportuniteService>();
-builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IInteractionRepository, InteractionRepository>();
 builder.Services.AddScoped<IInteractionService, InteractionService>();
+
+// Comptes et Contacts
+builder.Services.AddScoped<ICompteRepository, CompteRepository>();
+builder.Services.AddScoped<ICompteService, CompteService>();
+builder.Services.AddScoped<IContactRepository, ContactRepository>();
+builder.Services.AddScoped<IContactService, ContactService>();
 
 // --- OpenAPI + Scalar pour tester les API ---
 builder.Services.AddEndpointsApiExplorer();
@@ -134,7 +149,8 @@ app.MapScalarApiReference(options =>
         .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
 });
 
-// L'ordre est IMPORTANT : Authentication avant Authorization
+// L'ordre est IMPORTANT : CORS → Authentication → Authorization
+app.UseCors("DevCors");
 app.UseAuthentication();
 app.UseAuthorization();
 

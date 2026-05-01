@@ -98,6 +98,7 @@ export class TicketsComponent implements OnInit {
         });
     }
 
+
     // --- drag & drop ---
     onDragStart(ticket: Ticket): void { this.draggedTicket = ticket; }
     onDragOver(event: DragEvent): void { event.preventDefault(); }
