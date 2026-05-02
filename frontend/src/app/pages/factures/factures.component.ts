@@ -9,7 +9,7 @@ import { Facture, FactureRequest, LigneFactureRequest, StatutFacture } from '../
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './factures.component.html',
-    styleUrls: ['../shared/finance-page.scss', './factures.component.scss']
+    styleUrls: ['../shared/crm-page.scss', '../shared/finance-page.scss', './factures.component.scss']
 })
 export class FacturesComponent implements OnInit {
 
@@ -18,12 +18,10 @@ export class FacturesComponent implements OnInit {
     message = '';
     isLoading = false;
 
-    // Champs du formulaire
     numero = '';
-    tauxTVA = 0.20; // 20%
+    tauxTVA = 0.20;
     lignes: LigneFactureRequest[] = [{ produit: '', quantite: 1, prixUnitaire: 0 }];
 
-    // Labels pour l'affichage des statuts
     statutLabels: Record<StatutFacture, string> = {
         BROUILLON: 'Brouillon',
         VALIDEE: 'Validée',
@@ -52,8 +50,7 @@ export class FacturesComponent implements OnInit {
         this.isLoading = true;
         this.financeSvc.getFactures().subscribe({
             next: (data) => { this.factures = data; this.isLoading = false; },
-            error: (err) => {
-                console.error('Erreur chargement factures', err);
+            error: () => {
                 this.message = 'Erreur de chargement des factures';
                 this.isLoading = false;
             }
@@ -89,16 +86,34 @@ export class FacturesComponent implements OnInit {
         return this.getTotalHT() * (1 + this.tauxTVA);
     }
 
+    /** Payload compatible Spring : quantités entières, décimaux pour les prix. */
+    private buildFactureRequest(): FactureRequest {
+        return {
+            numero: this.numero.trim(),
+            tauxTVA: Number(this.tauxTVA),
+            lignes: this.lignes.map(l => ({
+                produit: (l.produit || '').trim(),
+                quantite: Math.max(1, Math.round(Number(l.quantite))),
+                prixUnitaire: Number(l.prixUnitaire)
+            }))
+        };
+    }
+
+    private readError(err: any): string {
+        const b = err?.error;
+        if (!b) return 'Erreur réseau ou serveur';
+        if (typeof b === 'string') return b;
+        if (b.detail) return String(b.detail);
+        if (b.message) return String(b.message);
+        return 'Erreur lors de la création';
+    }
+
     save(): void {
-        if (!this.numero || this.lignes.some(l => !l.produit || l.prixUnitaire <= 0)) {
+        const request = this.buildFactureRequest();
+        if (!request.numero || request.lignes.some(l => !l.produit || l.prixUnitaire <= 0)) {
             this.message = 'Veuillez remplir tous les champs obligatoires.';
             return;
         }
-        const request: FactureRequest = {
-            numero: this.numero,
-            tauxTVA: this.tauxTVA,
-            lignes: this.lignes
-        };
         this.financeSvc.createFacture(request).subscribe({
             next: () => {
                 this.showForm = false;
@@ -106,8 +121,7 @@ export class FacturesComponent implements OnInit {
                 this.loadFactures();
             },
             error: (err) => {
-                console.error('Erreur création facture', err);
-                this.message = err.error?.message || 'Erreur lors de la création';
+                this.message = this.readError(err);
             }
         });
     }
@@ -118,8 +132,7 @@ export class FacturesComponent implements OnInit {
                 facture.statut = updated.statut;
                 this.message = `Statut mis à jour : ${this.statutLabels[statut]}`;
             },
-            error: (err) => {
-                console.error('Erreur changement statut', err);
+            error: () => {
                 this.message = 'Erreur lors du changement de statut';
             }
         });
@@ -132,8 +145,7 @@ export class FacturesComponent implements OnInit {
                 this.message = 'Facture supprimée';
                 this.loadFactures();
             },
-            error: (err) => {
-                console.error('Erreur suppression', err);
+            error: () => {
                 this.message = 'Impossible de supprimer cette facture';
             }
         });

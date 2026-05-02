@@ -1,86 +1,112 @@
-<div class="fade-in">
-    <!-- Header -->
-    <div class="page-header">
+<div class="space-y-6 animate-fade-in max-w-7xl mx-auto">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-            <h1>
-                <i class="fa-solid fa-users-gear page-icon"></i>
-                Administration du Personnel
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                <i class="fa-solid fa-users-gear text-amber-500"></i>
+                Gestion des Utilisateurs
             </h1>
-            <p class="page-subtitle">Gerer les utilisateurs, les roles et les acces au systeme.</p>
+            <p class="text-sm text-slate-500 mt-1">Supervision des accès et assignation des rôles du réseau MAKA.</p>
         </div>
-        
-        <div style="display:flex; align-items:center;">
-            <button class="btn-add" style="background:var(--card-hover);" (click)="loadUsers()">
-                <i class="fa-solid fa-rotate-right" [class.fa-spin]="loading"></i>
-                Rafraichir
-            </button>
-        </div>
+        <button (click)="loadUsers()" class="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-amber-500 transition-colors flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-rotate"></i> Rafraîchir
+        </button>
     </div>
 
-    <!-- Content -->
-    <div style="padding: 1.5rem;">
-        <div style="background:var(--card-bg); border-radius:16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow:hidden;">
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                        <tr style="background: var(--card-hover); border-bottom: 1px solid var(--border-color);">
-                            <th style="padding:1.25rem 1.5rem; color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 1px; font-weight: 600;">Utilisateur</th>
-                            <th style="padding:1.25rem 1.5rem; color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 1px; font-weight: 600;">Roles actuels</th>
-                            <th style="padding:1.25rem 1.5rem; color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 1px; font-weight: 600;">Attribuer des roles</th>
-                            <th style="padding:1.25rem 1.5rem; color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 1px; font-weight: 600; text-align:right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody *ngIf="!loading">
-                        <tr *ngFor="let u of users" style="border-bottom: 1px solid var(--border-color); font-size:0.95rem; transition: background 0.2s;" onmouseover="this.style.background='var(--card-hover)'" onmouseout="this.style.background='transparent'">
-                            <td style="padding:1.5rem;">
-                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
-                                        {{ u.first_name.charAt(0) }}{{ u.last_name.charAt(0) }}
-                                    </div>
-                                    <div>
-                                        <div style="font-weight: 600; color:var(--text-color); font-size: 1.05rem;">{{u.first_name}} {{u.last_name}}</div>
-                                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top: 0.2rem;">{{u.email}}</div>
-                                    </div>
+    <!-- Error/Success Alerts -->
+    <div *ngIf="errorMsg" class="p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-3">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ errorMsg }}
+    </div>
+    <div *ngIf="successMsg" class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm font-medium flex items-center gap-3">
+        <i class="fa-solid fa-circle-check"></i> {{ successMsg }}
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden animate-slide-up">
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[0.65rem]">
+                    <tr>
+                        <th class="px-6 py-4">Utilisateur</th>
+                        <th class="px-6 py-4">Rôles Actuels</th>
+                        <th class="px-6 py-4 min-w-[300px]">Modifier les accès</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    
+                    <tr *ngIf="loading">
+                        <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                            <i class="fa-solid fa-circle-notch fa-spin text-amber-500 text-2xl mb-2"></i>
+                            <p>Chargement du registre...</p>
+                        </td>
+                    </tr>
+                    
+                    <tr *ngFor="let user of users" class="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                        
+                        <!-- Utilisateur Info -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-sm shadow-inner">
+                                    {{ (user.first_name || 'U').charAt(0) }}{{ (user.last_name || 'U').charAt(0) }}
                                 </div>
-                            </td>
-                            <td style="padding:1.5rem;">
-                                <div class="role-tags">
-                                    <span class="role-badge" *ngFor="let role of u.roles" [class.admin]="role === 'ROLE_ADMIN'">
-                                        {{ role.replace('ROLE_', '') }}
-                                    </span>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-slate-900 dark:text-white">{{ user.first_name }} {{ user.last_name }}</span>
+                                    <span class="text-xs text-slate-500">{{ user.email }}</span>
                                 </div>
-                            </td>
-                            <td style="padding:1.5rem;">
-                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; max-width: 400px;">
-                                    <button *ngFor="let role of availableRoles" 
-                                            (click)="toggleRole(u, role.value)"
-                                            style="padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid;"
-                                            [style.background]="hasRole(u.roles, role.value) ? 'var(--primary)' : 'transparent'"
-                                            [style.color]="hasRole(u.roles, role.value) ? 'white' : 'var(--text-muted)'"
-                                            [style.borderColor]="hasRole(u.roles, role.value) ? 'var(--primary)' : 'var(--border-color)'">
-                                        {{ role.label }}
-                                    </button>
-                                </div>
-                            </td>
-                            <td style="padding:1.5rem; text-align:right;">
-                                <button class="btn-del" title="Supprimer" (click)="deleteUser(u.id)" style="width: 36px; height: 36px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">
-                                    <i class="fa-solid fa-trash"></i>
+                            </div>
+                        </td>
+
+                        <!-- Rôles Actuels -->
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1">
+                                <span *ngFor="let r of user.roles" 
+                                      class="px-2 py-1 rounded-md text-[0.65rem] font-bold uppercase tracking-wider border"
+                                      [ngClass]="{
+                                          'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/30': r === 'ROLE_ADMIN',
+                                          'bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/30': r === 'ROLE_COMMERCIAL',
+                                          'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30': r === 'ROLE_FINANCIER',
+                                          'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30': r === 'ROLE_RH',
+                                          'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700': r === 'ROLE_USER'
+                                      }">
+                                    {{ getRoleLabel(r) }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Modifier Accès (Toggles) -->
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-2">
+                                <button *ngFor="let ro of availableRoles"
+                                        (click)="toggleRole(user, ro.value)"
+                                        class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border"
+                                        [ngClass]="user.roles.includes(ro.value) ? 
+                                            'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900 dark:border-white shadow-sm' : 
+                                            'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'">
+                                    {{ ro.label }}
                                 </button>
-                            </td>
-                        </tr>
-                        <tr *ngIf="users.length === 0">
-                            <td colspan="4" class="text-center py-4">Aucun utilisateur trouve.</td>
-                        </tr>
-                    </tbody>
-                    <tbody *ngIf="loading">
-                        <tr>
-                            <td colspan="4" class="text-center py-8">
-                                <i class="fa-solid fa-circle-notch fa-spin text-3xl text-primary"></i>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="px-6 py-4 text-right">
+                            <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+
+                    </tr>
+                    
+                    <tr *ngIf="!loading && users.length === 0">
+                        <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                            Aucun utilisateur trouvé.
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

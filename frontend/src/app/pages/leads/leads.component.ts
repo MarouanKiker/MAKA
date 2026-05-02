@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { CrmService } from '../../core/services/crm.service';
 import { Lead } from '../../core/models/crm.model';
 
@@ -19,7 +20,6 @@ export class LeadsComponent implements OnInit {
 
     leads: Lead[] = [];
 
-    // colonnes du kanban (chaque colonne = un statut string enum)
     columns = [
         { key: 'NOUVEAU', label: 'Nouveau', color: '#4a9eff' },
         { key: 'QUALIFIE', label: 'Qualifié', color: '#a0a0a0' },
@@ -56,14 +56,14 @@ export class LeadsComponent implements OnInit {
     save(): void {
         const newLead: Partial<Lead> = {
             source: this.source,
-            statut: 'NOUVEAU', 
+            statut: 'NOUVEAU',
             score: this.score,
             dateCreation: new Date().toISOString()
         };
 
         this.crm.createLead(newLead).subscribe({
-            next: (created) => {
-                this.leads.push(created);
+            next: () => {
+                this.loadLeads();
                 this.showForm = false;
             },
             error: (err) => console.error('Erreur creation lead', err)
@@ -84,10 +84,10 @@ export class LeadsComponent implements OnInit {
 
     confirmConvert(): void {
         if (!this.leadToConvert) return;
-        
+
         const lead = this.leadToConvert;
         this.crm.convertLead(lead.id, this.oppTitre, this.oppValeur).subscribe({
-            next: (newOpp) => {
+            next: () => {
                 lead.statut = 'CONVERTI';
                 this.showConvertForm = false;
                 this.leadToConvert = null;
@@ -96,7 +96,7 @@ export class LeadsComponent implements OnInit {
                 console.error('Erreur conversion', err);
                 if (err.status === 409) {
                     alert('Ce Lead a déjà été converti en Opportunité !');
-                    lead.statut = 'CONVERTI'; // Synchroniser l'UI
+                    lead.statut = 'CONVERTI';
                 } else {
                     alert('Une erreur est survenue lors de la conversion.');
                 }
@@ -112,15 +112,13 @@ export class LeadsComponent implements OnInit {
     }
 
     delete(id: number): void {
+        if (!confirm('Supprimer ce lead ?')) return;
         this.crm.deleteLead(id).subscribe({
-            next: () => {
-                this.leads = this.leads.filter(l => l.id !== id);
-            },
+            next: () => this.loadLeads(),
             error: (err) => console.error('Erreur suppression lead', err)
         });
     }
 
-    // --- drag & drop ---
     onDragStart(lead: Lead): void {
         this.draggedLead = lead;
     }
@@ -129,31 +127,18 @@ export class LeadsComponent implements OnInit {
         event.preventDefault();
     }
 
-    onDrop(event: DragEvent, statut: string): void {
+    onDrop(event: DragEvent, newStatut: string): void {
         event.preventDefault();
-        if (this.draggedLead) {
-            const currentLead = this.draggedLead;
-            const previousStatut = currentLead.statut;
-            
-            if (statut === 'CONVERTI' && previousStatut !== 'CONVERTI') {
-                this.openConvertForm(currentLead);
-            } else if (previousStatut !== statut) {
-                const oldStatut = currentLead.statut;
-                currentLead.statut = statut; // optimiste
-                this.crm.updateLead(currentLead.id, { 
-                    statut: statut, 
-                    source: currentLead.source, 
-                    score: currentLead.score 
-                }).subscribe({
-                    next: () => {},
-                    error: (err) => {
-                        console.error('Erreur maj statut', err);
-                        currentLead.statut = oldStatut; // revert
-                    }
-                });
-            }
+        if (!this.draggedLead || this.draggedLead.statut === newStatut) {
             this.draggedLead = null;
+            return;
         }
+        const lead = this.draggedLead;
+        this.crm.updateLead(lead.id, { statut: newStatut }).subscribe({
+            next: () => { lead.statut = newStatut; },
+            error: (err) => console.error('Erreur mise à jour statut', err)
+        });
+        this.draggedLead = null;
     }
 
     onDragEnd(): void {

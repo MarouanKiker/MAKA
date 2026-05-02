@@ -1,20 +1,4 @@
-// Modèles CRM alignés avec les DTOs .NET du backend
-
-export interface Account {
-    id: number;
-    nom: string;
-    email: string;
-    telephone: string;
-    responsable: string;
-}
-
-export interface Contact {
-    id: number;
-    nom: string;
-    type: string;
-    adresse: string;
-    accountId: number;
-}
+// Modèles CRM alignés avec les DTOs .NET du backend baseline
 
 export interface Lead {
     id: number;
@@ -23,6 +7,7 @@ export interface Lead {
     score: number;
     dateCreation: string;
     campagneId: number | null;
+    campagneNom?: string | null;
     opportunite?: Opportunity | null;
 }
 
@@ -53,7 +38,6 @@ export interface Task {
     dueDate: string;
     isCompleted: boolean;
     leadId?: number | null;
-    opportuniteId?: number | null;
 }
 
 export interface CreateTaskDto {
@@ -61,7 +45,6 @@ export interface CreateTaskDto {
     description: string;
     dueDate: string;
     leadId?: number | null;
-    opportuniteId?: number | null;
 }
 
 // Ticket : aligné avec Ticket.cs du backend

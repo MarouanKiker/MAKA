@@ -12,6 +12,5 @@ public class CreateLeadDto
     public int Score { get; set; }
 
     public int? CampagneId { get; set; }
-
     public int? UtilisateurId { get; set; }
 }

@@ -25,14 +25,14 @@ public class ComptabiliteController {
 
     @GetMapping
     @Operation(summary = "Lister toutes les ecritures comptables")
-    @PreAuthorize("hasAnyRole('COMPTABLE','GESTIONNAIRE','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYE','USER','COMPTABLE','GESTIONNAIRE','ADMIN')")
     public ResponseEntity<List<JournalTransactionResponse>> getJournal() {
         return ResponseEntity.ok(comptabiliteService.getJournal());
     }
 
     @GetMapping("/compte/{compte}")
     @Operation(summary = "Lister les ecritures par compte")
-    @PreAuthorize("hasAnyRole('COMPTABLE','GESTIONNAIRE','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYE','USER','COMPTABLE','GESTIONNAIRE','ADMIN')")
     public ResponseEntity<List<JournalTransactionResponse>> getByCompte(@PathVariable String compte) {
         return ResponseEntity.ok(comptabiliteService.getJournalByCompte(compte));
     }

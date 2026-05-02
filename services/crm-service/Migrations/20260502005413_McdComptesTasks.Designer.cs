@@ -3,6 +3,7 @@ using System;
 using CrmService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CrmService.Migrations
 {
     [DbContext(typeof(CrmDbContext))]
-    partial class CrmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260502005413_McdComptesTasks")]
+    partial class McdComptesTasks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,42 @@ namespace CrmService.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("CrmService.Models.Account", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Responsable")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Telephone")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int?>("UtilisateurId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("comptes", (string)null);
+                });
 
             modelBuilder.Entity("CrmService.Models.CampagneMarketing", b =>
                 {
@@ -47,6 +86,39 @@ namespace CrmService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("campagnes_marketing", (string)null);
+                });
+
+            modelBuilder.Entity("CrmService.Models.Contact", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Adresse")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("contacts", (string)null);
                 });
 
             modelBuilder.Entity("CrmService.Models.Interaction", b =>
@@ -90,6 +162,9 @@ namespace CrmService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("CampagneId")
                         .HasColumnType("integer");
 
@@ -97,6 +172,21 @@ namespace CrmService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Entreprise")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NomContact")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int>("Score")
                         .HasColumnType("integer");
@@ -109,10 +199,17 @@ namespace CrmService.Migrations
                     b.Property<int>("Statut")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Telephone")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<int?>("UtilisateurId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("CampagneId");
 
@@ -176,14 +273,27 @@ namespace CrmService.Migrations
                     b.Property<int?>("LeadId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("OpportuniteId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Priorite")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(2);
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int?>("UtilisateurId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LeadId");
+
+                    b.HasIndex("OpportuniteId");
 
                     b.ToTable("tasks", (string)null);
                 });
@@ -209,6 +319,11 @@ namespace CrmService.Migrations
                     b.Property<int?>("LeadId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Priorite")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(2);
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -219,11 +334,25 @@ namespace CrmService.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int?>("UtilisateurId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LeadId");
 
                     b.ToTable("tickets", (string)null);
+                });
+
+            modelBuilder.Entity("CrmService.Models.Contact", b =>
+                {
+                    b.HasOne("CrmService.Models.Account", "Account")
+                        .WithMany("Contacts")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("CrmService.Models.Interaction", b =>
@@ -238,10 +367,17 @@ namespace CrmService.Migrations
 
             modelBuilder.Entity("CrmService.Models.Lead", b =>
                 {
+                    b.HasOne("CrmService.Models.Account", "Account")
+                        .WithMany("Leads")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("CrmService.Models.CampagneMarketing", "Campagne")
                         .WithMany("Leads")
                         .HasForeignKey("CampagneId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Account");
 
                     b.Navigation("Campagne");
                 });
@@ -264,7 +400,14 @@ namespace CrmService.Migrations
                         .HasForeignKey("LeadId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("CrmService.Models.Opportunite", "Opportunite")
+                        .WithMany()
+                        .HasForeignKey("OpportuniteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Lead");
+
+                    b.Navigation("Opportunite");
                 });
 
             modelBuilder.Entity("CrmService.Models.Ticket", b =>
@@ -275,6 +418,13 @@ namespace CrmService.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Lead");
+                });
+
+            modelBuilder.Entity("CrmService.Models.Account", b =>
+                {
+                    b.Navigation("Contacts");
+
+                    b.Navigation("Leads");
                 });
 
             modelBuilder.Entity("CrmService.Models.CampagneMarketing", b =>

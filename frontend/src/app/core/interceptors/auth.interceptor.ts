@@ -1,9 +1,22 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
-// intercepteur HTTP : envoie automatiquement les cookies HttpOnly (maka_jwt).
+/**
+ * Intercepteur auth : `withCredentials: true` pour envoyer le cookie HttpOnly `maka_jwt`
+ * vers la gateway. Si le backend a aussi renvoyé `token` au login (stocké par compatibilité),
+ * on ajoute `Authorization: Bearer` pour les services qui lisent le header (CRM .NET, Finance).
+ */
 export const authInterceptor: HttpInterceptorFn = function (req, next) {
-    req = req.clone({ withCredentials: true });
+    const token = localStorage.getItem('maka_token');
 
-    // on continue la requete
-    return next(req);
+    let cloned = req.clone({ withCredentials: true });
+
+    if (token) {
+        cloned = cloned.clone({
+            setHeaders: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    }
+
+    return next(cloned);
 };

@@ -25,6 +25,24 @@ services:
       - finance-network
 
   # ---------------------------------------------------------------------------
+  # FRONTEND - Angular 17 (dev server sur port 4200)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "${PORT_FRONTEND:-4200}:4200"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    depends_on:
+      - gateway
+    networks:
+      - hub-network
+
+  # ---------------------------------------------------------------------------
   # GATEWAY (Hub) - Point d'entrée unique (port 8000 pour éviter conflit Windows)
   # ---------------------------------------------------------------------------
   gateway:
@@ -234,6 +252,7 @@ services:
     environment:
       DATABASE_URL: "postgresql://${SALES_DB_USER:-sales_user}:${SALES_DB_PASSWORD:-sales_pass}@sales-db:5432/${SALES_DB_NAME:-sales_db}"
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
       GATEWAY_URL: http://gateway:80
       RABBITMQ_URL: "amqp://${RABBITMQ_USER:-maka}:${RABBITMQ_PASS:-maka_secret}@rabbitmq:5672/"

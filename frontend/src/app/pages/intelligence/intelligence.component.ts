@@ -22,84 +22,98 @@ interface ChatMessage {
 })
 export class IntelligenceComponent implements OnInit {
 
-    // --- chatbot ---
+    // --- Copilot (Real RAG) ---
     messages: ChatMessage[] = [];
     messageInput = '';
     chatLoading = false;
+    showCopilot = false;
 
-    // --- forecast ---
+    // --- Data from Backend ---
+    segmentationData: any = null;
     forecastData: any = null;
-
-    // --- kpis ---
     kpis: any = null;
-
-    // --- insights ---
     insights: any[] = [];
-
-    // --- etats de chargement ---
-    loading = true;
+    loadingData = true;
 
     @ViewChild('chatContainer') chatContainer!: ElementRef;
 
     constructor(private ai: AiService) {}
 
     ngOnInit(): void {
-        // message de bienvenue du chatbot
         this.messages.push({
-            texte: "Bonjour ! Je suis l'assistant IA de MAKA ERP. Posez-moi une question sur vos ventes, devis ou previsions.",
+            texte: "Bonjour ! Je suis MAKA Copilot. Je suis connecté à votre base de données réelle. Posez-moi des questions sur vos ventes, vos clients VIP ou vos prévisions.",
             auteur: 'ai',
             heure: this.getHeure()
         });
 
-        // charger les donnees
-        this.chargerDonnees();
+        this.chargerDonneesReelles();
     }
 
-    // charger les KPI, forecast et insights en parallele
-    chargerDonnees(): void {
+    chargerDonneesReelles(): void {
+        this.loadingData = true;
+
+        // Charger KPI
         this.ai.getKpis().subscribe({
             next: (data) => { this.kpis = data; },
-            error: () => { this.kpis = { ca_actuel: 270000, ca_prevu: 291600, croissance: 4.7, total_devis: 12, total_commandes: 8, taux_conversion: 66.7 }; }
+            error: (err) => { console.error('Erreur KPI', err); }
         });
 
+        // Charger Forecast
         this.ai.getForecast().subscribe({
-            next: (data) => { this.forecastData = data; this.loading = false; },
-            error: () => { this.genererForecastDemo(); this.loading = false; }
+            next: (data) => { this.forecastData = data; },
+            error: (err) => { console.error('Erreur Forecast', err); }
         });
 
+        // Charger Segmentation (K-Means)
+        this.ai.getSegmentation().subscribe({
+            next: (data) => { 
+                this.segmentationData = data; 
+                this.loadingData = false;
+            },
+            error: (err) => { 
+                console.error('Erreur Segmentation', err); 
+                this.loadingData = false;
+            }
+        });
+
+        // Charger Insights
         this.ai.getInsights().subscribe({
             next: (data) => { this.insights = data; },
-            error: () => { this.insights = [
-                { icone: 'fa-arrow-trend-up', texte: 'CA en hausse de 4.7% ce mois.', type: 'success' },
-                { icone: 'fa-lightbulb', texte: 'Pack Premium represente 35% des ventes.', type: 'info' },
-                { icone: 'fa-clock', texte: '3 devis en attente depuis +15 jours.', type: 'warning' }
-            ]; }
+            error: (err) => { console.error('Erreur Insights', err); }
         });
     }
 
-    // envoyer un message au chatbot
+    // --- Copilot Chat Logic (Real Backend Call) ---
+    toggleCopilot(): void {
+        this.showCopilot = !this.showCopilot;
+        if (this.showCopilot) this.scrollChat();
+    }
+
     envoyerMessage(): void {
         let texte = this.messageInput.trim();
         if (!texte || this.chatLoading) return;
 
-        // ajouter le message user
         this.messages.push({ texte: texte, auteur: 'user', heure: this.getHeure() });
         this.messageInput = '';
         this.chatLoading = true;
         this.scrollChat();
 
-        // appeler l'API
+        // APPEL AU VRAI BACKEND RAG (app.ai.chatbot)
         this.ai.chat(texte).subscribe({
-            next: (data) => {
-                this.messages.push({ texte: data.reponse, auteur: 'ai', heure: this.getHeure() });
+            next: (response) => {
+                this.messages.push({ 
+                    texte: response.reponse, 
+                    auteur: 'ai', 
+                    heure: this.getHeure() 
+                });
                 this.chatLoading = false;
                 this.scrollChat();
             },
-            error: () => {
-                this.messages.push({
-                    texte: "Je suis temporairement indisponible. Verifiez que le service sales est demarre.",
-                    auteur: 'ai',
-                    heure: this.getHeure()
+            error: (err) => {
+                this.messages.push({ 
+                    texte: "Désolé, je n'arrive pas à contacter le moteur d'Intelligence Artificielle. Le service sales est-il démarré ?", 
+                    auteur: 'ai', 
+                    heure: this.getHeure() 
                 });
                 this.chatLoading = false;
                 this.scrollChat();
@@ -107,7 +121,6 @@ export class IntelligenceComponent implements OnInit {
         });
     }
 
-    // gerer touche Entree dans l'input
     onKeyDown(event: KeyboardEvent): void {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -115,7 +128,6 @@ export class IntelligenceComponent implements OnInit {
         }
     }
 
-    // scroller le chat en bas
     scrollChat(): void {
         setTimeout(() => {
             if (this.chatContainer) {
@@ -124,42 +136,20 @@ export class IntelligenceComponent implements OnInit {
         }, 100);
     }
 
-    // heure actuelle formatee
     getHeure(): string {
         let now = new Date();
         return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
     }
 
-    // calculer la hauteur d'une barre de graphique (en %)
-    getBarHeight(valeur: number): number {
-        if (!this.forecastData) return 0;
-        let max = Math.max(...this.forecastData.donnees.map((d: any) => d.valeur));
-        return (valeur / max) * 100;
-    }
-
-    // formater un montant en DH
+    // Utilitaires affichage
     formatMontant(val: number): string {
         if (val >= 1000) return Math.round(val / 1000) + 'K';
-        return val.toString();
+        return val ? val.toString() : '0';
     }
 
-    // forecast de demo si l'API n'est pas disponible
-    genererForecastDemo(): void {
-        this.forecastData = {
-            tendance: 'hausse',
-            croissance: 8.2,
-            donnees: [
-                { mois: 'Sep', valeur: 220000, type: 'reel' },
-                { mois: 'Oct', valeur: 235000, type: 'reel' },
-                { mois: 'Nov', valeur: 248000, type: 'reel' },
-                { mois: 'Dec', valeur: 275000, type: 'reel' },
-                { mois: 'Jan', valeur: 242000, type: 'reel' },
-                { mois: 'Fev', valeur: 258000, type: 'reel' },
-                { mois: 'Mar', valeur: 270000, type: 'reel' },
-                { mois: 'Avr', valeur: 285000, type: 'prediction' },
-                { mois: 'Mai', valeur: 295000, type: 'prediction' },
-                { mois: 'Jun', valeur: 310000, type: 'prediction' },
-            ]
-        };
+    getBarHeight(valeur: number): number {
+        if (!this.forecastData || !this.forecastData.donnees) return 0;
+        let max = Math.max(...this.forecastData.donnees.map((d: any) => d.valeur), 1);
+        return (valeur / max) * 100;
     }
 }

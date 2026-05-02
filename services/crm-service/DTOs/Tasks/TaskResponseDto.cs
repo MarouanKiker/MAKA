@@ -8,5 +8,4 @@ public class TaskResponseDto
     public DateTime DueDate { get; set; }
     public bool IsCompleted { get; set; }
     public int? LeadId { get; set; }
-    public int? OpportuniteId { get; set; }
 }

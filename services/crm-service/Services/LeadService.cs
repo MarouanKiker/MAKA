@@ -40,9 +40,12 @@ public class LeadService : ILeadService
         return lead == null ? null : LeadMapper.ToResponseDto(lead);
     }
 
-    public async Task<LeadResponseDto> CreateAsync(CreateLeadDto dto)
+    public async Task<LeadResponseDto> CreateAsync(CreateLeadDto dto, int? authUserId)
     {
         var lead = LeadMapper.ToEntity(dto);
+        if (lead.UtilisateurId == null && authUserId != null)
+            lead.UtilisateurId = authUserId;
+
         var created = await _leadRepository.CreateAsync(lead);
 
         // Recharger avec l'include de la campagne

@@ -44,6 +44,22 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenResolver(request -> {
+                            // Chercher le token dans le cookie 'maka_jwt'
+                            if (request.getCookies() != null) {
+                                for (var cookie : request.getCookies()) {
+                                    if ("maka_jwt".equals(cookie.getName())) {
+                                        return cookie.getValue();
+                                    }
+                                }
+                            }
+                            // Fallback sur le header Authorization standard
+                            String authHeader = request.getHeader("Authorization");
+                            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                                return authHeader.substring(7);
+                            }
+                            return null;
+                        })
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 );
 

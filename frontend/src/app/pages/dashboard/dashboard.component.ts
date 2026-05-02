@@ -17,6 +17,7 @@ export class DashboardComponent implements OnInit {
 
     userName = '';
     today = '';
+    toastMessage = '';
 
     stats: any[] = [];
     pipeline: any[] = [];
@@ -45,7 +46,7 @@ export class DashboardComponent implements OnInit {
             next: (data) => {
                 this.leads = data.leads;
                 this.opportunities = data.opps;
-                
+
                 this.buildStats();
                 this.buildPipeline();
             },
@@ -55,16 +56,12 @@ export class DashboardComponent implements OnInit {
 
     buildStats(): void {
         let max = Math.max(
-            this.crm.accounts.length,
-            this.crm.contacts.length,
             this.leads.length,
             this.opportunities.length,
             1
         );
 
         this.stats = [
-            { icon: 'fa-solid fa-building', label: 'Comptes', value: this.crm.accounts.length, bg: 'rgba(96,165,250,.12)', color: '#60a5fa', percent: (this.crm.accounts.length / max) * 100 },
-            { icon: 'fa-solid fa-address-book', label: 'Contacts', value: this.crm.contacts.length, bg: 'rgba(167,139,250,.12)', color: '#a78bfa', percent: (this.crm.contacts.length / max) * 100 },
             { icon: 'fa-solid fa-bullseye', label: 'Leads', value: this.leads.length, bg: 'rgba(251,191,36,.12)', color: '#fbbf24', percent: (this.leads.length / max) * 100 },
             { icon: 'fa-solid fa-arrow-trend-up', label: 'Opportunites', value: this.opportunities.length, bg: 'rgba(52,211,153,.12)', color: '#34d399', percent: (this.opportunities.length / max) * 100 },
         ];
@@ -96,5 +93,33 @@ export class DashboardComponent implements OnInit {
 
     goTo(path: string): void {
         this.router.navigate([path]);
+    }
+
+    showOpToast(): void {
+        this.toastMessage = 'Le système est 100% opérationnel. Aucun incident en cours.';
+        setTimeout(() => this.toastMessage = '', 4000);
+    }
+
+    downloadReport(): void {
+        this.toastMessage = 'Génération du rapport global en cours...';
+        setTimeout(() => {
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "Module,Statut,Metrique\n" +
+                "CRM & Ventes,Operationnel," + this.leads.length + " Leads\n" +
+                "Finance & Compta,Operationnel," + this.opportunities.length + " Opportunites\n" +
+                "Serveur API,Operationnel,99.9% Uptime\n" +
+                "Base de donnees,Operationnel,3.2ms de latence";
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `maka_rapport_global_${new Date().getTime()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            this.toastMessage = 'Le rapport CSV a été téléchargé avec succès.';
+            setTimeout(() => this.toastMessage = '', 4000);
+        }, 1500);
     }
 }

@@ -17,8 +17,11 @@ export class AuthService {
 
     // connexion d'un utilisateur
     login(data: LoginRequest): Observable<any> {
-        // Login: le JWT est désormais stocké côté navigateur en cookie HttpOnly.
         return this.http.post<any>(this.api + '/login', data, { withCredentials: true }).pipe(
+            tap(res => {
+                // Stocker le token pour l'intercepteur
+                if (res.token) localStorage.setItem('maka_token', res.token);
+            }),
             switchMap(() => this.http.get<{ user: any }>(this.api + '/profile', { withCredentials: true })),
             tap((res) => {
                 let user = this.mapUser(res.user);
@@ -45,6 +48,7 @@ export class AuthService {
             error: () => { }
         });
         localStorage.removeItem('user');
+        localStorage.removeItem('maka_token');
         this.router.navigate(['/login']);
     }
 

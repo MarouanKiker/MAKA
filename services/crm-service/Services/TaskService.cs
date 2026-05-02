@@ -25,7 +25,7 @@ public class TaskService : ITaskService
         return task == null ? null : TaskMapper.ToResponseDto(task);
     }
 
-    public async Task<TaskResponseDto> CreateAsync(CreateTaskDto dto)
+    public async Task<TaskResponseDto> CreateAsync(CreateTaskDto dto, int? authUserId)
     {
         var task = TaskMapper.ToEntity(dto);
         var created = await _repo.CreateAsync(task);
@@ -52,9 +52,6 @@ public class TaskService : ITaskService
 
         if (dto.LeadId.HasValue)
             task.LeadId = dto.LeadId;
-
-        if (dto.OpportuniteId.HasValue)
-            task.OpportuniteId = dto.OpportuniteId;
 
         var updated = await _repo.UpdateAsync(task);
         return TaskMapper.ToResponseDto(updated);

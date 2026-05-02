@@ -53,17 +53,20 @@ export class CampaignsComponent implements OnInit {
     }
 
     save(): void {
+        const nom = (this.nom || '').trim();
+        if (!nom) return;
+
         const newCampaign: Partial<Campaign> = {
-            nom: this.nom,
+            nom,
             budget: this.budget,
             dateDebut: this.dateDebut ? new Date(this.dateDebut).toISOString() : new Date().toISOString(),
-            dateFin: this.dateFin ? new Date(this.dateFin).toISOString() : new Date().toISOString()
+            dateFin: this.dateFin ? new Date(this.dateFin).toISOString() : new Date(Date.now() + 86400000).toISOString()
         };
 
         this.crm.createCampaign(newCampaign).subscribe({
-            next: (created) => {
-                this.campaigns.push(created);
+            next: () => {
                 this.showForm = false;
+                this.loadCampaigns();
             },
             error: (err) => console.error('Erreur creation campagne', err)
         });

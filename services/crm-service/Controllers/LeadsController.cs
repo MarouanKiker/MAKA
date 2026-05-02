@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CrmService.Auth;
 using CrmService.DTOs.Leads;
 using CrmService.Interfaces;
 
@@ -50,7 +51,8 @@ public class LeadsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateLeadDto dto)
     {
-        var lead = await _leadService.CreateAsync(dto);
+        var uid = User.GetAuthUserId();
+        var lead = await _leadService.CreateAsync(dto, uid);
         return CreatedAtAction(nameof(GetById), new { id = lead.Id }, lead);
     }
 
