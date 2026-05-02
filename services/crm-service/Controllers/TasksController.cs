@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CrmService.Auth;
 using CrmService.DTOs.Tasks;
 using CrmService.Interfaces;
 
@@ -40,7 +41,8 @@ public class TasksController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTaskDto dto)
     {
-        var task = await _service.CreateAsync(dto);
+        var uid = User.GetAuthUserId();
+        var task = await _service.CreateAsync(dto, uid);
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
     }
 

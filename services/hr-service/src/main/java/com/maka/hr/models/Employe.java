@@ -27,6 +27,9 @@ public class Employe {
     @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd")
     private Date dateEmbauche;
 
+    private String poste;
+    private String departement;
+
     // --- Relations (Basé sur le diagramme de classe) ---
 
     @OneToMany(mappedBy = "employe", cascade = CascadeType.ALL)
@@ -63,6 +66,12 @@ public class Employe {
 
     public Date getDateEmbauche() { return dateEmbauche; }
     public void setDateEmbauche(Date dateEmbauche) { this.dateEmbauche = dateEmbauche; }
+
+    public String getPoste() { return poste; }
+    public void setPoste(String poste) { this.poste = poste; }
+
+    public String getDepartement() { return departement; }
+    public void setDepartement(String departement) { this.departement = departement; }
 
     public List<Contrat> getContrats() { return contrats; }
     public void setContrats(List<Contrat> contrats) { this.contrats = contrats; }

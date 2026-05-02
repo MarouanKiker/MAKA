@@ -18,7 +18,6 @@ public class TaskRepository : ITaskRepository
     {
         return await _context.Tasks
             .Include(t => t.Lead)
-            .Include(t => t.Opportunite)
             .OrderByDescending(t => t.DueDate)
             .ToListAsync();
     }
@@ -27,7 +26,6 @@ public class TaskRepository : ITaskRepository
     {
         return await _context.Tasks
             .Include(t => t.Lead)
-            .Include(t => t.Opportunite)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 

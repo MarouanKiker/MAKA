@@ -38,19 +38,22 @@ class LoginJwtCookieListener
             return;
         }
 
-        // Cookie JWT sécurisé: non lisible en JS et envoyé automatiquement au backend.
+        // Cookie JWT HttpOnly. En HTTPS prod : SameSite=none + Secure. En HTTP local : lax + non sécurisé.
+        $secure = $request->isSecure();
+        $sameSite = $secure ? 'none' : 'lax';
+
         $response->headers->setCookie(
             Cookie::create('maka_jwt')
                 ->withValue($jwt)
                 ->withHttpOnly(true)
-                ->withSecure(true)
-                ->withSameSite('strict')
+                ->withSecure($secure)
+                ->withSameSite($sameSite)
                 ->withPath('/')
                 ->withExpires(new \DateTimeImmutable('+1 hour'))
         );
 
-        // Rétrocompatibilité: on conserve les autres champs (ex: refresh_token), mais pas le JWT.
-        unset($data['token'], $data['access_token']);
+        // On garde le token dans le JSON pour que le frontend puisse le mettre en header (fallback dev)
+        // $response->headers->setCookie(...) est deja fait au dessus pour le mode secure cookie.
         $response->setContent((string) json_encode($data, JSON_UNESCAPED_UNICODE));
     }
 }

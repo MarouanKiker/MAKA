@@ -17,8 +17,5 @@ namespace CrmService.Models
         // Relations
         public int? LeadId { get; set; }
         public Lead? Lead { get; set; }
-
-        public int? OpportuniteId { get; set; }
-        public Opportunite? Opportunite { get; set; }
     }
 }

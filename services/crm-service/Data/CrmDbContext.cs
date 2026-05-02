@@ -82,13 +82,8 @@ public class CrmDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(e => e.LeadId)
                   .OnDelete(DeleteBehavior.SetNull);
-
-            // Relation Task → Opportunite (N → 1)
-            entity.HasOne(e => e.Opportunite)
-                  .WithMany()
-                  .HasForeignKey(e => e.OpportuniteId)
-                  .OnDelete(DeleteBehavior.SetNull);
         });
+
         modelBuilder.Entity<Ticket>(entity =>
         {
             entity.ToTable("tickets");

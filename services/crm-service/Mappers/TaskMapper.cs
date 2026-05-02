@@ -13,8 +13,7 @@ public static class TaskMapper
             Description = dto.Description ?? string.Empty,
             DueDate = dto.DueDate,
             IsCompleted = false,
-            LeadId = dto.LeadId,
-            OpportuniteId = dto.OpportuniteId
+            LeadId = dto.LeadId
         };
     }
 
@@ -27,8 +26,7 @@ public static class TaskMapper
             Description = task.Description,
             DueDate = task.DueDate,
             IsCompleted = task.IsCompleted,
-            LeadId = task.LeadId,
-            OpportuniteId = task.OpportuniteId
+            LeadId = task.LeadId
         };
     }
 }

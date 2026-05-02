@@ -28,7 +28,7 @@ public class CampagneService : ICampagneService
     public async Task<CampagneResponseDto> CreateAsync(CreateCampagneDto dto)
     {
         // Validation : DateFin doit être après DateDebut
-        if (dto.DateFin <= dto.DateDebut)
+        if (dto.DateFin < dto.DateDebut)
             throw new ArgumentException("La date de fin doit être postérieure à la date de début.");
 
         var campagne = CampagneMapper.ToEntity(dto);
@@ -56,7 +56,7 @@ public class CampagneService : ICampagneService
             campagne.DateFin = dto.DateFin.Value;
 
         // Revalider les dates après modification
-        if (campagne.DateFin <= campagne.DateDebut)
+        if (campagne.DateFin < campagne.DateDebut)
             throw new ArgumentException("La date de fin doit être postérieure à la date de début.");
 
         var updated = await _campagneRepository.UpdateAsync(campagne);

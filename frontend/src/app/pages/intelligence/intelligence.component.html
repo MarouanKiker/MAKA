@@ -1,156 +1,166 @@
-<div class="intel-page">
-
-    <!-- particules en arriere-plan -->
-    <div class="particles">
-        <span *ngFor="let p of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]" class="particle"></span>
-    </div>
-
-    <!-- en-tete -->
-    <div class="intel-header">
-        <div class="intel-title">
-            <span class="intel-icon">🧠</span>
+<div class="p-4 md:p-8 space-y-6">
+    
+    <!-- En-tête -->
+    <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-inner">
+                <i class="fa-solid fa-brain text-white text-xl"></i>
+            </div>
             <div>
-                <h1>MAKA Intelligence</h1>
-                <p>Module d'Intelligence Artificielle</p>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">MAKA Intelligence</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Modèles Machine Learning connectés à vos vraies données</p>
             </div>
         </div>
-        <div class="intel-badge">
-            <span class="dot-pulse"></span>
-            IA Active
-        </div>
+        <button (click)="toggleCopilot()" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-semibold border border-indigo-200 dark:border-indigo-500/20 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-robot"></i>
+            MAKA Copilot
+        </button>
     </div>
 
-    <!-- grille principale : chatbot a gauche, forecast + kpi a droite -->
-    <div class="intel-grid">
+    <!-- Spinner Chargement -->
+    <div *ngIf="loadingData" class="flex flex-col items-center justify-center py-20">
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-500 mb-4"></i>
+        <p class="text-slate-500 font-medium">L'IA MAKA analyse vos données en temps réel...</p>
+    </div>
 
-        <!-- COLONNE GAUCHE : CHATBOT -->
-        <div class="chat-card">
-            <div class="card-header">
-                <i class="fa-solid fa-robot"></i>
-                <span>Assistant IA</span>
-                <span class="header-badge">Gemini</span>
+    <div *ngIf="!loadingData" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Colonne Gauche (2/3) : KPIs et Forecast -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- KPIs -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" *ngIf="kpis">
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 text-lg"><i class="fa-solid fa-coins"></i></div>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ formatMontant(kpis.ca_actuel) }} DH</p>
+                    <p class="text-xs font-medium text-slate-500 mt-1">CA Réel</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 text-6xl text-purple-500/5"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3 text-lg"><i class="fa-solid fa-crystal-ball"></i></div>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ formatMontant(kpis.ca_prevu) }} DH</p>
+                    <p class="text-xs font-medium text-slate-500 mt-1">Prédiction (Gradient Boosting)</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-3 text-lg"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white">+{{ kpis.croissance }}%</p>
+                    <p class="text-xs font-medium text-slate-500 mt-1">Tendance</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3 text-lg"><i class="fa-solid fa-bullseye"></i></div>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ kpis.taux_conversion }}%</p>
+                    <p class="text-xs font-medium text-slate-500 mt-1">Conv. Historique</p>
+                </div>
             </div>
 
-            <!-- messages du chat -->
-            <div class="chat-messages" #chatContainer>
-                <div *ngFor="let msg of messages"
-                     class="chat-bubble"
-                     [class.user-bubble]="msg.auteur === 'user'"
-                     [class.ai-bubble]="msg.auteur === 'ai'">
-                    <div class="bubble-avatar" *ngIf="msg.auteur === 'ai'">🤖</div>
-                    <div class="bubble-content">
-                        <p>{{ msg.texte }}</p>
-                        <span class="bubble-time">{{ msg.heure }}</span>
-                    </div>
-                    <div class="bubble-avatar user-avatar-icon" *ngIf="msg.auteur === 'user'">👤</div>
+            <!-- Prevision ML -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden" *ngIf="forecastData">
+                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
+                    <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-indigo-500"></i>
+                        Prévision des ventes (Gradient Boosting)
+                    </h2>
+                    <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded tracking-wider">Modèle : Actif</span>
                 </div>
+                
+                <div class="p-6 h-64 flex flex-col">
+                    <div class="flex-1 flex items-end gap-4 border-b border-slate-200 dark:border-slate-800 pb-2 relative">
+                        <div *ngFor="let point of forecastData.donnees" class="flex-1 flex flex-col items-center justify-end h-full gap-2 relative group cursor-pointer">
+                            <div class="w-full max-w-[40px] rounded-t-sm transition-all duration-300 relative"
+                                 [ngClass]="point.type === 'reel' ? 'bg-slate-300 dark:bg-slate-700' : 'bg-indigo-500'"
+                                 [style.height.%]="getBarHeight(point.valeur)">
+                                <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">{{ formatMontant(point.valeur) }}</span>
+                            </div>
+                            <span class="text-[10px] text-slate-500 font-medium uppercase">{{ point.mois }}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center gap-6 mt-6 text-xs font-medium text-slate-600">
+                        <span class="flex items-center gap-2"><div class="w-3 h-3 bg-slate-300 dark:bg-slate-700 rounded-sm"></div> Données réelles (BDD)</span>
+                        <span class="flex items-center gap-2"><div class="w-3 h-3 bg-indigo-500 rounded-sm"></div> Prédiction IA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <!-- indicateur de chargement -->
-                <div class="chat-bubble ai-bubble" *ngIf="chatLoading">
-                    <div class="bubble-avatar">🤖</div>
-                    <div class="bubble-content">
-                        <div class="typing-indicator">
-                            <span></span><span></span><span></span>
+        <!-- Colonne Droite : Segmentation K-Means -->
+        <div class="space-y-6">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
+                    <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-users-viewfinder text-purple-500"></i>
+                        Segmentation Client (K-Means)
+                    </h2>
+                </div>
+                
+                <div class="p-6" *ngIf="segmentationData">
+                    <p class="text-xs text-slate-500 mb-4">L'IA a automatiquement identifié {{ segmentationData.n_clusters }} clusters parmi vos {{ segmentationData.n_clients }} clients réels :</p>
+                    
+                    <div class="space-y-3">
+                        <div *ngFor="let seg of segmentationData.segments" class="p-3 border border-slate-100 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">{{ seg.icone }}</span>
+                                    <h3 class="font-bold text-sm" [style.color]="seg.couleur">{{ seg.nom }}</h3>
+                                </div>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">{{ seg.nb_clients }} clients</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-slate-500 ml-8">
+                                <span>CA Moyen: {{ seg.ca_moyen }} DH</span>
+                                <span>Total: {{ formatMontant(seg.ca_total) }} DH</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div class="p-6 text-center text-slate-500 text-sm" *ngIf="!segmentationData">
+                    Pas assez de clients dans la base de données pour effectuer le clustering (minimum 4).
+                </div>
             </div>
+        </div>
 
-            <!-- input du chat -->
-            <div class="chat-input-area">
-                <input type="text"
-                       [(ngModel)]="messageInput"
-                       (keydown)="onKeyDown($event)"
-                       placeholder="Posez une question sur vos donnees..."
-                       class="chat-input" />
-                <button class="chat-send" (click)="envoyerMessage()" [disabled]="chatLoading">
-                    <i class="fa-solid fa-paper-plane"></i>
+    </div>
+
+    <!-- Copilot Sidebar Overlay -->
+    <div *ngIf="showCopilot" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white dark:bg-slate-900 shadow-[-10px_0_30px_rgba(0,0,0,0.1)] z-50 flex flex-col border-l border-slate-200 dark:border-slate-800 animate-[slideInRight_0.3s_ease-out]">
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-robot text-xl"></i>
+                <h2 class="font-bold text-lg">MAKA Copilot (RAG)</h2>
+            </div>
+            <button (click)="toggleCopilot()" class="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4 space-y-4" #chatContainer>
+            <div *ngFor="let msg of messages" class="flex gap-3" [ngClass]="{'flex-row-reverse': msg.auteur === 'user'}">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" [ngClass]="msg.auteur === 'user' ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'">
+                    <i class="fa-solid" [ngClass]="msg.auteur === 'user' ? 'fa-user' : 'fa-robot'"></i>
+                </div>
+                <div class="max-w-[80%] rounded-2xl px-4 py-3 shadow-sm text-sm" [ngClass]="msg.auteur === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-tl-none'">
+                    {{ msg.texte }}
+                    <div class="text-[10px] mt-1 text-right opacity-70">{{ msg.heure }}</div>
+                </div>
+            </div>
+            
+            <div *ngIf="chatLoading" class="flex gap-3">
+                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-none px-4 py-3 flex gap-1 items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style="animation-delay: 0.1s"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style="animation-delay: 0.2s"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <div class="relative">
+                <input type="text" [(ngModel)]="messageInput" (keydown)="onKeyDown($event)" placeholder="Posez une question sur vos ventes..." class="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 transition-colors text-slate-900 dark:text-white">
+                <button (click)="envoyerMessage()" [disabled]="chatLoading || !messageInput.trim()" class="absolute right-2 top-2 w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50 transition-colors">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
                 </button>
             </div>
-        </div>
-
-        <!-- COLONNE DROITE -->
-        <div class="right-column">
-
-            <!-- KPI INTELLIGENTS -->
-            <div class="kpi-row" *ngIf="kpis">
-                <div class="kpi-card">
-                    <div class="kpi-icon green"><i class="fa-solid fa-coins"></i></div>
-                    <div class="kpi-info">
-                        <span class="kpi-value">{{ formatMontant(kpis.ca_actuel) }} DH</span>
-                        <span class="kpi-label">CA Actuel</span>
-                    </div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon purple"><i class="fa-solid fa-crystal-ball"></i></div>
-                    <div class="kpi-info">
-                        <span class="kpi-value">{{ formatMontant(kpis.ca_prevu) }} DH</span>
-                        <span class="kpi-label">CA Prevu (IA)</span>
-                    </div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon cyan"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                    <div class="kpi-info">
-                        <span class="kpi-value">+{{ kpis.croissance }}%</span>
-                        <span class="kpi-label">Croissance</span>
-                    </div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon orange"><i class="fa-solid fa-bullseye"></i></div>
-                    <div class="kpi-info">
-                        <span class="kpi-value">{{ kpis.taux_conversion }}%</span>
-                        <span class="kpi-label">Conversion</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- GRAPHIQUE PREVISION -->
-            <div class="forecast-card" *ngIf="forecastData">
-                <div class="card-header">
-                    <i class="fa-solid fa-chart-line"></i>
-                    <span>Prevision des Ventes</span>
-                    <span class="header-badge" [class.badge-green]="forecastData.tendance === 'hausse'">
-                        {{ forecastData.tendance === 'hausse' ? '↑' : '↓' }} {{ forecastData.croissance }}%
-                    </span>
-                </div>
-                <div class="chart-container">
-                    <div class="chart-bars">
-                        <div *ngFor="let point of forecastData.donnees"
-                             class="chart-bar-wrapper">
-                            <div class="chart-bar"
-                                 [class.bar-real]="point.type === 'reel'"
-                                 [class.bar-prediction]="point.type === 'prediction'"
-                                 [style.height.%]="getBarHeight(point.valeur)">
-                                <span class="bar-tooltip">{{ formatMontant(point.valeur) }} DH</span>
-                            </div>
-                            <span class="bar-label">{{ point.mois }}</span>
-                        </div>
-                    </div>
-                    <div class="chart-legend">
-                        <span class="legend-item"><span class="legend-dot real"></span> Reel</span>
-                        <span class="legend-item"><span class="legend-dot prediction"></span> Prediction IA</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- INSIGHTS -->
-            <div class="insights-card" *ngIf="insights.length > 0">
-                <div class="card-header">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    <span>Insights IA</span>
-                </div>
-                <div class="insights-list">
-                    <div *ngFor="let insight of insights"
-                         class="insight-item"
-                         [class.insight-success]="insight.type === 'success'"
-                         [class.insight-warning]="insight.type === 'warning'"
-                         [class.insight-info]="insight.type === 'info'">
-                        <i class="fa-solid" [ngClass]="insight.icone"></i>
-                        <span>{{ insight.texte }}</span>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 </div>

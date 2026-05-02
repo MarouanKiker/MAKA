@@ -9,18 +9,12 @@ import {
 } from '../models/finance.model';
 import { environment } from '../../../environments/environment';
 
-// Service qui gère les appels HTTP vers le backend Finance (Spring Boot)
-// Gateway Nginx: /api/finance/* → finance-service:6000/api/v1/*
 @Injectable({ providedIn: 'root' })
 export class FinanceService {
 
     private api = environment.apiUrl + '/api/finance';
 
     constructor(private http: HttpClient) {}
-
-    // =============================================
-    // FACTURES  →  /api/finance/factures
-    // =============================================
 
     getFactures(): Observable<Facture[]> {
         return this.http.get<Facture[]>(`${this.api}/factures`);
@@ -46,10 +40,6 @@ export class FinanceService {
         return this.http.delete<void>(`${this.api}/factures/${id}`);
     }
 
-    // =============================================
-    // PAIEMENTS  →  /api/finance/paiements
-    // =============================================
-
     getPaiements(): Observable<Paiement[]> {
         return this.http.get<Paiement[]>(`${this.api}/paiements`);
     }
@@ -74,10 +64,6 @@ export class FinanceService {
         return this.http.patch<Paiement>(`${this.api}/paiements/${id}/rejeter`, {});
     }
 
-    // =============================================
-    // JOURNAL  →  /api/finance/journal
-    // =============================================
-
     getJournal(): Observable<JournalTransaction[]> {
         return this.http.get<JournalTransaction[]>(`${this.api}/journal`);
     }
@@ -86,9 +72,6 @@ export class FinanceService {
         return this.http.get<FinanceStats>(`${this.api}/journal/stats`);
     }
 
-    // =============================================
-    // COMPTES BANCAIRES (mock - pas de backend dédié)
-    // =============================================
     private _comptes: CompteBancaire[] = [];
 
     getComptesBancaires(): Observable<CompteBancaire[]> {

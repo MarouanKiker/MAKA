@@ -13,6 +13,9 @@ DATABASE_URL = os.getenv(
 # cle API Gemini (gratuit via Google AI Studio)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
+# cle API OpenRouter (optionnel)
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+
 # chemin vers la cle publique JWT (volume Docker partage)
 JWT_PUBLIC_KEY_PATH = os.getenv("JWT_PUBLIC_KEY_PATH", "/app/keys/public.pem")
 

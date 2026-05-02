@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Employe, Contrat, DemandeConge, FicheDePaie, Reclamation } from '../models/hr.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class HrService {
     private http = inject(HttpClient);
-    private apiUrl = 'http://localhost:8000/api/hr';
+    private apiUrl = `${environment.apiUrl}/api/hr`;
 
     // ========================
     // EMPLOYÉS (lecture seule — créés via Auth Service)

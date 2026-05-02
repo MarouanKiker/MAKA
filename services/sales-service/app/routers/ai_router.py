@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from typing import Optional
+
+from fastapi import APIRouter, Cookie, Depends, Header
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas import ChatRequest, LeadScoreRequest, LeadBatchRequest
@@ -18,9 +20,17 @@ router = APIRouter(prefix="/api/sales/ai", tags=["Intelligence IA"])
 # --- CHATBOT RAG ---
 
 @router.post("/chat")
-async def chatbot(req: ChatRequest, db: Session = Depends(get_db)):
+async def chatbot(
+    req: ChatRequest,
+    db: Session = Depends(get_db),
+    maka_jwt: Optional[str] = Cookie(None),
+    authorization: Optional[str] = Header(None),
+):
     """chatbot IA avec RAG — interroge la BDD puis repond avec les vrais chiffres"""
-    result = await chat(req.message, db)
+    token = maka_jwt
+    if not token and authorization and authorization.lower().startswith("bearer "):
+        token = authorization[7:].strip()
+    result = await chat(req.message, db, token=token)
     return result
 
 

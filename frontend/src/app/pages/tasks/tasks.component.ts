@@ -69,10 +69,10 @@ export class TasksComponent implements OnInit {
             leadId: this.leadId || null
         };
         this.crm.createTask(dto).subscribe({
-            next: (created) => {
-                this.tasks.push(created);
+            next: () => {
                 this.showForm = false;
                 this.message = 'Tâche créée !';
+                this.loadTasks();
             },
             error: (err) => {
                 console.error('Erreur création tâche', err);

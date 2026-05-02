@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* =============================================================
    MAKA ERP — "Nano Precision" Design System
    Deep space · Glassmorphism · Vibrant accents · Cyan highlights
@@ -81,7 +85,7 @@ body,
 
 /* -------- LIGHT MODE -------- */
 [data-theme="light"] {
-  --bg-0: #f8fafc; /* fond generique (slate-50) */
+  --bg-0: #f8fafc;
   --bg-1: #ffffff;
   --bg-2: #ffffff;
   --bg-3: #f1f5f9;
@@ -93,24 +97,36 @@ body,
   --glass: rgba(255, 255, 255, .8);
   --glass-border: rgba(99, 102, 241, .1);
 
-  --text-0: #0f172a; /* text-slate-900 */
-  --text-1: #1e293b; /* text-slate-800 */
-  --text-2: #64748b; /* text-slate-500 */
-  --text-3: #94a3b8; /* text-slate-400 */
+  --text-0: #0f172a;
+  --text-1: #1e293b;
+  --text-2: #64748b;
+  --text-3: #94a3b8;
 
   --border-0: #e2e8f0;
   --border-1: #cbd5e1;
-  --border-color: #e2e8f0; /* ajout pour compo recentes */
+  --border-color: #e2e8f0;
 
   --accent: #4f46e5;
   --accent-rgb: 79, 70, 229;
   --accent-dim: #4338ca;
   --accent-soft: rgba(79, 70, 229, .08);
 
+  --violet: #7c3aed;
+  --violet-soft: rgba(124, 58, 237, .08);
+
   --cyan: #06b6d4;
   --cyan-dim: #0891b2;
   --cyan-soft: rgba(6, 182, 212, .08);
 
+  --blue: #3b82f6;
+  --blue-soft: rgba(59, 130, 246, .08);
+  --purple: #a855f7;
+  --purple-soft: rgba(168, 85, 247, .08);
+
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, .08);
+  --warning: #d97706;
+  --warning-soft: rgba(217, 119, 6, .08);
   --danger: #e11d48;
   --danger-soft: rgba(225, 29, 72, .08);
 
@@ -119,10 +135,11 @@ body,
   --shadow-glow: 0 0 20px rgba(99, 102, 241, .05);
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, .05), 0 2px 4px -1px rgba(0, 0, 0, .03);
 
+  --gradient-primary: linear-gradient(135deg, #4f46e5, #7c3aed);
   --gradient-surface: linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,1));
 
   --bg-hover: #f1f5f9;
-  --card-bg: #ffffff; /* compatibilite avec Intelligence & Dash */
+  --card-bg: #ffffff;
   --card-hover: #f8fafc;
   --bg-color: #f8fafc;
   --text-color: #0f172a;
@@ -145,13 +162,10 @@ html {
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg-0);
-  color: var(--text-0);
   min-height: 100%;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background .3s ease, color .3s ease;
 }
 
 a {
@@ -222,4 +236,86 @@ a:hover {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+/* -------- GLOBAL UTILITIES -------- */
+.fade-in {
+  animation: fadeInUp .5s ease both;
+}
+
+.fade-in > * {
+  animation: fadeInUp .4s ease both;
+}
+
+.fade-in > *:nth-child(2) { animation-delay: .08s; }
+.fade-in > *:nth-child(3) { animation-delay: .16s; }
+.fade-in > *:nth-child(4) { animation-delay: .24s; }
+.fade-in > *:nth-child(5) { animation-delay: .32s; }
+
+/* -------- PREMIUM COMPONENTS -------- */
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+.glass-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.maka-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-0);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0;
+}
+.maka-tabs button {
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-2);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.maka-tabs button:hover {
+  color: var(--text-0);
+  background: var(--bg-hover);
+}
+.maka-tabs button.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.maka-tabs button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gradient-primary);
+  box-shadow: 0 -2px 10px var(--accent);
+}
+
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.toast {
+  @apply fixed bottom-4 right-4 z-50 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl shadow-2xl font-medium text-sm animate-slide-up cursor-pointer hover:opacity-90;
+}
+
+.loading {
+  @apply text-center p-8 text-sm font-semibold text-slate-500 dark:text-slate-400 flex flex-col items-center gap-3 before:content-[''] before:w-6 before:h-6 before:border-2 before:border-indigo-500 before:border-t-transparent before:rounded-full before:animate-spin;
 }

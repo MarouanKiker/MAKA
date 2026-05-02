@@ -7,11 +7,12 @@ public static class TicketMapper
 {
     public static Ticket ToEntity(CreateTicketDto dto)
     {
+        var st = string.IsNullOrWhiteSpace(dto.Status) ? "Open" : dto.Status.Trim();
         return new Ticket
         {
             Title = dto.Title,
             Description = dto.Description ?? string.Empty,
-            Status = dto.Status,
+            Status = st,
             LeadId = dto.LeadId,
             CreatedAt = DateTime.UtcNow
         };

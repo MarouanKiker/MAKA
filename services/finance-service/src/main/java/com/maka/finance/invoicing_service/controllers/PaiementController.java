@@ -31,42 +31,42 @@ public class PaiementController {
 
     @PostMapping
     @Operation(summary = "Enregistrer un paiement")
-    @PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYE','USER','COMPTABLE','GESTIONNAIRE','ADMIN')")
     public ResponseEntity<PaiementResponse> create(@Valid @RequestBody CreatePaiementRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(paiementService.create(request));
     }
 
     @PatchMapping("/{id}/valider")
     @Operation(summary = "Valider un paiement")
-    @PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYE','USER','COMPTABLE','GESTIONNAIRE','ADMIN')")
     public ResponseEntity<PaiementResponse> validate(@PathVariable Long id) {
         return ResponseEntity.ok(paiementService.validatePayment(id));
     }
 
     @PatchMapping("/{id}/rejeter")
     @Operation(summary = "Rejeter un paiement")
-    @PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYE','USER','COMPTABLE','GESTIONNAIRE','ADMIN')")
     public ResponseEntity<PaiementResponse> reject(@PathVariable Long id) {
         return ResponseEntity.ok(paiementService.rejectPayment(id));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Consulter un paiement")
-    @PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYE','USER','COMPTABLE','GESTIONNAIRE','ADMIN')")
     public ResponseEntity<PaiementResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(paiementService.getById(id));
     }
 
     @GetMapping
     @Operation(summary = "Lister tous les paiements")
-    @PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYE','USER','COMPTABLE','GESTIONNAIRE','ADMIN')")
     public ResponseEntity<List<PaiementResponse>> getAll() {
         return ResponseEntity.ok(paiementService.getAll());
     }
 
     @GetMapping("/facture/{factureId}")
     @Operation(summary = "Lister les paiements d'une facture")
-    @PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYE','USER','COMPTABLE','GESTIONNAIRE','ADMIN')")
     public ResponseEntity<List<PaiementResponse>> getByFacture(@PathVariable Long factureId) {
         return ResponseEntity.ok(paiementService.getByFactureId(factureId));
     }
