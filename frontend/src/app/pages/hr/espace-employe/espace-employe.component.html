@@ -80,6 +80,11 @@
                     class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-500 transition-all duration-300 flex items-center gap-2">
                 <i class="fa-solid fa-money-check-dollar" [ngClass]="activeTab === 'fiches' ? 'text-emerald-500' : ''"></i> Fiches de Paie
             </button>
+            <button (click)="setTab('reclamations')" 
+                    [ngClass]="activeTab === 'reclamations' ? 'bg-white dark:bg-white/10 shadow-sm text-slate-900 dark:text-white' : ''"
+                    class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-500 transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-comment-dots" [ngClass]="activeTab === 'reclamations' ? 'text-indigo-500' : ''"></i> Mes Réclamations
+            </button>
         </div>
 
         <!-- ONGLET : CONGÉS -->
@@ -147,7 +152,7 @@
                             <td class="px-6 py-4 text-red-500">-{{ f.cotisations | number:'1.2-2' }} MAD</td>
                             <td class="px-6 py-4 text-emerald-500 font-bold">{{ f.salaireNet | number:'1.2-2' }} MAD</td>
                             <td class="px-6 py-4 text-right">
-                                <button class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 rounded-lg text-xs font-semibold transition-colors flex items-center justify-end gap-2 ml-auto">
+                                <button (click)="downloadPdf(f)" class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 rounded-lg text-xs font-semibold transition-colors flex items-center justify-end gap-2 ml-auto">
                                     <i class="fa-solid fa-download"></i> PDF
                                 </button>
                             </td>
@@ -161,10 +166,122 @@
             </div>
         </div>
 
-        <!-- ONGLET : RÉCLAMATIONS REMOVED -->
+        <!-- ONGLET : RÉCLAMATIONS -->
+        <div *ngIf="activeTab === 'reclamations'" class="animate-fade-in space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Mes réclamations</h3>
+                <button (click)="showReclamationForm = true" class="px-4 py-2 bg-indigo-600 dark:bg-indigo-50 text-white rounded-xl font-semibold text-sm hover:scale-105 transition-transform flex items-center gap-2 shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-plus"></i> Nouvelle réclamation
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="mesReclamations.length > 0">
+                <div *ngFor="let r of mesReclamations" class="bg-white dark:bg-[#12131a] border border-border/50 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-slate-900 dark:text-white">{{ r.sujet }}</h4>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border"
+                              [ngClass]="{
+                                  'bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/20': r.statut === 'Ouvert',
+                                  'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20': r.statut === 'Résolu'
+                              }">
+                            {{ r.statut }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 italic">"{{ r.description }}"</p>
+                    <div class="text-[10px] text-slate-400 font-medium flex items-center gap-2">
+                        <i class="fa-solid fa-clock"></i> Envoyé le {{ r.dateEnvoi | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                    
+                    <div *ngIf="r.reponseRH" class="mt-4 p-4 bg-slate-50 dark:bg-white/5 rounded-xl border-l-4 border-indigo-500">
+                        <div class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">Réponse du Responsable RH</div>
+                        <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{{ r.reponseRH }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="mesReclamations.length === 0" class="flex flex-col items-center justify-center p-12 bg-white/50 dark:bg-white/5 border border-border/50 rounded-3xl text-slate-500 border-dashed">
+                <i class="fa-solid fa-comments-slash text-4xl mb-4 text-slate-300 dark:text-slate-600"></i>
+                <p class="font-medium">Vous n'avez ouvert aucune réclamation.</p>
+            </div>
+        </div>
 
     </div>
 
-    <!-- Modals remain mostly similar but can be styled later if needed -->
+    <!-- MODAL : NOUVELLE DEMANDE DE CONGÉ -->
+    <div *ngIf="showCongeForm" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" (click)="showCongeForm = false"></div>
+        <div class="relative w-full max-w-xl bg-white dark:bg-[#12131a] rounded-[2rem] shadow-2xl border border-white/20 overflow-hidden animate-zoom-in">
+            <div class="p-8 space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Nouvelle Demande</h2>
+                    <button (click)="showCongeForm = false" class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Type de congé</label>
+                        <select [(ngModel)]="newConge.type" class="w-full bg-slate-100 dark:bg-white/5 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white outline-none focus:ring-2 ring-cyan-500 transition-all font-medium">
+                            <option value="CP">Congé Payé</option>
+                            <option value="Maladie">Maladie</option>
+                            <option value="RTT">RTT</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Date de début</label>
+                        <input type="date" [(ngModel)]="newConge.dateDebut" class="w-full bg-slate-100 dark:bg-white/5 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white outline-none focus:ring-2 ring-cyan-500 transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Date de fin</label>
+                        <input type="date" [(ngModel)]="newConge.dateFin" class="w-full bg-slate-100 dark:bg-white/5 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white outline-none focus:ring-2 ring-cyan-500 transition-all">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Motif (Optionnel)</label>
+                    <textarea [(ngModel)]="newConge.motif" rows="3" class="w-full bg-slate-100 dark:bg-white/5 border-none rounded-xl px-4 py-4 text-slate-900 dark:text-white outline-none focus:ring-2 ring-cyan-500 transition-all resize-none" placeholder="Expliquez brièvement..."></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button (click)="showCongeForm = false" class="flex-1 px-6 py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">Annuler</button>
+                    <button (click)="soumettreConge()" class="flex-1 px-6 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-cyan-600/20 hover:scale-[1.02] transition-all">Soumettre</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL : NOUVELLE RÉCLAMATION -->
+    <div *ngIf="showReclamationForm" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" (click)="showReclamationForm = false"></div>
+        <div class="relative w-full max-w-xl bg-white dark:bg-[#12131a] rounded-[2rem] shadow-2xl border border-white/20 overflow-hidden animate-zoom-in">
+            <div class="p-8 space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Ouvrir une Réclamation</h2>
+                    <button (click)="showReclamationForm = false" class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Sujet de la réclamation</label>
+                    <input type="text" [(ngModel)]="newReclamation.sujet" class="w-full bg-slate-100 dark:bg-white/5 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white outline-none focus:ring-2 ring-indigo-500 transition-all font-semibold" placeholder="Ex: Erreur sur ma fiche de paie">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Description détaillée</label>
+                    <textarea [(ngModel)]="newReclamation.description" rows="4" class="w-full bg-slate-100 dark:bg-white/5 border-none rounded-xl px-4 py-4 text-slate-900 dark:text-white outline-none focus:ring-2 ring-indigo-500 transition-all resize-none" placeholder="Décrivez votre problème ou votre besoin..."></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button (click)="showReclamationForm = false" class="flex-1 px-6 py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">Annuler</button>
+                    <button (click)="soumettreReclamation()" class="flex-1 px-6 py-4 bg-indigo-600 dark:bg-indigo-50 text-white rounded-2xl font-bold shadow-lg shadow-indigo-600/20 hover:scale-[1.02] transition-all">Envoyer au RH</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>

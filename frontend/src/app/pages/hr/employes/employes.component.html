@@ -27,6 +27,7 @@
                 <th>Email</th>
                 <th>Date d'Embauche</th>
                 <th>Statut</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -36,6 +37,11 @@
                 <td><i class="fa-solid fa-envelope" style="color:var(--text-2); margin-right:5px;"></i> {{ emp.email }}</td>
                 <td>{{ emp.dateEmbauche | date:'dd/MM/yyyy' }}</td>
                 <td><span class="badge nouvelle">Actif</span></td>
+                <td>
+                    <button class="btn-sm danger" (click)="deleteEmploye(emp.id)" title="Supprimer">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
             </tr>
         </tbody>
     </table>

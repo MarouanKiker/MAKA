@@ -128,4 +128,101 @@ export class EspaceEmployeComponent implements OnInit {
         const mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
         return mois[m - 1] || m.toString();
     }
+
+    downloadPdf(f: FicheDePaie): void {
+        const doc = new (window as any).jspdf.jsPDF();
+        const emp = this.monProfil;
+
+        // 1. En-tête avec Logo
+        const logoUrl = 'assets/logo.jpeg';
+        const img = new Image();
+        img.src = logoUrl;
+
+        img.onload = () => {
+            // Logo
+            doc.addImage(img, 'JPEG', 15, 10, 30, 20);
+            
+            // Titre
+            doc.setFontSize(18);
+            doc.setTextColor(40, 40, 40);
+            doc.text('BULLETIN DE PAIE', 120, 20);
+            
+            doc.setDrawColor(0, 150, 0); 
+            doc.setLineWidth(1);
+            doc.line(15, 35, 195, 35);
+
+            // 2. Infos Employé
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text('INFORMATIONS SALARIÉ', 15, 45);
+            doc.setFont(undefined, 'normal');
+            
+            (doc as any).autoTable({
+                startY: 50,
+                head: [['Nom & Prénom', 'Matricule', 'Poste', 'Période de paie']],
+                body: [[
+                    emp?.nom || 'N/A',
+                    'EMP-' + (emp?.id || '000'),
+                    this.mesContrats[0]?.poste || 'Salarié',
+                    `${this.getMoisLabel(f.mois)} ${f.annee}`
+                ]],
+                theme: 'grid',
+                headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+            });
+
+            // 3. Tableau de paie
+            const startY = (doc as any).lastAutoTable.finalY + 10;
+            
+            const columns = [
+                { header: 'LIBELLÉ', dataKey: 'libelle' },
+                { header: 'BASE', dataKey: 'base' },
+                { header: 'TAUX', dataKey: 'taux' },
+                { header: 'À PAYER', dataKey: 'gain' },
+                { header: 'À RETENIR', dataKey: 'retenue' }
+            ];
+
+            const body = [
+                { libelle: 'SALAIRE DE BASE', base: f.salaireBrut.toFixed(2), taux: '-', gain: f.salaireBrut.toFixed(2), retenue: '' },
+                { libelle: 'COTISATION CNSS', base: f.salaireBrut.toFixed(2), taux: '4.48%', gain: '', retenue: (f.salaireBrut * 0.0448).toFixed(2) },
+                { libelle: 'AMO', base: f.salaireBrut.toFixed(2), taux: '2.26%', gain: '', retenue: (f.salaireBrut * 0.0226).toFixed(2) },
+                { libelle: 'PRÉLÈVEMENT IGR', base: '-', taux: '10.00%', gain: '', retenue: (f.cotisations - (f.salaireBrut * 0.0674)).toFixed(2) }
+            ];
+
+            (doc as any).autoTable({
+                startY: startY,
+                columns: columns,
+                body: body,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 150, 0], textColor: [255, 255, 255] },
+                columnStyles: {
+                    gain: { halign: 'right' },
+                    retenue: { halign: 'right' }
+                }
+            });
+
+            // 4. Totaux
+            const finalY = (doc as any).lastAutoTable.finalY + 10;
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            
+            doc.setFillColor(240, 240, 240);
+            doc.rect(130, finalY, 65, 12, 'F');
+            doc.setTextColor(0, 100, 0);
+            doc.text(`NET À PAYER :  ${f.salaireNet.toFixed(2)} MAD`, 135, finalY + 8);
+
+            // 5. Bas de page
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text('MAKA ERP - Document généré automatiquement', 15, 285);
+
+            // Téléchargement
+            doc.save(`bulletin_paie_${emp?.nom}_${f.mois}_${f.annee}.pdf`);
+        };
+
+        img.onerror = () => {
+            console.error('Erreur chargement logo, génération sans image');
+            doc.text('MAKA ERP - BULLETIN DE PAIE', 15, 20);
+            doc.save(`bulletin_paie_${f.mois}_${f.annee}.pdf`);
+        };
+    }
 }

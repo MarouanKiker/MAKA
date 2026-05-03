@@ -134,10 +134,15 @@ export class LeadsComponent implements OnInit {
             return;
         }
         const lead = this.draggedLead;
-        this.crm.updateLead(lead.id, { statut: newStatut }).subscribe({
-            next: () => { lead.statut = newStatut; },
-            error: (err) => console.error('Erreur mise à jour statut', err)
-        });
+
+        if (newStatut === 'CONVERTI') {
+            this.openConvertForm(lead);
+        } else {
+            this.crm.updateLead(lead.id, { statut: newStatut }).subscribe({
+                next: () => { lead.statut = newStatut; },
+                error: (err) => console.error('Erreur mise à jour statut', err)
+            });
+        }
         this.draggedLead = null;
     }
 
