@@ -18,6 +18,12 @@ export class HrService {
     getEmploye(id: number): Observable<Employe> {
         return this.http.get<Employe>(`${this.apiUrl}/employes/${id}`);
     }
+    createEmploye(employe: Partial<Employe>): Observable<Employe> {
+        return this.http.post<Employe>(`${this.apiUrl}/employes`, employe);
+    }
+    deleteEmploye(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/employes/${id}`);
+    }
 
     // ========================
     // CONTRATS
