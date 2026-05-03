@@ -8,16 +8,36 @@ from app.ai.chatbot import chat
 from app.ai.forecaster import generer_forecast, generer_kpis, generer_insights
 from app.ai.lead_scoring import entrainer_modele, scorer_lead, scorer_leads_batch
 from app.ai.segmentation import segmenter_clients
+from app.ai.cross_analytics import generer_cross_analytics
 
 # ============================================================
 # Router IA — Endpoints pour le module MAKA Intelligence
-# Inclut : Chatbot RAG, Forecast, Lead Scoring, Segmentation
+# Inclut : Chatbot RAG++, Forecast, Lead Scoring, Segmentation,
+#           Cross-Analytics (Score Sante, Alertes, KPIs globaux)
 # ============================================================
 
 router = APIRouter(prefix="/api/sales/ai", tags=["Intelligence IA"])
 
 
-# --- CHATBOT RAG ---
+# --- CROSS-ANALYTICS (Centre de Commandement) ---
+
+@router.get("/cross-analytics")
+async def cross_analytics(
+    db: Session = Depends(get_db),
+    maka_jwt: Optional[str] = Cookie(None),
+    authorization: Optional[str] = Header(None),
+):
+    """
+    Rapport cross-modules : score de sante, alertes intelligentes,
+    KPIs agreges de CRM + Finance + RH + Ventes.
+    """
+    token = maka_jwt
+    if not token and authorization and authorization.lower().startswith("bearer "):
+        token = authorization[7:].strip()
+    return await generer_cross_analytics(db, token=token)
+
+
+# --- CHATBOT RAG++ ---
 
 @router.post("/chat")
 async def chatbot(
@@ -26,7 +46,7 @@ async def chatbot(
     maka_jwt: Optional[str] = Cookie(None),
     authorization: Optional[str] = Header(None),
 ):
-    """chatbot IA avec RAG — interroge la BDD puis repond avec les vrais chiffres"""
+    """chatbot IA avec RAG++ — interroge TOUS les modules puis repond avec les vrais chiffres"""
     token = maka_jwt
     if not token and authorization and authorization.lower().startswith("bearer "):
         token = authorization[7:].strip()
