@@ -25,17 +25,16 @@ class CreateAdminCommand extends Command
         $email = 'marouankiker@gmail.com';
 
         // verifier si l'admin existe deja
-        $existing = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
-        if ($existing) {
-            $output->writeln('>>> Admin deja existant, skip.');
-            return Command::SUCCESS;
+        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
+        if ($user) {
+            $output->writeln('>>> Admin deja existant, mise a jour du mot de passe et des droits...');
+        } else {
+            $user = new User();
+            $user->setEmail($email);
+            $user->setFirstName('Marouan');
+            $user->setLastName('Kiker');
         }
 
-        // creer l'admin
-        $user = new User();
-        $user->setEmail($email);
-        $user->setFirstName('Marouan');
-        $user->setLastName('Kiker');
         $user->setRoles(['ROLE_ADMIN']);
         $user->setPassword($this->hasher->hashPassword($user, 'admin123'));
 

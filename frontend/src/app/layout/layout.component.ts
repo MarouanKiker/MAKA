@@ -182,6 +182,11 @@ export class LayoutComponent {
 
             if (this.currentModule === 'ADMIN' && !['/admin'].includes(item.path)) return false;
 
+            // Hide Espace Employe for Admin and RH users
+            if (item.path === '/espace-employe' && (this.auth.isAdmin() || this.auth.hasRole('ROLE_RH'))) {
+                return false;
+            }
+
             return true;
         });
     }

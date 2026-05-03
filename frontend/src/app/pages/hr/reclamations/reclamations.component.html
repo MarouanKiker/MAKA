@@ -1,11 +1,8 @@
 <div class="page-header">
     <div>
         <h1><i class="fa-solid fa-comment-dots page-icon"></i> Réclamations</h1>
-        <p class="page-subtitle">Gestion des réclamations et plaintes des employés</p>
+        <p class="page-subtitle">Traitement des réclamations et plaintes des employés</p>
     </div>
-    <button class="btn-add" (click)="showForm = true">
-        <i class="fa-solid fa-plus"></i> Nouvelle réclamation
-    </button>
 </div>
 
 <div class="alert danger" *ngIf="errorMsg">{{ errorMsg }}</div>
@@ -35,32 +32,7 @@
 </div>
 <div class="empty" *ngIf="reclamations.length === 0">Aucune réclamation.</div>
 
-<!-- Modal: Nouvelle réclamation -->
-<div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
-    <div class="modal" (click)="$event.stopPropagation()">
-        <h2>Nouvelle réclamation</h2>
-        <div class="champ">
-            <label>Employé</label>
-            <select [(ngModel)]="newReclamation.employeId">
-                <option [ngValue]="undefined" disabled>-- Choisir --</option>
-                <option *ngFor="let e of employes" [ngValue]="e.id">{{ e.nom }}</option>
-            </select>
-        </div>
-        <div class="champ">
-            <label>Sujet</label>
-            <input type="text" [(ngModel)]="newReclamation.sujet" placeholder="Ex: Problème de planning" />
-        </div>
-        <div class="champ">
-            <label>Description</label>
-            <textarea [(ngModel)]="newReclamation.description" rows="3" placeholder="Décrivez le problème..."></textarea>
-        </div>
-        <div class="modal-actions">
-            <button class="btn-cancel" (click)="showForm = false">Annuler</button>
-            <button class="btn-save" (click)="saveReclamation()">Envoyer</button>
-        </div>
-    </div>
-</div>
-
+<!-- (La création se fait dans l'espace employé) -->
 <!-- Modal: Réponse RH -->
 <div class="modal-overlay" *ngIf="showReponse" (click)="showReponse = false">
     <div class="modal" (click)="$event.stopPropagation()">
