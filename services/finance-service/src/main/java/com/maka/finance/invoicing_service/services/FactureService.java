@@ -56,15 +56,30 @@ public class FactureService {
 
     @CacheEvict(value = "factures", allEntries = true)
     public FactureResponse create(@Valid FactureRequest request) {
-        if (factureRepository.existsByNumero(request.numero())) {
-            throw new BusinessException("Une facture avec ce numéro existe déjà.");
-        }
+        try {
+            System.out.println("🚀 Tentative de création de facture: " + request.numero());
+            
+            if (factureRepository.existsByNumero(request.numero())) {
+                throw new BusinessException("Une facture avec ce numéro existe déjà.");
+            }
 
-        Facture facture = factureMapper.toEntity(request);
-        facture.calculateMontants();
-        Facture saved = factureRepository.save(facture);
-        financeMetrics.incrementInvoicesCreated();
-        return factureMapper.toResponse(saved);
+            Facture facture = factureMapper.toEntity(request);
+            
+            // Validation et calculs
+            facture.calculateMontants();
+            
+            Facture saved = factureRepository.save(facture);
+            System.out.println("✅ Facture créée avec succès: ID=" + saved.getId());
+            
+            financeMetrics.incrementInvoicesCreated();
+            return factureMapper.toResponse(saved);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            System.err.println("❌ Erreur critique lors de la création de facture: " + e.getMessage());
+            e.printStackTrace();
+            throw new BusinessException("Erreur lors de la création de la facture: " + e.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)

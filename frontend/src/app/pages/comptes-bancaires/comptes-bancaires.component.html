@@ -1,7 +1,7 @@
 <div class="page-header">
     <div>
         <h1><i class="fa-solid fa-landmark page-icon"></i> Comptes bancaires</h1>
-        <span class="page-subtitle">Gestion des comptes bancaires de l'entreprise</span>
+        <span class="page-subtitle">Gestion des comptes et trésorerie de l'entreprise</span>
     </div>
     <button class="btn-add" (click)="openForm()">
         <i class="fa-solid fa-plus"></i> Nouveau compte
@@ -11,47 +11,88 @@
 <div class="toast" *ngIf="message" (click)="message = ''">{{ message }}</div>
 
 <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-        <h2>Nouveau compte bancaire</h2>
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 m-0">Nouveau compte bancaire</h2>
+                <p class="text-xs text-slate-500 m-0">Ajouter une nouvelle banque pour la trésorerie</p>
+            </div>
+        </div>
+        
         <form (ngSubmit)="save()">
-            <div class="form-group">
-                <label>IBAN</label>
-                <input type="text" [(ngModel)]="iban" name="iban" required placeholder="MA76 1234 5678 9012 3456 7890 12" />
+            <div class="champ">
+                <label>Nom de la banque *</label>
+                <div class="relative">
+                    <i class="fa-solid fa-building-columns absolute left-4 top-3 text-slate-400"></i>
+                    <input type="text" [(ngModel)]="banque" name="banque" required placeholder="Ex: Attijariwafa Bank" class="!pl-10" />
+                </div>
             </div>
-            <div class="form-group">
-                <label>Banque</label>
-                <input type="text" [(ngModel)]="banque" name="banque" required placeholder="Attijariwafa Bank" />
+            <div class="champ">
+                <label>Numéro IBAN (24 caractères) *</label>
+                <div class="relative">
+                    <i class="fa-solid fa-money-check absolute left-4 top-3 text-slate-400"></i>
+                    <input type="text" [(ngModel)]="iban" name="iban" required placeholder="MA76 1234 ..." class="!pl-10 font-mono tracking-wider" />
+                </div>
             </div>
-            <div class="form-actions">
+            <div class="modal-actions">
                 <button type="button" class="btn-cancel" (click)="showForm = false">Annuler</button>
-                <button type="submit" class="btn-save">Ajouter</button>
+                <button type="submit" class="btn-save"><i class="fa-solid fa-check mr-2"></i> Ajouter</button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="table-container">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>IBAN</th>
-                <th>Banque</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let c of comptes">
-                <td class="cell-main">{{ c.iban }}</td>
-                <td>{{ c.banque }}</td>
-                <td>
-                    <button class="btn-icon delete" (click)="deleteCompte(c.id)" title="Supprimer">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-            <tr *ngIf="comptes.length === 0">
-                <td colspan="3" class="empty-row">Aucun compte bancaire</td>
-            </tr>
-        </tbody>
-    </table>
+<!-- Affichage sous forme de magnifiques cartes -->
+<div class="card-grid mt-8">
+    <div class="item-card relative overflow-hidden group" *ngFor="let c of comptes">
+        <!-- background decoration -->
+        <div class="absolute -right-6 -top-6 text-indigo-50 dark:text-indigo-900/20 text-8xl z-0 rotate-12 transition-transform group-hover:scale-110">
+            <i class="fa-solid fa-landmark"></i>
+        </div>
+        
+        <div class="card-top relative z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div>
+                    <h3 class="card-title text-lg mb-0">{{ c.nomBanque }}</h3>
+                    <span class="badge nouvelle mt-1">Compte Actif</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-meta relative z-10 mt-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+            <div class="card-meta-item flex flex-col items-start gap-1 mb-3">
+                <span class="text-xs uppercase font-bold text-slate-400 tracking-wider">IBAN</span>
+                <span class="font-mono text-slate-700 dark:text-slate-300 font-semibold tracking-widest break-all">{{ c.iban }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="card-meta-item flex flex-col items-start gap-1">
+                    <span class="text-xs uppercase font-bold text-slate-400 tracking-wider">Solde actuel</span>
+                    <span class="text-2xl font-black" [ngClass]="(c.soldeActuel || 0) >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                        {{ (c.soldeActuel || 0) | number:'1.2-2' }} {{ c.devise || 'MAD' }}
+                    </span>
+                </div>
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl"
+                    [ngClass]="(c.soldeActuel || 0) >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'">
+                    <i class="fa-solid" [ngClass]="(c.soldeActuel || 0) >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-actions relative z-10 mt-6">
+            <button class="btn-sm danger w-full flex justify-center py-2" (click)="deleteCompte(c.id)" title="Supprimer ce compte">
+                <i class="fa-solid fa-trash mr-2"></i> Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="empty" *ngIf="comptes.length === 0">
+    <i class="fa-solid fa-building-columns text-4xl mb-4"></i>
+    <p>Aucun compte bancaire enregistré. Ajoutez votre première banque !</p>
 </div>

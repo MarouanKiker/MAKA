@@ -37,12 +37,21 @@ export class TicketsComponent implements OnInit {
         this.loadTickets();
     }
 
+    showMessage(msg: string): void {
+        this.message = msg;
+        setTimeout(() => {
+            if (this.message === msg) {
+                this.message = '';
+            }
+        }, 4000);
+    }
+
     loadTickets(): void {
         this.crm.getTickets().subscribe({
             next: (data) => this.tickets = data,
             error: (err) => {
                 console.error('Erreur chargement tickets', err);
-                this.message = 'Erreur de chargement des tickets';
+                this.showMessage('Erreur de chargement des tickets');
             }
         });
     }
@@ -71,11 +80,11 @@ export class TicketsComponent implements OnInit {
             next: (created) => {
                 this.tickets.push(created);
                 this.showForm = false;
-                this.message = 'Ticket créé !';
+                this.showMessage('Ticket créé !');
             },
             error: (err) => {
                 console.error('Erreur création ticket', err);
-                this.message = 'Erreur lors de la création';
+                this.showMessage('Erreur lors de la création');
             }
         });
     }

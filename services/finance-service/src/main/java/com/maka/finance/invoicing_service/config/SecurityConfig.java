@@ -39,7 +39,9 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/api/v1/debug/**",
+                                "/api/debug/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -102,7 +104,11 @@ public class SecurityConfig {
                 throw new org.springframework.security.oauth2.jwt.BadJwtException("Clé publique non configurée");
             };
         } catch (Exception e) {
-            throw new RuntimeException("Erreur de chargement de la clé publique RSA", e);
+            // Empêcher le crash fatal au démarrage
+            System.err.println("❌ Erreur critique : Clé publique RSA corrompue ou illisible. Authentification indisponible.");
+            return token -> {
+                throw new org.springframework.security.oauth2.jwt.BadJwtException("Service de sécurité en cours de maintenance");
+            };
         }
     }
 

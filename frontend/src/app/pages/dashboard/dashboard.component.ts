@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { CrmService } from '../../core/services/crm.service';
+import { FinanceService } from '../../core/services/finance.service';
 import { Lead, Opportunity } from '../../core/models/crm.model';
+import { Facture, Paiement, CompteBancaire } from '../../core/models/finance.model';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
@@ -25,7 +27,12 @@ export class DashboardComponent implements OnInit {
     leads: Lead[] = [];
     opportunities: Opportunity[] = [];
 
-    constructor(public auth: AuthService, public crm: CrmService, private router: Router) {
+    // Finance data
+    finFactures: Facture[] = [];
+    finPaiements: Paiement[] = [];
+    finComptes: CompteBancaire[] = [];
+
+    constructor(public auth: AuthService, public crm: CrmService, private financeSvc: FinanceService, private router: Router) {
         let user = this.auth.getUser();
         if (user) {
             this.userName = user.prenom;
@@ -51,6 +58,20 @@ export class DashboardComponent implements OnInit {
                 this.buildPipeline();
             },
             error: (err) => console.error('Erreur forcJoin dashboard', err)
+        });
+
+        // Load finance data
+        this.financeSvc.getFactures().subscribe({
+            next: (data) => this.finFactures = data,
+            error: () => {}
+        });
+        this.financeSvc.getPaiements().subscribe({
+            next: (data) => this.finPaiements = data,
+            error: () => {}
+        });
+        this.financeSvc.getComptesBancaires().subscribe({
+            next: (data) => this.finComptes = data,
+            error: () => {}
         });
     }
 
@@ -121,5 +142,16 @@ export class DashboardComponent implements OnInit {
             this.toastMessage = 'Le rapport CSV a été téléchargé avec succès.';
             setTimeout(() => this.toastMessage = '', 4000);
         }, 1500);
+    }
+
+    // --- Finance Stats ---
+    getFinanceCA(): number {
+        return this.finFactures.reduce((s, f) => s + (f.montantTTC || 0), 0);
+    }
+    getFinancePaiementsEnAttente(): number {
+        return this.finPaiements.filter(p => p.statut === 'EN_ATTENTE').length;
+    }
+    getFinanceSoldeBancaire(): number {
+        return this.finComptes.reduce((s, c) => s + (c.soldeActuel || 0), 0);
     }
 }

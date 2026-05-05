@@ -17,21 +17,37 @@ public class FactureMapper {
     public Facture toEntity(FactureRequest request) {
         Facture facture = new Facture();
         facture.setNumero(request.numero());
+        facture.setClientNom(request.clientNom());
+        facture.setDateEcheance(request.dateEcheance());
         facture.setTauxTVA(request.tauxTVA() == null ? new BigDecimal("0.20") : request.tauxTVA());
-        facture.setLignes(mapLignesToEntities(request.lignes()));
+        facture.setTaxe(request.taxe() == null ? BigDecimal.ZERO : request.taxe());
+        
+        List<LigneFacture> lignes = mapLignesToEntities(request.lignes());
+        lignes.forEach(l -> l.setFacture(facture));
+        facture.setLignes(lignes);
+        
         return facture;
     }
 
     public void updateEntity(Facture facture, FactureRequest request) {
         facture.setNumero(request.numero());
+        facture.setClientNom(request.clientNom());
+        facture.setDateEcheance(request.dateEcheance());
         facture.setTauxTVA(request.tauxTVA() == null ? facture.getTauxTVA() : request.tauxTVA());
-        facture.setLignes(mapLignesToEntities(request.lignes()));
+        
+        // Remove old lines if needed, add new lines
+        facture.getLignes().clear();
+        List<LigneFacture> nouvellesLignes = mapLignesToEntities(request.lignes());
+        nouvellesLignes.forEach(l -> l.setFacture(facture));
+        facture.getLignes().addAll(nouvellesLignes);
     }
 
     public FactureResponse toResponse(Facture facture) {
         return new FactureResponse(
                 facture.getId(),
                 facture.getNumero(),
+                facture.getClientNom(),
+                facture.getDateEcheance(),
                 facture.getTauxTVA(),
                 facture.getMontantHT(),
                 facture.getMontantTVA(),

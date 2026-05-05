@@ -38,15 +38,24 @@ export class ComptesBancairesComponent implements OnInit {
         this.showForm = true;
     }
 
+    showMessage(msg: string): void {
+        this.message = msg;
+        setTimeout(() => {
+            if (this.message === msg) {
+                this.message = '';
+            }
+        }, 4000);
+    }
+
     save(): void {
         if (!this.iban || !this.banque) return;
         this.financeSvc.createCompteBancaire({
             iban: this.iban,
-            banque: this.banque
+            nomBanque: this.banque
         }).subscribe({
             next: () => {
                 this.showForm = false;
-                this.message = 'Compte bancaire ajoute !';
+                this.showMessage('Compte bancaire ajouté !');
                 this.loadComptes();
             }
         });
@@ -54,7 +63,7 @@ export class ComptesBancairesComponent implements OnInit {
 
     deleteCompte(id: number): void {
         this.financeSvc.deleteCompteBancaire(id).subscribe({
-            next: () => { this.message = 'Compte supprime'; this.loadComptes(); }
+            next: () => { this.showMessage('Compte supprimé'); this.loadComptes(); }
         });
     }
 }

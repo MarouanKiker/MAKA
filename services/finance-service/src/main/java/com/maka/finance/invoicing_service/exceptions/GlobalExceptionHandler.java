@@ -49,7 +49,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception ex, HttpServletRequest request) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected internal error", request.getRequestURI(), List.of(ex.getMessage()));
+        ex.printStackTrace(); // Pour les logs serveur
+        String message = ex.getClass().getSimpleName() + ": " + ex.getMessage();
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur interne critique", request.getRequestURI(), List.of(message));
     }
 
     private ResponseEntity<ApiError> build(HttpStatus status, String message, String path, List<String> details) {

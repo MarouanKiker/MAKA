@@ -37,12 +37,21 @@ export class TasksComponent implements OnInit {
         this.loadTasks();
     }
 
+    showMessage(msg: string): void {
+        this.message = msg;
+        setTimeout(() => {
+            if (this.message === msg) {
+                this.message = '';
+            }
+        }, 4000);
+    }
+
     loadTasks(): void {
         this.crm.getTasks().subscribe({
             next: (data) => this.tasks = data,
             error: (err) => {
                 console.error('Erreur chargement tâches', err);
-                this.message = 'Erreur de chargement des tâches';
+                this.showMessage('Erreur de chargement des tâches');
             }
         });
     }
@@ -71,12 +80,12 @@ export class TasksComponent implements OnInit {
         this.crm.createTask(dto).subscribe({
             next: () => {
                 this.showForm = false;
-                this.message = 'Tâche créée !';
+                this.showMessage('Tâche créée !');
                 this.loadTasks();
             },
             error: (err) => {
                 console.error('Erreur création tâche', err);
-                this.message = 'Erreur lors de la création';
+                this.showMessage('Erreur lors de la création');
             }
         });
     }

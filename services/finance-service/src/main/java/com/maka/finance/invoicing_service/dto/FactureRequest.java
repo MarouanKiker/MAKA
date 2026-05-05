@@ -7,6 +7,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Schema(description = "Payload de création/mise à jour d'une facture")
@@ -15,10 +16,19 @@ public record FactureRequest(
         @Schema(example = "FAC-2026-0001")
         String numero,
 
+        @Schema(example = "Société ABC", description = "Nom du client")
+        String clientNom,
+
+        @Schema(description = "Date d'échéance de la facture")
+        LocalDate dateEcheance,
+
         @DecimalMin(value = "0.00", message = "Le taux TVA doit être >= 0")
         @DecimalMax(value = "1.00", message = "Le taux TVA doit être <= 1")
         @Schema(example = "0.20")
         BigDecimal tauxTVA,
+
+        @Schema(example = "0.00")
+        BigDecimal taxe,
 
         @NotEmpty(message = "Une facture doit contenir au moins une ligne")
         @Valid

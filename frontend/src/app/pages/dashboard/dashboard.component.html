@@ -70,14 +70,15 @@
             </div>
             <h2 class="text-base font-semibold text-slate-900 dark:text-white mb-1">Finance & Compta</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 flex-1 mb-4 leading-relaxed">
-                Facturation, paiements et gestion de la trésorerie.
+                CA: <span class="font-bold text-emerald-600">{{ getFinanceCA() | number:'1.0-0' }} MAD</span>
+                <br>Solde: <span class="font-bold text-slate-700 dark:text-slate-300">{{ getFinanceSoldeBancaire() | number:'1.0-0' }} MAD</span>
             </p>
-            <div class="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/80">
                 <div class="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
-                    <i class="fa-solid fa-file-invoice text-emerald-500"></i> Factures
+                    <i class="fa-solid fa-file-invoice text-emerald-500"></i> {{ finFactures.length }} Factures
                 </div>
-                <div class="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
-                    <i class="fa-solid fa-scale-balanced text-emerald-500"></i> Journal
+                <div class="flex items-center gap-2 text-xs font-medium" [ngClass]="getFinancePaiementsEnAttente() > 0 ? 'text-amber-600' : 'text-slate-600 dark:text-slate-300'">
+                    <i class="fa-solid fa-clock"></i> {{ getFinancePaiementsEnAttente() }} à valider
                 </div>
             </div>
         </div>

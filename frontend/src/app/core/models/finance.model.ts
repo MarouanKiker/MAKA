@@ -1,9 +1,8 @@
-// modèles finance alignés avec les DTOs Spring Boot du backend
+// modèles finance alignés avec les DTOs Spring Boot du backend (Version PRO)
 
-// ----- Statuts et Modes (Enums) -----
+// ----- Statuts -----
 export type StatutFacture = 'BROUILLON' | 'VALIDEE' | 'ENVOYEE' | 'PARTIELLEMENT_PAYEE' | 'PAYEE' | 'ANNULEE';
 export type StatutPaiement = 'EN_ATTENTE' | 'VALIDE' | 'REJETE';
-export type ModePaiement  = 'VIREMENT' | 'CARTE_BANCAIRE' | 'CHEQUE' | 'ESPECES';
 
 // ----- Facture -----
 export interface LigneFacture {
@@ -11,7 +10,7 @@ export interface LigneFacture {
     produit: string;
     quantite: number;
     prixUnitaire: number;
-    montantHT: number;
+    totalLigne: number;
 }
 
 export interface LigneFactureRequest {
@@ -23,10 +22,13 @@ export interface LigneFactureRequest {
 export interface Facture {
     id: number;
     numero: string;
+    clientNom: string;
+    dateEcheance: string;
     tauxTVA: number;
     montantHT: number;
     montantTVA: number;
     montantTTC: number;
+    taxe: number;
     montantPaye: number;
     resteAPayer: number;
     statut: StatutFacture;
@@ -37,7 +39,10 @@ export interface Facture {
 
 export interface FactureRequest {
     numero: string;
-    tauxTVA: number;          // entre 0 et 1, ex: 0.20 pour 20%
+    clientNom: string;
+    dateEcheance: string | null;
+    tauxTVA: number;
+    taxe: number;
     lignes: LigneFactureRequest[];
 }
 
@@ -46,8 +51,10 @@ export interface Paiement {
     id: number;
     factureId: number;
     montant: number;
-    modePaiement: ModePaiement;
+    modePaiement: string; // Libellé
+    compteBancaire: string; // Nom banque
     referenceTransaction: string;
+    type: 'CLIENT' | 'FOURNISSEUR';
     statut: StatutPaiement;
     datePaiement: string;
     dateCreation: string;
@@ -56,31 +63,37 @@ export interface Paiement {
 export interface CreatePaiementRequest {
     factureId: number;
     montant: number;
-    modePaiement: ModePaiement;
+    modePaiementId: number;
+    compteBancaireId?: number;
     referenceTransaction?: string;
+    type: 'CLIENT' | 'FOURNISSEUR';
+}
+
+// ----- Mode de Paiement (Entité) -----
+export interface ModePaiement {
+    id: number;
+    libelle: string;
+    actif: boolean;
 }
 
 // ----- Compte Bancaire -----
 export interface CompteBancaire {
     id: number;
     iban: string;
-    banque: string;
+    nomBanque: string;
+    soldeActuel: number;
+    devise: string;
 }
 
 // ----- Journal -----
 export interface JournalTransaction {
     id: number;
-    date: string;
-    credit: number;
+    dateEcriture: string;
+    compteDebit: string;
+    compteCredit: string;
     debit: number;
+    credit: number;
     description: string;
-    factureId: number;
-    paiementId: number;
-}
-
-// ----- Stats -----
-export interface FinanceStats {
-    totalCredit: number;
-    totalDebit: number;
-    solde: number;
+    referenceType: string;
+    referenceId: number;
 }

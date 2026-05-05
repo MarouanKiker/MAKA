@@ -9,18 +9,12 @@ import static org.mockito.Mockito.when;
 import com.maka.finance.invoicing_service.dto.CreatePaiementRequest;
 import com.maka.finance.invoicing_service.dto.PaiementResponse;
 import com.maka.finance.invoicing_service.dto.event.PaymentEvent;
-import com.maka.finance.invoicing_service.entities.Facture;
-import com.maka.finance.invoicing_service.entities.LigneFacture;
-import com.maka.finance.invoicing_service.entities.ModePaiement;
-import com.maka.finance.invoicing_service.entities.Paiement;
-import com.maka.finance.invoicing_service.entities.StatutFacture;
-import com.maka.finance.invoicing_service.entities.StatutPaiement;
+import com.maka.finance.invoicing_service.entities.*;
 import com.maka.finance.invoicing_service.events.FinanceEventPublisher;
 import com.maka.finance.invoicing_service.exceptions.BusinessException;
 import com.maka.finance.invoicing_service.mappers.PaiementMapper;
 import com.maka.finance.invoicing_service.metrics.FinanceMetrics;
-import com.maka.finance.invoicing_service.repositories.FactureRepository;
-import com.maka.finance.invoicing_service.repositories.PaiementRepository;
+import com.maka.finance.invoicing_service.repositories.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +32,10 @@ class PaiementServiceTest {
     @Mock
     private FactureRepository factureRepository;
     @Mock
+    private CompteBancaireRepository compteBancaireRepository;
+    @Mock
+    private ModePaiementRepository modePaiementRepository;
+    @Mock
     private PaiementMapper paiementMapper;
     @Mock
     private ComptabiliteService comptabiliteService;
@@ -53,6 +51,8 @@ class PaiementServiceTest {
         paiementService = new PaiementService(
                 paiementRepository,
                 factureRepository,
+                compteBancaireRepository,
+                modePaiementRepository,
                 paiementMapper,
                 comptabiliteService,
                 financeEventPublisher,
@@ -67,7 +67,7 @@ class PaiementServiceTest {
         facture.setStatut(StatutFacture.BROUILLON);
         facture.setResteAPayer(new BigDecimal("100.00"));
 
-        CreatePaiementRequest request = new CreatePaiementRequest(1L, new BigDecimal("50.00"), ModePaiement.VIREMENT, "TX-1");
+        CreatePaiementRequest request = new CreatePaiementRequest(1L, new BigDecimal("50.00"), 1L, null, "TX-1", "CLIENT");
 
         when(paiementRepository.existsByReferenceTransaction("TX-1")).thenReturn(false);
         when(factureRepository.findById(1L)).thenReturn(Optional.of(facture));
@@ -84,21 +84,27 @@ class PaiementServiceTest {
         facture.setStatut(StatutFacture.ENVOYEE);
         facture.setResteAPayer(new BigDecimal("200.00"));
 
-        CreatePaiementRequest request = new CreatePaiementRequest(2L, new BigDecimal("80.00"), ModePaiement.CARTE_BANCAIRE, "TX-2");
+        ModePaiement mode = new ModePaiement("Virement");
+        mode.setId(1L);
+
+        CreatePaiementRequest request = new CreatePaiementRequest(2L, new BigDecimal("80.00"), 1L, null, "TX-2", "CLIENT");
 
         Paiement paiement = new Paiement();
         paiement.setFacture(facture);
         paiement.setMontant(new BigDecimal("80.00"));
         paiement.setReferenceTransaction("TX-2");
         paiement.setStatut(StatutPaiement.EN_ATTENTE);
+        paiement.setModePaiement(mode);
+        paiement.setType("CLIENT");
 
         PaiementResponse response = new PaiementResponse(
-                5L, 2L, new BigDecimal("80.00"), ModePaiement.CARTE_BANCAIRE,
-                "TX-2", StatutPaiement.EN_ATTENTE, null, null
+                5L, 2L, new BigDecimal("80.00"), "Virement", "N/A",
+                "TX-2", "CLIENT", StatutPaiement.EN_ATTENTE, null, null
         );
 
         when(paiementRepository.existsByReferenceTransaction("TX-2")).thenReturn(false);
         when(factureRepository.findById(2L)).thenReturn(Optional.of(facture));
+        when(modePaiementRepository.findById(1L)).thenReturn(Optional.of(mode));
         when(paiementMapper.toEntity(request, facture)).thenReturn(paiement);
         when(paiementRepository.save(paiement)).thenReturn(paiement);
         when(paiementMapper.toResponse(paiement)).thenReturn(response);
@@ -131,10 +137,11 @@ class PaiementServiceTest {
         paiement.setMontant(new BigDecimal("100.00"));
         paiement.setReferenceTransaction("TX-3");
         paiement.setStatut(StatutPaiement.EN_ATTENTE);
+        paiement.setType("CLIENT");
 
         PaiementResponse response = new PaiementResponse(
-                7L, 3L, new BigDecimal("100.00"), ModePaiement.VIREMENT,
-                "TX-3", StatutPaiement.VALIDE, null, null
+                7L, 3L, new BigDecimal("100.00"), "Virement", "Bank",
+                "TX-3", "CLIENT", StatutPaiement.VALIDE, null, null
         );
 
         when(paiementRepository.findById(7L)).thenReturn(Optional.of(paiement));

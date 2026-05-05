@@ -6,7 +6,9 @@ import com.maka.finance.invoicing_service.entities.JournalTransaction;
 import com.maka.finance.invoicing_service.entities.Paiement;
 import com.maka.finance.invoicing_service.repositories.JournalTransactionRepository;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +79,29 @@ public class ComptabiliteService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Retourne les statistiques du journal comptable : total crédit, total débit, et solde.
+     * Endpoint utilisé par le frontend pour la page Journal.
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getStats() {
+        List<JournalTransaction> all = journalTransactionRepository.findAll();
+        BigDecimal totalDebit = BigDecimal.ZERO;
+        BigDecimal totalCredit = BigDecimal.ZERO;
+
+        for (JournalTransaction jt : all) {
+            totalDebit = totalDebit.add(jt.getDebit());
+            totalCredit = totalCredit.add(jt.getCredit());
+        }
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalDebit", totalDebit);
+        stats.put("totalCredit", totalCredit);
+        stats.put("solde", totalCredit.subtract(totalDebit));
+        stats.put("nbEcritures", all.size());
+        return stats;
     }
 
     private void saveEcriture(
