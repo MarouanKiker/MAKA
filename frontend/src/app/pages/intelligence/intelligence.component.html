@@ -1,6 +1,6 @@
 <div class="p-4 md:p-8 space-y-6">
-    
-    <!-- En-tête -->
+
+    <!-- En-tete -->
     <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-inner">
@@ -8,129 +8,243 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white">MAKA Intelligence</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Modèles Machine Learning connectés à vos vraies données</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Centre de commandement IA — Vision 360° de l'entreprise</p>
             </div>
         </div>
-        <button (click)="toggleCopilot()" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-semibold border border-indigo-200 dark:border-indigo-500/20 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors flex items-center gap-2">
-            <i class="fa-solid fa-robot"></i>
-            MAKA Copilot
-        </button>
+        <div class="flex items-center gap-3">
+            <!-- Tabs -->
+            <div class="hidden md:flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 gap-1">
+                <button (click)="activeTab='overview'" [class]="activeTab==='overview' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all">Vue globale</button>
+                <button (click)="activeTab='forecast'" [class]="activeTab==='forecast' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all">Prévisions</button>
+                <button (click)="activeTab='segmentation'" [class]="activeTab==='segmentation' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all">Segmentation</button>
+            </div>
+            <button (click)="toggleCopilot()" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-indigo-500/25 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-robot"></i> Copilot
+            </button>
+        </div>
     </div>
 
-    <!-- Spinner Chargement -->
+    <!-- Spinner -->
     <div *ngIf="loadingData" class="flex flex-col items-center justify-center py-20">
         <i class="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-500 mb-4"></i>
-        <p class="text-slate-500 font-medium">L'IA MAKA analyse vos données en temps réel...</p>
+        <p class="text-slate-500 font-medium">L'IA analyse vos données cross-modules...</p>
     </div>
 
-    <div *ngIf="!loadingData" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- ============ TAB: VUE GLOBALE ============ -->
+    <div *ngIf="!loadingData && activeTab==='overview'" class="space-y-6">
 
-        <!-- Colonne Gauche (2/3) : KPIs et Forecast -->
-        <div class="lg:col-span-2 space-y-6">
+        <!-- Row 1: Score Sante + KPIs Cross -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <!-- KPIs -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" *ngIf="kpis">
-                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 text-lg"><i class="fa-solid fa-coins"></i></div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ formatMontant(kpis.ca_actuel) }} DH</p>
-                    <p class="text-xs font-medium text-slate-500 mt-1">CA Réel</p>
+            <!-- Score de Sante -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center justify-center" *ngIf="crossData">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Santé Entreprise</p>
+                <div class="relative w-32 h-32">
+                    <svg class="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="54" fill="none" stroke-width="8" class="stroke-slate-200 dark:stroke-slate-800"/>
+                        <circle cx="60" cy="60" r="54" fill="none" stroke-width="8" stroke-linecap="round" [attr.stroke]="crossData.couleur_sante" [attr.stroke-dasharray]="2 * 3.14159 * 54" [attr.stroke-dashoffset]="getScoreOffset()" class="transition-all duration-1000"/>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-3xl font-black text-slate-900 dark:text-white">{{ healthAnimated }}</span>
+                        <span class="text-[10px] font-bold text-slate-400">/100</span>
+                    </div>
                 </div>
-                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
-                    <div class="absolute -right-4 -top-4 text-6xl text-purple-500/5"><i class="fa-solid fa-bolt"></i></div>
-                    <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3 text-lg"><i class="fa-solid fa-crystal-ball"></i></div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ formatMontant(kpis.ca_prevu) }} DH</p>
-                    <p class="text-xs font-medium text-slate-500 mt-1">Prédiction (Gradient Boosting)</p>
-                </div>
-                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-3 text-lg"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">+{{ kpis.croissance }}%</p>
-                    <p class="text-xs font-medium text-slate-500 mt-1">Tendance</p>
-                </div>
-                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3 text-lg"><i class="fa-solid fa-bullseye"></i></div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ kpis.taux_conversion }}%</p>
-                    <p class="text-xs font-medium text-slate-500 mt-1">Conv. Historique</p>
-                </div>
+                <span class="mt-2 text-sm font-bold" [style.color]="crossData.couleur_sante">{{ crossData.niveau_sante }}</span>
             </div>
 
-            <!-- Prevision ML -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden" *ngIf="forecastData">
-                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
-                    <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-indigo-500"></i>
-                        Prévision des ventes (Gradient Boosting)
-                    </h2>
-                    <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded tracking-wider">Modèle : Actif</span>
+            <!-- KPIs Cross-Modules -->
+            <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4" *ngIf="crossData">
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2 text-sm"><i class="fa-solid fa-coins"></i></div>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ formatMontant(crossData.kpis.ca_mensuel) }} <span class="text-xs font-normal text-slate-400">MAD</span></p>
+                    <p class="text-[11px] font-medium text-slate-500 mt-1">CA Mensuel</p>
                 </div>
-                
-                <div class="p-6 h-64 flex flex-col">
-                    <div class="flex-1 flex items-end gap-4 border-b border-slate-200 dark:border-slate-800 pb-2 relative">
-                        <div *ngFor="let point of forecastData.donnees" class="flex-1 flex flex-col items-center justify-end h-full gap-2 relative group cursor-pointer">
-                            <div class="w-full max-w-[40px] rounded-t-sm transition-all duration-300 relative"
-                                 [ngClass]="point.type === 'reel' ? 'bg-slate-300 dark:bg-slate-700' : 'bg-indigo-500'"
-                                 [style.height.%]="getBarHeight(point.valeur)">
-                                <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">{{ formatMontant(point.valeur) }}</span>
-                            </div>
-                            <span class="text-[10px] text-slate-500 font-medium uppercase">{{ point.mois }}</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-center gap-6 mt-6 text-xs font-medium text-slate-600">
-                        <span class="flex items-center gap-2"><div class="w-3 h-3 bg-slate-300 dark:bg-slate-700 rounded-sm"></div> Données réelles (BDD)</span>
-                        <span class="flex items-center gap-2"><div class="w-3 h-3 bg-indigo-500 rounded-sm"></div> Prédiction IA</span>
-                    </div>
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2 text-sm"><i class="fa-solid fa-users"></i></div>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ crossData.kpis.total_leads }}</p>
+                    <p class="text-[11px] font-medium text-slate-500 mt-1">Leads CRM <span class="text-emerald-500">(+{{ crossData.kpis.leads_nouveaux }})</span></p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-2 text-sm"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ crossData.kpis.factures_impayees }}</p>
+                    <p class="text-[11px] font-medium text-slate-500 mt-1">Factures impayées</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="w-9 h-9 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2 text-sm"><i class="fa-solid fa-people-group"></i></div>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ crossData.kpis.total_employes }}</p>
+                    <p class="text-[11px] font-medium text-slate-500 mt-1">Employés <span class="text-amber-500" *ngIf="crossData.kpis.conges_en_cours">({{ crossData.kpis.conges_en_cours }} en congé)</span></p>
                 </div>
             </div>
         </div>
 
-        <!-- Colonne Droite : Segmentation K-Means -->
-        <div class="space-y-6">
+        <!-- Row 2: KPIs detailles -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4" *ngIf="crossData">
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                <p class="text-lg font-bold text-slate-900 dark:text-white">{{ formatMontant(crossData.kpis.pipeline_crm) }}</p>
+                <p class="text-[10px] text-slate-500">Pipeline CRM (MAD)</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                <p class="text-lg font-bold text-slate-900 dark:text-white">{{ crossData.kpis.taux_conversion }}%</p>
+                <p class="text-[10px] text-slate-500">Conv. Devis→Cmd</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                <p class="text-lg font-bold text-slate-900 dark:text-white">{{ crossData.kpis.tickets_ouverts }}</p>
+                <p class="text-[10px] text-slate-500">Tickets ouverts</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                <p class="text-lg font-bold text-slate-900 dark:text-white">{{ crossData.kpis.total_commandes }}</p>
+                <p class="text-[10px] text-slate-500">Commandes</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                <p class="text-lg font-bold" [class]="crossData.kpis.croissance_ca >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                    {{ crossData.kpis.croissance_ca > 0 ? '+' : '' }}{{ crossData.kpis.croissance_ca }}%
+                </p>
+                <p class="text-[10px] text-slate-500">Croissance CA</p>
+            </div>
+        </div>
+
+        <!-- Row 3: Alertes + Insights -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Alertes Cross-Modules -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden" *ngIf="crossData">
+                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                    <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-bell text-amber-500"></i> Alertes Intelligentes
+                        <span class="ml-auto text-[10px] font-bold px-2 py-0.5 bg-amber-100 dark:bg-amber-500/20 text-amber-600 rounded-full">{{ crossData.alertes.length }}</span>
+                    </h2>
+                </div>
+                <div class="p-4 space-y-3 max-h-80 overflow-y-auto">
+                    <div *ngFor="let alerte of crossData.alertes" class="p-3 rounded-xl border-l-4 transition-colors" [ngClass]="getAlerteBorderClass(alerte.type) + ' ' + getAlerteBgClass(alerte.type)">
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid mt-0.5" [ngClass]="alerte.icone + ' ' + getAlerteIconClass(alerte.type)"></i>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ alerte.titre }}</p>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{{ alerte.texte }}</p>
+                                <span class="text-[10px] font-bold text-slate-400 mt-1 inline-block">{{ alerte.module }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Ventes -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
+                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
                     <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-users-viewfinder text-purple-500"></i>
-                        Segmentation Client (K-Means)
+                        <i class="fa-solid fa-lightbulb text-indigo-500"></i> Insights ML
                     </h2>
                 </div>
-                
-                <div class="p-6" *ngIf="segmentationData">
-                    <p class="text-xs text-slate-500 mb-4">L'IA a automatiquement identifié {{ segmentationData.n_clusters }} clusters parmi vos {{ segmentationData.n_clients }} clients réels :</p>
-                    
-                    <div class="space-y-3">
-                        <div *ngFor="let seg of segmentationData.segments" class="p-3 border border-slate-100 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                            <div class="flex justify-between items-center mb-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-lg">{{ seg.icone }}</span>
-                                    <h3 class="font-bold text-sm" [style.color]="seg.couleur">{{ seg.nom }}</h3>
-                                </div>
-                                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">{{ seg.nb_clients }} clients</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-slate-500 ml-8">
-                                <span>CA Moyen: {{ seg.ca_moyen }} DH</span>
-                                <span>Total: {{ formatMontant(seg.ca_total) }} DH</span>
-                            </div>
-                        </div>
+                <div class="p-4 space-y-3">
+                    <div *ngFor="let ins of insights" class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                        <i class="fa-solid mt-0.5" [ngClass]="ins.icone" [class]="ins.type === 'success' ? 'text-emerald-500' : ins.type === 'warning' ? 'text-amber-500' : 'text-blue-500'"></i>
+                        <p class="text-sm text-slate-700 dark:text-slate-300">{{ ins.texte }}</p>
                     </div>
-                </div>
-                <div class="p-6 text-center text-slate-500 text-sm" *ngIf="!segmentationData">
-                    Pas assez de clients dans la base de données pour effectuer le clustering (minimum 4).
+                    <div *ngIf="!insights.length" class="text-center text-sm text-slate-500 py-4">Aucun insight disponible</div>
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- Copilot Sidebar Overlay -->
-    <div *ngIf="showCopilot" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white dark:bg-slate-900 shadow-[-10px_0_30px_rgba(0,0,0,0.1)] z-50 flex flex-col border-l border-slate-200 dark:border-slate-800 animate-[slideInRight_0.3s_ease-out]">
+    <!-- ============ TAB: PREVISIONS ============ -->
+    <div *ngIf="!loadingData && activeTab==='forecast'" class="space-y-6">
+
+        <!-- KPIs Ventes -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" *ngIf="kpis">
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-3"><i class="fa-solid fa-coins"></i></div>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ formatMontant(kpis.ca_actuel) }} DH</p>
+                <p class="text-xs font-medium text-slate-500 mt-1">CA Réel</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 flex items-center justify-center mb-3"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ formatMontant(kpis.ca_prevu) }} DH</p>
+                <p class="text-xs font-medium text-slate-500 mt-1">Prédiction IA</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 flex items-center justify-center mb-3"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">+{{ kpis.croissance }}%</p>
+                <p class="text-xs font-medium text-slate-500 mt-1">Tendance</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 flex items-center justify-center mb-3"><i class="fa-solid fa-bullseye"></i></div>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ kpis.taux_conversion }}%</p>
+                <p class="text-xs font-medium text-slate-500 mt-1">Conv. Historique</p>
+            </div>
+        </div>
+
+        <!-- Graphique Forecast -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden" *ngIf="forecastData">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
+                <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-indigo-500"></i> Prévision des ventes (Gradient Boosting)
+                </h2>
+                <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded tracking-wider">R² : {{ forecastData.precision_modele }}%</span>
+            </div>
+            <div class="p-6 h-64 flex flex-col">
+                <div class="flex-1 flex items-end gap-3 border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <div *ngFor="let point of forecastData.donnees" class="flex-1 flex flex-col items-center justify-end h-full gap-2 group cursor-pointer">
+                        <div class="w-full max-w-[40px] rounded-t-sm transition-all duration-300" [ngClass]="point.type === 'reel' ? 'bg-slate-300 dark:bg-slate-700' : 'bg-indigo-500'" [style.height.%]="getBarHeight(point.valeur)">
+                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none whitespace-nowrap">{{ formatMontant(point.valeur) }}</span>
+                        </div>
+                        <span class="text-[9px] text-slate-500 font-medium">{{ point.mois }}</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center gap-6 mt-4 text-xs font-medium text-slate-600">
+                    <span class="flex items-center gap-2"><div class="w-3 h-3 bg-slate-300 dark:bg-slate-700 rounded-sm"></div> Données BDD</span>
+                    <span class="flex items-center gap-2"><div class="w-3 h-3 bg-indigo-500 rounded-sm"></div> Prédiction IA</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ TAB: SEGMENTATION ============ -->
+    <div *ngIf="!loadingData && activeTab==='segmentation'" class="space-y-6">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users-viewfinder text-purple-500"></i> Segmentation Client (K-Means)
+                </h2>
+            </div>
+            <div class="p-6" *ngIf="segmentationData && segmentationData.segments?.length">
+                <p class="text-xs text-slate-500 mb-4">L'IA a identifié {{ segmentationData.n_clusters }} clusters parmi {{ segmentationData.n_clients }} clients :</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div *ngFor="let seg of segmentationData.segments" class="p-4 border border-slate-100 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">{{ seg.icone }}</span>
+                                <h3 class="font-bold text-sm" [style.color]="seg.couleur">{{ seg.nom }}</h3>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">{{ seg.nb_clients }} clients</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-500">
+                            <span>CA Moyen: {{ formatMontant(seg.ca_moyen) }} DH</span>
+                            <span>Total: {{ formatMontant(seg.ca_total) }} DH</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 text-center text-slate-500 text-sm" *ngIf="!segmentationData || !segmentationData.segments?.length">
+                Pas assez de clients pour effectuer le clustering (minimum 4).
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ COPILOT SIDEBAR ============ -->
+    <div *ngIf="showCopilot" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white dark:bg-slate-900 shadow-[-10px_0_30px_rgba(0,0,0,0.15)] z-50 flex flex-col border-l border-slate-200 dark:border-slate-800 animate-[slideInRight_0.3s_ease-out]">
         <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-robot text-xl"></i>
-                <h2 class="font-bold text-lg">MAKA Copilot (RAG)</h2>
+                <div>
+                    <h2 class="font-bold text-lg">MAKA Copilot</h2>
+                    <p class="text-[10px] text-indigo-200">RAG++ • Tous les modules</p>
+                </div>
             </div>
             <button (click)="toggleCopilot()" class="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-        
+
         <div class="flex-1 overflow-y-auto p-4 space-y-4" #chatContainer>
             <div *ngFor="let msg of messages" class="flex gap-3" [ngClass]="{'flex-row-reverse': msg.auteur === 'user'}">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" [ngClass]="msg.auteur === 'user' ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'">
@@ -141,9 +255,9 @@
                     <div class="text-[10px] mt-1 text-right opacity-70">{{ msg.heure }}</div>
                 </div>
             </div>
-            
+
             <div *ngIf="chatLoading" class="flex gap-3">
-                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 flex items-center justify-center">
                     <i class="fa-solid fa-robot"></i>
                 </div>
                 <div class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-none px-4 py-3 flex gap-1 items-center">
@@ -156,7 +270,7 @@
 
         <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
             <div class="relative">
-                <input type="text" [(ngModel)]="messageInput" (keydown)="onKeyDown($event)" placeholder="Posez une question sur vos ventes..." class="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 transition-colors text-slate-900 dark:text-white">
+                <input type="text" [(ngModel)]="messageInput" (keydown)="onKeyDown($event)" placeholder="Posez une question sur votre entreprise..." class="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors text-slate-900 dark:text-white">
                 <button (click)="envoyerMessage()" [disabled]="chatLoading || !messageInput.trim()" class="absolute right-2 top-2 w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50 transition-colors">
                     <i class="fa-solid fa-paper-plane text-xs"></i>
                 </button>

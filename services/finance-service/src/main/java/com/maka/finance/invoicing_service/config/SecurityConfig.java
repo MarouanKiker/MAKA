@@ -116,7 +116,7 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
         converter.setAuthoritiesClaimName("roles");
-        converter.setAuthorityPrefix("ROLE_");
+        converter.setAuthorityPrefix(""); // Symfony envoie déjà ROLE_ADMIN, pas besoin de re-prefixer
 
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(converter);

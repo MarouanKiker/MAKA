@@ -1,32 +1,47 @@
 import google.generativeai as genai
+import httpx
 from sqlalchemy.orm import Session
-from app.config import GEMINI_API_KEY
+from app.config import GEMINI_API_KEY, OPENROUTER_API_KEY
 from app.models import Produit, Devis, CommandeVente, VenteMensuelle
 
 # ============================================================
-# Chatbot IA avec RAG (Retrieval Augmented Generation)
-# Etape 1: Cherche les vraies donnees dans la BDD
-# Etape 2: Donne ces donnees a Gemini comme contexte
-# Etape 3: Gemini repond avec les vrais chiffres
+# Chatbot IA avec RAG++ (Retrieval Augmented Generation)
+# Version 2 : Contexte CROSS-MODULES (CRM + Finance + RH + Ventes)
+#
+# Etape 1: Recupere les donnees de TOUS les microservices
+# Etape 2: Injecte le tout comme contexte au LLM
+# Etape 3: Le LLM repond avec les vrais chiffres de l'entreprise
 # ============================================================
 
-# contexte systeme pour le chatbot
-SYSTEM_PROMPT = """Tu es l'assistant intelligent de MAKA ERP, un systeme de gestion d'entreprise.
+# URLs internes des microservices (reseau Docker hub-network)
+CRM_BASE = "http://crm-service:5000/api/crm"
+FINANCE_BASE = "http://finance-service:6000/api/v1"
+HR_BASE = "http://hr-service:8080/api/hr"
+
+# Prompt systeme enrichi pour le mode "cerveau d'entreprise"
+SYSTEM_PROMPT = """Tu es MAKA Copilot, l'assistant IA intelligent de MAKA ERP.
+Tu es le CERVEAU CENTRAL de l'entreprise. Tu as acces en temps reel aux donnees de TOUS les modules :
+- VENTES : produits, devis, commandes, chiffre d'affaires
+- CRM : leads, opportunites, taches, tickets, campagnes
+- FINANCE : factures, paiements, tresorerie
+- RH : employes, conges
+
 Tu reponds en francais, de maniere concise et professionnelle.
-Tu as acces aux donnees reelles de l'entreprise qui te sont fournies en contexte.
 Utilise TOUJOURS les donnees fournies pour repondre avec precision.
+Tu peux croiser les donnees entre modules pour donner des insights pertinents.
+Quand c'est pertinent, donne des recommandations actionables.
 Si tu ne sais pas, dis-le honnetement.
-Garde tes reponses courtes (3-4 phrases max)."""
+Garde tes reponses courtes et impactantes (3-5 phrases max)."""
 
 
 async def recuperer_contexte_bdd(db: Session, token: str = None):
     """
-    Recupere un resume des donnees reelles de TOUS les modules (Microservices).
-    On appelle les autres services via HTTP interne pour avoir une vision globale.
+    Recupere un resume des donnees reelles de TOUS les modules.
+    Appelle les microservices via HTTP interne pour une vision 360°.
     """
     contexte = []
-    
-    # Auth inter-services : CRM/Finance acceptent cookie et header Bearer (.NET / Spring).
+
+    # Headers d'auth inter-services
     headers = {}
     if token:
         headers["Cookie"] = f"maka_jwt={token}"
@@ -35,49 +50,105 @@ async def recuperer_contexte_bdd(db: Session, token: str = None):
     # --- 1. DONNEES VENTES (Local DB) ---
     produits = db.query(Produit).all()
     if produits:
-        contexte.append(f"VENTES: {len(produits)} produits au catalogue.")
-    
+        top_produits = sorted(produits, key=lambda p: p.prix_vente, reverse=True)[:5]
+        noms_top = ", ".join([p.nom for p in top_produits])
+        contexte.append(f"VENTES: {len(produits)} produits au catalogue. Top produits: {noms_top}.")
+
     total_devis = db.query(Devis).count()
-    contexte.append(f"DEVIS: {total_devis} au total.")
+    devis_attente = db.query(Devis).filter(Devis.statut.in_(["BROUILLON", "ENVOYE"])).count()
+    devis_acceptes = db.query(Devis).filter(Devis.statut == "ACCEPTE").count()
+    contexte.append(f"DEVIS: {total_devis} au total, {devis_acceptes} acceptes, {devis_attente} en attente.")
 
     commandes = db.query(CommandeVente).all()
     if commandes:
         ca_total = sum(c.montant_ttc for c in commandes)
-        contexte.append(f"CHIFFRE AFFAIRES: {round(ca_total, 0)} MAD total.")
+        # Meilleur client
+        ca_par_client = {}
+        for c in commandes:
+            ca_par_client[c.client] = ca_par_client.get(c.client, 0) + c.montant_ttc
+        meilleur = max(ca_par_client.items(), key=lambda x: x[1]) if ca_par_client else None
+        contexte.append(f"CA TOTAL: {round(ca_total, 0)} MAD sur {len(commandes)} commandes.")
+        if meilleur:
+            contexte.append(f"MEILLEUR CLIENT: '{meilleur[0]}' avec {round(meilleur[1], 0)} MAD.")
+
+    # Tendance CA
+    ventes = db.query(VenteMensuelle).order_by(
+        VenteMensuelle.annee.desc(), VenteMensuelle.mois.desc()
+    ).limit(3).all()
+    if len(ventes) >= 2:
+        croissance = ((ventes[0].chiffre_affaires - ventes[1].chiffre_affaires) / ventes[1].chiffre_affaires) * 100
+        contexte.append(f"TENDANCE: CA mensuel {'en hausse' if croissance > 0 else 'en baisse'} de {round(abs(croissance), 1)}%.")
 
     # --- 2. DONNEES CRM (Appel crm-service) ---
     try:
         async with httpx.AsyncClient() as client:
-            resp = await client.get("http://crm-service:5000/api/crm/leads", headers=headers, timeout=2.0)
+            # Leads
+            resp = await client.get(f"{CRM_BASE}/leads", headers=headers, timeout=3.0)
             if resp.status_code == 200:
                 leads = resp.json()
-                nouveaux = len([l for l in leads if l.get('statut') == 'NOUVEAU'])
-                contexte.append(f"CRM: {len(leads)} leads au total, dont {nouveaux} nouveaux.")
-            
-            resp = await client.get("http://crm-service:5000/api/crm/campagnes", headers=headers, timeout=2.0)
+                nouveaux = len([l for l in leads if l.get("statut", "").upper() in ("NOUVEAU", "NEW")])
+                qualifies = len([l for l in leads if l.get("statut", "").upper() in ("QUALIFIE", "QUALIFIED", "CONTACTE")])
+                contexte.append(f"CRM LEADS: {len(leads)} leads — {nouveaux} nouveaux, {qualifies} qualifies.")
+
+            # Opportunites
+            resp = await client.get(f"{CRM_BASE}/opportunites", headers=headers, timeout=3.0)
+            if resp.status_code == 200:
+                opps = resp.json()
+                pipeline = sum(float(o.get("montant", 0) or o.get("valeur", 0) or 0) for o in opps)
+                contexte.append(f"CRM PIPELINE: {len(opps)} opportunites, valeur pipeline: {round(pipeline, 0)} MAD.")
+
+            # Tickets
+            resp = await client.get(f"{CRM_BASE}/tickets", headers=headers, timeout=3.0)
+            if resp.status_code == 200:
+                tickets = resp.json()
+                ouverts = len([t for t in tickets if str(t.get("statut", "")).upper() in ("OUVERT", "OPEN", "EN_COURS", "NOUVEAU")])
+                contexte.append(f"CRM TICKETS: {len(tickets)} tickets dont {ouverts} ouverts.")
+
+            # Campagnes
+            resp = await client.get(f"{CRM_BASE}/campagnes", headers=headers, timeout=3.0)
             if resp.status_code == 200:
                 campagnes = resp.json()
-                contexte.append(f"MARKETING: {len(campagnes)} campagnes actives.")
+                contexte.append(f"MARKETING: {len(campagnes)} campagnes enregistrees.")
     except Exception:
-        contexte.append("CRM: (Service indisponible pour le moment)")
+        contexte.append("CRM: (Service temporairement indisponible)")
 
     # --- 3. DONNEES FINANCE (Appel finance-service) ---
     try:
         async with httpx.AsyncClient() as client:
-            # L'URL interne de Spring Boot
-            resp = await client.get("http://finance-service:6000/api/v1/factures", headers=headers, timeout=2.0)
+            resp = await client.get(f"{FINANCE_BASE}/factures", headers=headers, timeout=3.0)
             if resp.status_code == 200:
                 factures = resp.json()
-                impayees = len([f for f in factures if f.get('statut') != 'PAYEE'])
-                total_du = sum(f.get('resteAPayer', 0) for f in factures)
-                contexte.append(f"FINANCE: {len(factures)} factures, {impayees} non payées. Total dû: {round(total_du, 0)} MAD.")
+                impayees = len([f for f in factures if str(f.get("statut", "")).upper() not in ("PAYEE", "PAID", "PAYÉE")])
+                total_du = sum(float(f.get("resteAPayer", 0) or f.get("reste_a_payer", 0) or 0) for f in factures)
+                contexte.append(f"FINANCE: {len(factures)} factures, {impayees} impayees. Total du: {round(total_du, 0)} MAD.")
+
+            resp = await client.get(f"{FINANCE_BASE}/paiements", headers=headers, timeout=3.0)
+            if resp.status_code == 200:
+                paiements = resp.json()
+                contexte.append(f"PAIEMENTS: {len(paiements)} paiements enregistres.")
     except Exception:
-        contexte.append("FINANCE: (Service indisponible pour le moment)")
+        contexte.append("FINANCE: (Service temporairement indisponible)")
+
+    # --- 4. DONNEES RH (Appel hr-service) ---
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{HR_BASE}/employes", headers=headers, timeout=3.0)
+            if resp.status_code == 200:
+                employes = resp.json()
+                contexte.append(f"RH: {len(employes)} employes dans l'entreprise.")
+
+            resp = await client.get(f"{HR_BASE}/conges", headers=headers, timeout=3.0)
+            if resp.status_code == 200:
+                conges = resp.json()
+                en_cours = len([c for c in conges if str(c.get("statut", "")).upper() in ("APPROUVE", "APPROVED", "EN_COURS", "ACCEPTE")])
+                contexte.append(f"CONGES: {len(conges)} demandes, {en_cours} actuellement en cours.")
+    except Exception:
+        contexte.append("RH: (Service temporairement indisponible)")
 
     return "\n".join(contexte)
 
 
-# reponses pre-ecrites pour le mode demo (quand il n'y a pas de cle API Gemini)
+# reponses pre-ecrites pour le mode demo (quand il n'y a pas de cle API)
 def trouver_reponse_demo(message: str, db: Session):
     """
     Mode demo : genere une reponse basee sur les vrais chiffres de la BDD
@@ -86,7 +157,7 @@ def trouver_reponse_demo(message: str, db: Session):
     msg = message.lower()
 
     if "bonjour" in msg or "salut" in msg:
-        return "Bonjour ! Je suis MAKA Copilot. Je suis connecté à votre base de données. Vous pouvez me demander par exemple : 'Combien de devis sont en attente ?' ou 'Quel est le CA total ?'"
+        return "Bonjour ! Je suis MAKA Copilot, le cerveau IA de votre ERP. Je suis connecté à tous vos modules (Ventes, CRM, Finance, RH). Posez-moi n'importe quelle question !"
 
     if "devis" in msg and "attente" in msg:
         devis_en_attente = db.query(Devis).filter(Devis.statut.in_(["BROUILLON", "ENVOYE"])).count()
@@ -118,36 +189,39 @@ def trouver_reponse_demo(message: str, db: Session):
         produits = db.query(Produit).count()
         return f"Votre catalogue contient actuellement {produits} produits et services actifs. Souhaitez-vous voir lesquels se vendent le mieux ?"
 
+    if "sante" in msg or "santé" in msg or "entreprise" in msg:
+        commandes = db.query(CommandeVente).all()
+        ca = sum(c.montant_ttc for c in commandes)
+        devis = db.query(Devis).count()
+        return f"Vue d'ensemble : CA total de {round(ca, 0)} MAD, {devis} devis émis, {len(commandes)} commandes. Utilisez le dashboard Cross-Analytics pour une analyse complète !"
+
     if "merci" in msg:
         return "Je vous en prie ! N'hésitez pas si vous avez d'autres questions sur vos données ERP."
 
-    # Reponse par defaut plus intelligente
-    return "Je suis en mode 'Copilot Local'. Pour pouvoir répondre à des questions complexes ouvertes comme celle-ci, j'ai besoin qu'une clé API IA (ex: Gemini) soit ajoutée dans la configuration système. Pour l'instant, demandez-moi plutôt des choses simples sur le CA, les devis ou les clients !"
+    # Reponse par defaut
+    return "Je suis en mode Copilot Local. Pour des réponses IA avancées, une clé API (Gemini/OpenRouter) est nécessaire. En attendant, je peux vous renseigner sur le CA, les devis, les clients, la santé de l'entreprise !"
 
-
-import httpx
-from app.config import GEMINI_API_KEY, OPENROUTER_API_KEY
 
 async def chat(message: str, db: Session = None, token: str = None):
     """
-    Chatbot IA avec RAG :
-    1. Recupere les donnees reelles de la BDD
+    Chatbot IA avec RAG++ :
+    1. Recupere les donnees reelles de TOUS les modules (Ventes + CRM + Finance + RH)
     2. Les injecte dans le prompt comme contexte
     3. Utilise OpenRouter (prioritaire) ou Gemini pour repondre
     """
-    # etape 1 : recuperer le contexte reel de la BDD (le "R" de RAG)
+    # etape 1 : recuperer le contexte cross-modules (le "R" de RAG)
     contexte_bdd = ""
     if db:
         contexte_bdd = await recuperer_contexte_bdd(db, token=token)
 
-    # Etape 2 : Si OpenRouter est configure, on l'utilise (plus flexible)
+    # Etape 2 : Si OpenRouter est configure, on l'utilise
     if OPENROUTER_API_KEY:
         try:
             prompt = SYSTEM_PROMPT
             if contexte_bdd:
-                prompt += f"\n\nDONNEES ACTUELLES DE L'ENTREPRISE :\n{contexte_bdd}"
-            
-            print(f"Tentative OpenRouter avec la clé : {OPENROUTER_API_KEY[:10]}...")
+                prompt += f"\n\nDONNEES ACTUELLES DE L'ENTREPRISE (temps reel depuis tous les modules) :\n{contexte_bdd}"
+
+            print(f"[RAG++] OpenRouter avec contexte cross-modules ({len(contexte_bdd)} chars)")
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     "https://openrouter.ai/api/v1/chat/completions",
@@ -157,19 +231,19 @@ async def chat(message: str, db: Session = None, token: str = None):
                         "X-Title": "MAKA ERP",
                     },
                     json={
-                        "model": "nvidia/nemotron-3-super-120b-a12b:free", # Le modèle suggéré par l'utilisateur
+                        "model": "nvidia/nemotron-3-super-120b-a12b:free",
                         "messages": [
                             {"role": "user", "content": f"{prompt}\n\nQuestion: {message}"}
                         ]
                     },
                     timeout=30.0
                 )
-                
+
                 if response.status_code == 200:
                     data = response.json()
                     return {
                         "reponse": data['choices'][0]['message']['content'],
-                        "source": "openrouter_rag",
+                        "source": "openrouter_rag_plus",
                         "contexte_utilise": bool(contexte_bdd),
                     }
                 else:
@@ -177,7 +251,7 @@ async def chat(message: str, db: Session = None, token: str = None):
         except Exception as e:
             print(f"Exception OpenRouter: {str(e)}")
 
-    # mode demo si pas de cle API (Gemini ou OpenRouter)
+    # mode demo si pas de cle API
     if not GEMINI_API_KEY:
         return {
             "reponse": trouver_reponse_demo(message, db) if db else "Je ne peux pas accéder à la BDD.",
@@ -185,26 +259,24 @@ async def chat(message: str, db: Session = None, token: str = None):
             "contexte_utilise": bool(contexte_bdd),
         }
 
-    # etape 3 : fallback vers Gemini direct si configurer
+    # Fallback Gemini
     try:
         genai.configure(api_key=GEMINI_API_KEY)
         model = genai.GenerativeModel("gemini-2.0-flash")
 
-        # construire le prompt enrichi avec les donnees reelles
         prompt = SYSTEM_PROMPT
         if contexte_bdd:
-            prompt += f"\n\nDONNEES ACTUELLES DE L'ENTREPRISE (issues de la base de donnees) :\n{contexte_bdd}"
+            prompt += f"\n\nDONNEES ACTUELLES DE L'ENTREPRISE (temps reel depuis tous les modules) :\n{contexte_bdd}"
         prompt += f"\n\nQuestion de l'utilisateur : {message}"
 
         response = model.generate_content(prompt)
         return {
             "reponse": response.text,
-            "source": "gemini_rag",
+            "source": "gemini_rag_plus",
             "contexte_utilise": bool(contexte_bdd),
         }
 
     except Exception as e:
-        # fallback final vers le mode demo en cas d'erreur
         return {
             "reponse": trouver_reponse_demo(message, db) if db else "Erreur de connexion BDD.",
             "source": "demo_rag_fallback",
