@@ -10,39 +10,81 @@
 
 <div class="toast" *ngIf="message" (click)="message = ''">{{ message }}</div>
 
-<!-- formulaire d'ajout -->
+<!-- formulaire d'ajout avec design moderne -->
 <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-        <h2>Enregistrer un paiement</h2>
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-money-bill-transfer"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 m-0">Enregistrer un paiement</h2>
+                <p class="text-xs text-slate-500 m-0">Ajouter un nouveau règlement de facture</p>
+            </div>
+        </div>
+
         <form (ngSubmit)="save()">
-            <div class="form-group">
+            <div class="champ">
                 <label>Facture concernée *</label>
-                <select [(ngModel)]="factureId" name="factureId" required>
+                <select [(ngModel)]="factureId" name="factureId" required class="w-full">
                     <option [ngValue]="null">-- Sélectionner une facture --</option>
                     <option *ngFor="let f of factures" [ngValue]="f.id">
-                        {{ f.numero }} — Reste : {{ f.resteAPayer | number:'1.2-2' }} MAD
+                        {{ f.numero }} — Reste à payer : {{ f.resteAPayer | number:'1.2-2' }} MAD
                     </option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Montant (MAD) *</label>
-                <input type="number" [(ngModel)]="montant" name="montant" required min="0.01" step="0.01" />
+            
+            <div class="row">
+                <div class="champ">
+                    <label>Montant (MAD) *</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-2.5 text-slate-400 font-bold">MAD</span>
+                        <input type="number" [(ngModel)]="montant" name="montant" required min="0.01" step="0.01" class="pl-14" />
+                    </div>
+                </div>
+                <div class="champ">
+                    <label>Mode de paiement *</label>
+                    <select [(ngModel)]="modePaiementId" name="modePaiement">
+                        <option *ngFor="let m of modesPaiement" [value]="m.id">{{ m.libelle }}</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Mode de paiement *</label>
-                <select [(ngModel)]="modePaiement" name="modePaiement">
-                    <option *ngFor="let m of modesPaiement" [value]="m">{{ modeLabels[m] }}</option>
-                </select>
+
+            <div class="row">
+                <div class="champ">
+                    <label>Compte bancaire (optionnel)</label>
+                    <select [(ngModel)]="compteBancaireId" name="compteBancaire" class="w-full">
+                        <option [ngValue]="null">-- Aucun compte --</option>
+                        <option *ngFor="let c of comptesBancaires" [ngValue]="c.id">
+                            {{ c.nomBanque }} — {{ c.iban }}
+                        </option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Référence de transaction (optionnel)</label>
+                    <input type="text" [(ngModel)]="referenceTransaction" name="ref" placeholder="Ex: VIR-2026-0042 (Généré auto si vide)" />
+                </div>
             </div>
-            <div class="form-group">
-                <label>Référence de transaction (optionnel)</label>
-                <input type="text" [(ngModel)]="referenceTransaction" name="ref" placeholder="Ex: VIR-2026-0042" />
-            </div>
-            <div class="form-actions">
+
+            <div class="modal-actions">
                 <button type="button" class="btn-cancel" (click)="showForm = false">Annuler</button>
-                <button type="submit" class="btn-save">Enregistrer</button>
+                <button type="submit" class="btn-save bg-emerald-600 hover:bg-emerald-700"><i class="fa-solid fa-check mr-2"></i> Valider le paiement</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- stats rapides pour les paiements -->
+<div class="page-stats mt-6">
+    <div class="mini-stat">
+        <div class="mini-stat-icon text-emerald-600 bg-emerald-50"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <div class="mini-stat-value">{{ paiements.length }}</div>
+        <div class="mini-stat-label">Paiements totaux</div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-icon text-blue-600 bg-blue-50"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div class="mini-stat-value">{{ getEnAttenteCount() }}</div>
+        <div class="mini-stat-label">En attente</div>
     </div>
 </div>
 
@@ -57,34 +99,43 @@
                 <th>Référence</th>
                 <th>Facture</th>
                 <th>Statut</th>
-                <th>Actions</th>
+                <th class="text-right">Actions</th>
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let p of paiements">
-                <td>{{ p.datePaiement | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td class="cell-main cell-amount">{{ p.montant | number:'1.2-2' }} MAD</td>
-                <td>{{ modeLabels[p.modePaiement] }}</td>
-                <td>{{ p.referenceTransaction || '-' }}</td>
-                <td>{{ getFactureNumero(p.factureId) }}</td>
+            <tr *ngFor="let p of paiements" class="hover:bg-slate-50 transition-colors">
+                <td class="font-medium text-slate-600">{{ p.datePaiement | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="font-bold text-emerald-600 text-lg">{{ p.montant | number:'1.2-2' }} MAD</td>
                 <td>
-                    <span class="badge" [style.background]="statutColors[p.statut]" [style.color]="'white'">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold">
+                        <i class="fa-solid fa-wallet text-slate-400"></i> {{ p.modePaiement }}
+                    </span>
+                </td>
+                <td class="font-mono text-xs text-slate-500">{{ p.referenceTransaction || '-' }}</td>
+                <td class="font-bold text-slate-800">{{ getFactureNumero(p.factureId) }}</td>
+                <td>
+                    <span class="badge" [style.background]="statutColors[p.statut] + '20'" [style.color]="statutColors[p.statut]" [style.borderColor]="statutColors[p.statut] + '40'">
                         {{ statutLabels[p.statut] }}
                     </span>
                 </td>
-                <td class="cell-actions">
-                    <button class="btn-icon success" *ngIf="p.statut === 'EN_ATTENTE'"
+                <td class="flex justify-end gap-2">
+                    <button class="btn-sm bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100" *ngIf="p.statut === 'EN_ATTENTE'"
                         (click)="valider(p)" title="Valider">
-                        <i class="fa-solid fa-check"></i>
+                        <i class="fa-solid fa-check"></i> Valider
                     </button>
-                    <button class="btn-icon danger" *ngIf="p.statut === 'EN_ATTENTE'"
+                    <button class="btn-sm danger" *ngIf="p.statut === 'EN_ATTENTE'"
                         (click)="rejeter(p)" title="Rejeter">
-                        <i class="fa-solid fa-xmark"></i>
+                        <i class="fa-solid fa-xmark"></i> Rejeter
                     </button>
                 </td>
             </tr>
             <tr *ngIf="paiements.length === 0 && !isLoading">
-                <td colspan="7" class="empty-row">Aucun paiement enregistré</td>
+                <td colspan="7">
+                    <div class="empty">
+                        <i class="fa-solid fa-money-bill-wave text-4xl mb-4"></i>
+                        <p>Aucun paiement enregistré pour le moment</p>
+                    </div>
+                </td>
             </tr>
         </tbody>
     </table>

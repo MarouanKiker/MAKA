@@ -1,8 +1,6 @@
 package com.maka.finance.invoicing_service.dto;
 
-import com.maka.finance.invoicing_service.entities.ModePaiement;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -14,10 +12,13 @@ public record CreatePaiementRequest(
         @DecimalMin(value = "0.01", message = "Le montant doit être > 0")
         BigDecimal montant,
 
-        @NotNull(message = "Le mode de paiement est obligatoire")
-        ModePaiement modePaiement,
+        @NotNull(message = "L'ID du mode de paiement est obligatoire")
+        Long modePaiementId,
 
-        @NotBlank(message = "La référence transaction est obligatoire")
-        String referenceTransaction
+        Long compteBancaireId,
+
+        String referenceTransaction,
+
+        String type
 ) {
 }

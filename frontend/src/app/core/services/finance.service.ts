@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 import {
     Facture, FactureRequest,
     Paiement, CreatePaiementRequest,
-    JournalTransaction, FinanceStats, StatutFacture,
-    CompteBancaire
+    JournalTransaction, StatutFacture,
+    CompteBancaire, ModePaiement
 } from '../models/finance.model';
 import { environment } from '../../../environments/environment';
 
@@ -16,6 +16,7 @@ export class FinanceService {
 
     constructor(private http: HttpClient) {}
 
+    // --- Factures ---
     getFactures(): Observable<Facture[]> {
         return this.http.get<Facture[]>(`${this.api}/factures`);
     }
@@ -28,10 +29,6 @@ export class FinanceService {
         return this.http.post<Facture>(`${this.api}/factures`, request);
     }
 
-    updateFacture(id: number, request: FactureRequest): Observable<Facture> {
-        return this.http.put<Facture>(`${this.api}/factures/${id}`, request);
-    }
-
     changeStatutFacture(id: number, statut: StatutFacture): Observable<Facture> {
         return this.http.patch<Facture>(`${this.api}/factures/${id}/statut`, { statut });
     }
@@ -40,16 +37,9 @@ export class FinanceService {
         return this.http.delete<void>(`${this.api}/factures/${id}`);
     }
 
+    // --- Paiements ---
     getPaiements(): Observable<Paiement[]> {
         return this.http.get<Paiement[]>(`${this.api}/paiements`);
-    }
-
-    getPaiement(id: number): Observable<Paiement> {
-        return this.http.get<Paiement>(`${this.api}/paiements/${id}`);
-    }
-
-    getPaiementsByFacture(factureId: number): Observable<Paiement[]> {
-        return this.http.get<Paiement[]>(`${this.api}/paiements/facture/${factureId}`);
     }
 
     createPaiement(request: CreatePaiementRequest): Observable<Paiement> {
@@ -60,45 +50,35 @@ export class FinanceService {
         return this.http.patch<Paiement>(`${this.api}/paiements/${id}/valider`, {});
     }
 
-    rejeterPaiement(id: number): Observable<Paiement> {
-        return this.http.patch<Paiement>(`${this.api}/paiements/${id}/rejeter`, {});
-    }
-
+    // --- Journal & Compta ---
     getJournal(): Observable<JournalTransaction[]> {
         return this.http.get<JournalTransaction[]>(`${this.api}/journal`);
     }
 
-    getStats(): Observable<FinanceStats> {
-        return this.http.get<FinanceStats>(`${this.api}/journal/stats`);
-    }
-
-    private _comptes: CompteBancaire[] = [];
-
+    // --- Comptes Bancaires (APIs Réelles) ---
     getComptesBancaires(): Observable<CompteBancaire[]> {
-        return new Observable(observer => {
-            observer.next(this._comptes);
-            observer.complete();
-        });
+        return this.http.get<CompteBancaire[]>(`${this.api}/comptes-bancaires`);
     }
 
     createCompteBancaire(compte: Partial<CompteBancaire>): Observable<CompteBancaire> {
-        return new Observable(observer => {
-            const newCompte: CompteBancaire = {
-                id: this._comptes.length + 1,
-                iban: compte.iban || '',
-                banque: compte.banque || ''
-            };
-            this._comptes.push(newCompte);
-            observer.next(newCompte);
-            observer.complete();
-        });
+        return this.http.post<CompteBancaire>(`${this.api}/comptes-bancaires`, compte);
     }
 
     deleteCompteBancaire(id: number): Observable<void> {
-        return new Observable(observer => {
-            this._comptes = this._comptes.filter(c => c.id !== id);
-            observer.next();
-            observer.complete();
-        });
+        return this.http.delete<void>(`${this.api}/comptes-bancaires/${id}`);
+    }
+
+    // --- Modes de Paiement ---
+    getModesPaiement(): Observable<ModePaiement[]> {
+        return this.http.get<ModePaiement[]>(`${this.api}/modes-paiement`);
+    }
+
+    // --- Stats & Rejet ---
+    getStats(): Observable<any> {
+        return this.http.get<any>(`${this.api}/journal/stats`);
+    }
+
+    rejeterPaiement(id: number): Observable<Paiement> {
+        return this.http.patch<Paiement>(`${this.api}/paiements/${id}/rejeter`, {});
     }
 }

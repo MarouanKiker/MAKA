@@ -14,4 +14,7 @@ public interface EmployeRepository extends JpaRepository<Employe, Long> {
 
     // Chercher un employé via son email professionnel
     Optional<Employe> findByEmail(String email);
+
+    // Compter le nombre d'employés par département
+    long countByDepartement(String departement);
 }

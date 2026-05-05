@@ -6,6 +6,8 @@ import com.maka.finance.invoicing_service.entities.Facture;
 import com.maka.finance.invoicing_service.entities.Paiement;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class PaiementMapper {
 
@@ -13,8 +15,18 @@ public class PaiementMapper {
         Paiement paiement = new Paiement();
         paiement.setFacture(facture);
         paiement.setMontant(request.montant());
-        paiement.setModePaiement(request.modePaiement());
-        paiement.setReferenceTransaction(request.referenceTransaction());
+
+        // Auto-générer la référence si non fournie
+        String ref = request.referenceTransaction();
+        if (ref == null || ref.isBlank()) {
+            ref = "PAY-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+        paiement.setReferenceTransaction(ref);
+
+        // Type par défaut : CLIENT
+        String type = request.type();
+        paiement.setType(type != null && !type.isBlank() ? type : "CLIENT");
+
         return paiement;
     }
 
@@ -23,8 +35,10 @@ public class PaiementMapper {
                 paiement.getId(),
                 paiement.getFacture().getId(),
                 paiement.getMontant(),
-                paiement.getModePaiement(),
+                paiement.getModePaiement() != null ? paiement.getModePaiement().getLibelle() : "N/A",
+                paiement.getCompteBancaire() != null ? paiement.getCompteBancaire().getNomBanque() : "N/A",
                 paiement.getReferenceTransaction(),
+                paiement.getType(),
                 paiement.getStatut(),
                 paiement.getDatePaiement(),
                 paiement.getDateCreation()
