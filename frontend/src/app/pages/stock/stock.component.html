@@ -1,0 +1,508 @@
+<div class="page-container">
+
+  <!-- Flash messages -->
+  <div class="flash-success" *ngIf="successMsg">✅ {{successMsg}}</div>
+  <div class="flash-error" *ngIf="errorMsg && !showModal">⚠️ {{errorMsg}}</div>
+
+  <!-- Header -->
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Gestion des Stocks</h1>
+      <p class="page-subtitle">Pilotez vos flux logistiques en temps réel avec précision.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="openModal('INVENTAIRE_START')">
+        <i class="fa-solid fa-clipboard-check"></i> Inventaire
+      </button>
+      <button class="btn btn-outline" (click)="openModal('TRANSFERT')">
+        <i class="fa-solid fa-right-left"></i> Transfert
+      </button>
+      <button class="btn btn-secondary" (click)="openModal('SORTIE')">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Sortie
+      </button>
+      <button class="btn btn-primary" (click)="openModal('ENTREE')">
+        <i class="fa-solid fa-arrow-down-long"></i> Entrée
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card" (click)="setTab('articles')" [class.active]="activeTab==='articles'">
+      <div class="kpi-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+      <div class="kpi-info"><h3>{{articles.length}}</h3><p>Articles</p></div>
+    </div>
+    <div class="kpi-card" (click)="setTab('alertes')" [class.active]="activeTab==='alertes'" [class.warning]="alertes.length>0">
+      <div class="kpi-icon warning-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="kpi-info"><h3>{{alertes.length}}</h3><p>Alertes</p></div>
+    </div>
+    <div class="kpi-card" (click)="setTab('depots')" [class.active]="activeTab==='depots'">
+      <div class="kpi-icon"><i class="fa-solid fa-warehouse"></i></div>
+      <div class="kpi-info"><h3>{{depots.length}}</h3><p>Dépôts</p></div>
+    </div>
+    <div class="kpi-card" (click)="setTab('mouvements')" [class.active]="activeTab==='mouvements'">
+      <div class="kpi-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
+      <div class="kpi-info"><h3>{{mouvements.length}}</h3><p>Mouvements</p></div>
+    </div>
+    <div class="kpi-card" (click)="setTab('inventaires')" [class.active]="activeTab==='inventaires'">
+      <div class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+      <div class="kpi-info"><h3>{{inventaires.length}}</h3><p>Inventaires</p></div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="content-card">
+
+    <!-- ── ARTICLES ── -->
+    <div *ngIf="activeTab==='articles'">
+      <div class="tab-header">
+        <h2><i class="fa-solid fa-list"></i> Catalogue d'Articles</h2>
+        <button class="btn btn-sm btn-outline" (click)="openModal('ARTICLE_CREATE')">
+          <i class="fa-solid fa-plus"></i> Nouvel Article
+        </button>
+      </div>
+      <div class="empty-state" *ngIf="articles.length===0 && !loading">
+        <i class="fa-solid fa-box-open"></i><h3>Aucun article</h3>
+        <p>Ajoutez votre premier article au catalogue.</p>
+      </div>
+      <div class="table-responsive" *ngIf="articles.length>0">
+        <table class="maka-table">
+          <thead><tr>
+            <th>Réf.</th><th>Désignation</th><th>Unité</th>
+            <th>Prix Achat</th><th>Prix Vente</th>
+            <th>Stock Global</th><th>Seuil</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr *ngFor="let a of articles">
+              <td class="fw-bold" style="color:var(--primary-color)">{{a.reference}}</td>
+              <td>{{a.designation}}</td>
+              <td><span class="badge">{{a.unite||'PIECE'}}</span></td>
+              <td>{{a.prixAchat|number:'1.2-2'}} MAD</td>
+              <td>{{a.prixVente|number:'1.2-2'}} MAD</td>
+              <td>
+                <span class="badge" [ngClass]="a.stockTotal<=a.seuilMinAlerte?'badge-danger':'badge-success'">
+                  <i class="fa-solid" [ngClass]="a.stockTotal<=a.seuilMinAlerte?'fa-arrow-trend-down':'fa-check'"></i>
+                  {{a.stockTotal}}
+                </span>
+              </td>
+              <td class="text-muted">{{a.seuilMinAlerte}}</td>
+              <td>
+                <button class="btn-icon" title="Stock par dépôt" (click)="viewStocksByDepot(a.id)"><i class="fa-solid fa-eye"></i></button>
+                <button class="btn-icon" title="Modifier" (click)="openModal('ARTICLE_EDIT', a)"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-icon btn-icon-danger" title="Supprimer" (click)="confirmDeleteArticle(a)"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="stock-details mt-4" *ngIf="selectedArticleId">
+        <h3><i class="fa-solid fa-network-wired"></i> Répartition par Dépôt</h3>
+        <div class="depot-grid">
+          <div class="depot-card" *ngFor="let s of selectedArticleStocks">
+            <i class="fa-solid fa-warehouse"></i>
+            <span class="d-name">{{s.depot_nom}}</span>
+            <span class="badge badge-primary">{{s.quantite}}</span>
+          </div>
+          <div *ngIf="selectedArticleStocks.length===0" class="text-muted">Aucun stock disponible dans les dépôts.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ALERTES ── -->
+    <div *ngIf="activeTab==='alertes'">
+      <div class="tab-header"><h2 class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Alertes de Rupture</h2></div>
+      <div class="empty-state" *ngIf="alertes.length===0">
+        <i class="fa-solid fa-shield-check" style="color:#10b981"></i>
+        <h3 style="color:#10b981">Tout est sous contrôle !</h3>
+        <p>Aucun article n'a franchi le seuil critique.</p>
+      </div>
+      <div class="table-responsive" *ngIf="alertes.length>0">
+        <table class="maka-table">
+          <thead><tr><th>Réf.</th><th>Désignation</th><th>Stock</th><th>Seuil</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let a of alertes">
+              <td class="fw-bold">{{a.reference}}</td>
+              <td>{{a.designation}}</td>
+              <td><span class="badge badge-danger">{{a.stockTotal}}</span></td>
+              <td class="text-muted">{{a.seuilMinAlerte}}</td>
+              <td><button class="btn btn-sm btn-primary" (click)="openModal('ENTREE')"><i class="fa-solid fa-bolt"></i> Réapprovisionner</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── DEPOTS ── -->
+    <div *ngIf="activeTab==='depots'">
+      <div class="tab-header">
+        <h2><i class="fa-solid fa-building"></i> Gestion des Dépôts</h2>
+        <button class="btn btn-sm btn-outline" (click)="openModal('DEPOT_CREATE')"><i class="fa-solid fa-plus"></i> Nouveau Dépôt</button>
+      </div>
+      <div class="empty-state" *ngIf="depots.length===0">
+        <i class="fa-solid fa-warehouse"></i><h3>Aucun Dépôt</h3><p>Créez votre premier dépôt logistique.</p>
+      </div>
+      <div class="depot-cards-container">
+        <div class="depot-main-card" *ngFor="let d of depots">
+          <div class="d-header">
+            <div class="d-icon"><i class="fa-solid fa-building-circle-check"></i></div>
+            <div class="d-info">
+              <h4>{{d.nom}}</h4>
+              <p><i class="fa-solid fa-location-dot"></i> {{d.adresse||'Adresse non renseignée'}}</p>
+            </div>
+            <div class="d-actions" style="margin-left:auto;display:flex;gap:.5rem">
+              <button class="btn-icon" title="Modifier" (click)="openModal('DEPOT_EDIT', d)"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn-icon btn-icon-danger" title="Supprimer" (click)="confirmDeleteDepot(d)"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+          <div class="d-capacity">
+            <div class="cap-labels"><span>Capacité max</span><span>{{d.capaciteMax}} u.</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MOUVEMENTS ── -->
+    <div *ngIf="activeTab==='mouvements'">
+      <div class="tab-header"><h2><i class="fa-solid fa-truck-ramp-box"></i> Historique des Mouvements</h2></div>
+      <div class="empty-state" *ngIf="mouvements.length===0">
+        <i class="fa-solid fa-file-invoice"></i><h3>Aucun mouvement</h3>
+        <p>Les entrées, sorties et transferts s'afficheront ici.</p>
+      </div>
+      <div class="table-responsive" *ngIf="mouvements.length>0">
+        <table class="maka-table">
+          <thead><tr>
+            <th>ID</th><th>Type</th><th>Source</th>
+            <th>Dépôt Source</th><th>Dépôt Dest.</th>
+            <th>Statut</th><th>Date</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr *ngFor="let m of mouvements">
+              <td class="fw-bold">#{{m.id}}</td>
+              <td>
+                <span class="badge" [ngClass]="getTypeBadge(m.typeMvt)">{{m.typeMvt}}</span>
+              </td>
+              <td>{{m.sourceType||'MANUEL'}}</td>
+              <td>{{getDepotName(m.depotSourceId)}}</td>
+              <td>{{getDepotName(m.depotDestinationId)}}</td>
+              <td>
+                <span class="badge"
+                  [class.badge-success]="m.statut==='VALIDE'"
+                  [class.badge-warning]="m.statut==='BROUILLON'"
+                  [class.badge-danger]="m.statut==='ANNULE'">{{m.statut}}</span>
+              </td>
+              <td>{{m.dateMouvement|date:'dd/MM/yyyy HH:mm'}}</td>
+              <td style="display:flex;gap:.4rem">
+                <button class="btn-icon" title="Voir les lignes" (click)="viewMouvementDetails(m)">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+                <button *ngIf="m.statut==='BROUILLON'" class="btn-icon btn-icon-danger" title="Annuler" (click)="annulerMouvement(m)">
+                  <i class="fa-solid fa-ban"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── INVENTAIRES ── -->
+    <div *ngIf="activeTab==='inventaires'">
+      <div class="tab-header"><h2><i class="fa-solid fa-clipboard-list"></i> Sessions d'Inventaire</h2></div>
+      <div class="empty-state" *ngIf="inventaires.length===0">
+        <i class="fa-solid fa-clipboard-check"></i><h3>Aucun Inventaire</h3>
+        <p>Lancez un inventaire pour ajuster vos stocks physiques.</p>
+      </div>
+      <div class="table-responsive" *ngIf="inventaires.length>0">
+        <table class="maka-table">
+          <thead><tr><th>ID</th><th>Dépôt</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let inv of inventaires">
+              <td class="fw-bold">#{{inv.id}}</td>
+              <td>{{getDepotName(inv.depotId)}}</td>
+              <td>
+                <span class="badge"
+                  [class.badge-success]="inv.statut==='VALIDE'"
+                  [class.badge-warning]="inv.statut==='EN_COURS'">{{inv.statut}}</span>
+              </td>
+              <td>{{inv.dateInv|date:'dd/MM/yyyy'}}</td>
+              <td>
+                <button class="btn btn-sm btn-outline" (click)="openInventaireDetails(inv)">
+                  {{inv.statut==='EN_COURS'?'Saisir / Valider':'Détails'}}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content-card -->
+</div><!-- /page-container -->
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content glass-panel"
+       [class.modal-lg]="modalType==='INVENTAIRE_DETAILS'"
+       (click)="$event.stopPropagation()">
+
+    <!-- Error inside modal -->
+    <div class="modal-error" *ngIf="errorMsg">⚠️ {{errorMsg}}</div>
+
+    <!-- ── Header ── -->
+    <div class="modal-header">
+      <h3>
+        <span *ngIf="modalType==='ENTREE'">Nouveau Mouvement : <span style="color:var(--primary-color)">ENTRÉE</span></span>
+        <span *ngIf="modalType==='SORTIE'">Nouveau Mouvement : <span style="color:#ef4444">SORTIE</span></span>
+        <span *ngIf="modalType==='TRANSFERT'">Nouveau Mouvement : <span style="color:#8b5cf6">TRANSFERT</span></span>
+        <span *ngIf="modalType==='ARTICLE_CREATE'">Nouvel Article</span>
+        <span *ngIf="modalType==='ARTICLE_EDIT'">Modifier Article — {{editArticle?.reference}}</span>
+        <span *ngIf="modalType==='DEPOT_CREATE'">Nouveau Dépôt</span>
+        <span *ngIf="modalType==='DEPOT_EDIT'">Modifier Dépôt — {{editDepot?.nom}}</span>
+        <span *ngIf="modalType==='INVENTAIRE_START'">Démarrer un Inventaire</span>
+        <span *ngIf="modalType==='INVENTAIRE_DETAILS'">Inventaire #{{selectedInventaire?.id}}</span>
+        <span *ngIf="modalType==='MOUVEMENT_DETAILS'">Mouvement #{{selectedMouvement?.id}}</span>
+        <span *ngIf="modalType==='CONFIRM_DELETE'">Confirmer la suppression</span>
+      </h3>
+      <button class="btn-close" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- ── Mouvement ── -->
+      <form *ngIf="modalType==='ENTREE'||modalType==='SORTIE'||modalType==='TRANSFERT'"
+            [formGroup]="mvtForm" (ngSubmit)="submitMouvement()">
+        <div class="form-group">
+          <label>Article *</label>
+          <select class="maka-input" formControlName="articleId">
+            <option value="">Sélectionnez un article...</option>
+            <option *ngFor="let a of articles" [value]="a.id">{{a.reference}} — {{a.designation}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantité *</label>
+          <input type="number" class="maka-input" formControlName="quantite" min="1">
+        </div>
+        <div class="form-row">
+          <div class="form-group" *ngIf="modalType==='SORTIE'||modalType==='TRANSFERT'">
+            <label>Dépôt Source *</label>
+            <select class="maka-input" formControlName="depotSourceId">
+              <option value="">Sélectionnez...</option>
+              <option *ngFor="let d of depots" [value]="d.id">{{d.nom}}</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="modalType==='ENTREE'||modalType==='TRANSFERT'">
+            <label>Dépôt Destination *</label>
+            <select class="maka-input" formControlName="depotDestinationId">
+              <option value="">Sélectionnez...</option>
+              <option *ngFor="let d of depots" [value]="d.id">{{d.nom}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Motif</label>
+          <input type="text" class="maka-input" formControlName="motif" placeholder="Ex: Arrivage fournisseur...">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="mvtForm.invalid">
+            <i class="fa-solid fa-check"></i> Valider
+          </button>
+        </div>
+      </form>
+
+      <!-- ── Article (Create/Edit) ── -->
+      <form *ngIf="modalType==='ARTICLE_CREATE'||modalType==='ARTICLE_EDIT'"
+            [formGroup]="articleForm" (ngSubmit)="submitArticle()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Référence (SKU) *</label>
+            <input type="text" class="maka-input" formControlName="reference"
+                   placeholder="REF-001" [readonly]="modalType==='ARTICLE_EDIT'">
+          </div>
+          <div class="form-group">
+            <label>Désignation *</label>
+            <input type="text" class="maka-input" formControlName="designation" placeholder="Nom de l'article">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Unité *</label>
+            <select class="maka-input" formControlName="unite">
+              <option value="PIECE">Pièce</option>
+              <option value="KG">Kilogramme</option>
+              <option value="LITRE">Litre</option>
+              <option value="M">Mètre</option>
+              <option value="M2">M²</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Seuil Alerte</label>
+            <input type="number" class="maka-input" formControlName="seuilMinAlerte" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Prix Achat (MAD)</label>
+            <input type="number" class="maka-input" formControlName="prixAchat" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Prix Vente (MAD)</label>
+            <input type="number" class="maka-input" formControlName="prixVente" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" class="maka-input" formControlName="description" placeholder="Description optionnelle">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="articleForm.invalid">
+            <i class="fa-solid fa-save"></i> {{editArticle ? 'Mettre à jour' : 'Enregistrer'}}
+          </button>
+        </div>
+      </form>
+
+      <!-- ── Depot (Create/Edit) ── -->
+      <form *ngIf="modalType==='DEPOT_CREATE'||modalType==='DEPOT_EDIT'"
+            [formGroup]="depotForm" (ngSubmit)="submitDepot()">
+        <div class="form-group">
+          <label>Nom du Dépôt *</label>
+          <input type="text" class="maka-input" formControlName="nom" placeholder="Entrepôt Principal Casa">
+        </div>
+        <div class="form-group">
+          <label>Adresse</label>
+          <input type="text" class="maka-input" formControlName="adresse" placeholder="Zone Industrielle, Lot 44...">
+        </div>
+        <div class="form-group">
+          <label>Capacité Max (unités)</label>
+          <input type="number" class="maka-input" formControlName="capaciteMax" min="1">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="depotForm.invalid">
+            <i class="fa-solid fa-save"></i> {{editDepot ? 'Mettre à jour' : 'Créer'}}
+          </button>
+        </div>
+      </form>
+
+      <!-- ── Inventaire Start ── -->
+      <div *ngIf="modalType==='INVENTAIRE_START'">
+        <div class="form-group">
+          <label>Dépôt à inventorier</label>
+          <select class="maka-input" #depotSel>
+            <option value="">Sélectionnez...</option>
+            <option *ngFor="let d of depots" [value]="d.id">{{d.nom}}</option>
+          </select>
+        </div>
+        <div style="background:rgba(14,165,233,.1);border-left:4px solid var(--primary-color);padding:1rem;border-radius:4px;margin-top:1rem">
+          <i class="fa-solid fa-circle-info"></i>
+          Un snapshot du stock actuel est capturé. Vous saisissez ensuite les quantités réelles puis validez.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+          <button type="button" class="btn btn-primary" (click)="demarrerInventaire(depotSel.value)">
+            <i class="fa-solid fa-play"></i> Démarrer
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Inventaire Details ── -->
+      <div *ngIf="modalType==='INVENTAIRE_DETAILS'">
+        <div style="padding:.75rem 1rem;background:var(--bg-color);border-radius:8px;margin-bottom:1rem">
+          <strong>Dépôt :</strong> {{getDepotName(selectedInventaire?.depotId)}} &nbsp;|&nbsp;
+          <strong>Statut :</strong>
+          <span class="badge" [class.badge-success]="selectedInventaire?.statut==='VALIDE'" [class.badge-warning]="selectedInventaire?.statut==='EN_COURS'">
+            {{selectedInventaire?.statut}}
+          </span>
+        </div>
+        <div class="table-responsive" style="max-height:350px;overflow-y:auto">
+          <table class="maka-table">
+            <thead><tr><th>Article</th><th>Qté Système</th><th>Qté Réelle</th><th>Écart</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let line of selectedInventaire?.lines">
+                <td>{{line.articleReference}} — {{line.articleDesignation}}</td>
+                <td><span class="badge">{{line.quantiteSysteme}}</span></td>
+                <td>
+                  <input type="number" class="maka-input" style="width:90px;padding:.2rem .4rem"
+                         [value]="line.quantiteReelle"
+                         [disabled]="selectedInventaire?.statut!=='EN_COURS'"
+                         (change)="saisirQuantite(line, $event)" min="0">
+                </td>
+                <td>
+                  <span class="badge"
+                    [class.badge-danger]="line.ecart<0"
+                    [class.badge-success]="line.ecart>0"
+                    [class.badge-secondary]="line.ecart===0">
+                    {{line.ecart>0?'+':''}}{{line.ecart}}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer" *ngIf="selectedInventaire?.statut==='EN_COURS'">
+          <span style="flex:1;color:#ef4444;font-size:.85rem">
+            <i class="fa-solid fa-triangle-exclamation"></i> Irréversible — des mouvements d'ajustement seront créés automatiquement.
+          </span>
+          <button class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn-primary" (click)="validerInventaireActuel()">
+            <i class="fa-solid fa-check-double"></i> Valider &amp; Ajuster
+          </button>
+        </div>
+        <div class="modal-footer" *ngIf="selectedInventaire?.statut!=='EN_COURS'">
+          <button class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+      <!-- ── Mouvement Details ── -->
+      <div *ngIf="modalType==='MOUVEMENT_DETAILS'">
+        <div style="padding:.75rem 1rem;background:var(--bg-color);border-radius:8px;margin-bottom:1rem">
+          <strong>Type :</strong> <span class="badge" [ngClass]="getTypeBadge(selectedMouvement?.typeMvt || '')">{{selectedMouvement?.typeMvt}}</span> &nbsp;|&nbsp;
+          <strong>Statut :</strong>
+          <span class="badge"
+                [class.badge-success]="selectedMouvement?.statut==='VALIDE'"
+                [class.badge-warning]="selectedMouvement?.statut==='BROUILLON'"
+                [class.badge-danger]="selectedMouvement?.statut==='ANNULE'">
+            {{selectedMouvement?.statut}}
+          </span> &nbsp;|&nbsp;
+          <strong>Source :</strong> {{selectedMouvement?.sourceType || 'MANUEL'}}
+        </div>
+        <div class="table-responsive" style="max-height:350px;overflow-y:auto">
+          <table class="maka-table">
+            <thead><tr><th>Article ID</th><th>Quantité</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let line of mouvementLignes">
+                <td>#{{line.articleId}}</td>
+                <td><span class="badge badge-primary">{{line.quantite}}</span></td>
+              </tr>
+              <tr *ngIf="mouvementLignes.length===0">
+                <td colspan="2" class="text-center text-muted">Aucune ligne trouvée.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+      <!-- ── Confirm Delete ── -->
+      <div *ngIf="modalType==='CONFIRM_DELETE'">
+        <div style="text-align:center;padding:1.5rem 0">
+          <i class="fa-solid fa-trash-can" style="font-size:3rem;color:#ef4444;margin-bottom:1rem;display:block"></i>
+          <p style="font-size:1.1rem">Êtes-vous sûr de vouloir supprimer :</p>
+          <p class="fw-bold" style="color:#ef4444;margin-top:.5rem">{{deleteTarget?.label}}</p>
+          <p class="text-muted" style="font-size:.85rem;margin-top:.5rem">Cette action est irréversible.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+          <button class="btn btn-danger" (click)="executeDelete()">
+            <i class="fa-solid fa-trash"></i> Confirmer la suppression
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+  </div><!-- /modal-content -->
+</div><!-- /modal-overlay -->

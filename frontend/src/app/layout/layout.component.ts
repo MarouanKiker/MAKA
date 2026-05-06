@@ -60,6 +60,11 @@ export class LayoutComponent {
             path: '/intelligence', label: 'MAKA Intelligence', color: '#22d3ee',
             icon: 'fa-solid fa-brain', roles: ['ROLE_EMPLOYE', 'ROLE_USER'] // tout le monde
         },
+        // --- GESTION DES STOCKS ---
+        {
+            path: '/stock', label: 'Stocks', color: '#14b8a6',
+            icon: 'fa-solid fa-boxes-stacked', roles: ['ROLE_COMMERCIAL', 'ROLE_ADMIN', 'ROLE_SUPPORT']
+        },
         // --- FINANCES ---
         {
             path: '/factures', label: 'Factures', color: '#10b981',
@@ -133,6 +138,8 @@ export class LayoutComponent {
                 this.currentModule = 'CRM';
             } else if (url.includes('/tickets')) {
                 this.currentModule = 'SUPPORT';
+            } else if (url.includes('/stock')) {
+                this.currentModule = 'STOCK';
             } else if (url.includes('/intelligence')) {
                 this.currentModule = 'IA';
             } else if (url.includes('/factures') || url.includes('/paiements') || url.includes('/comptes-bancaires') || url.includes('/journal')) {
@@ -168,6 +175,8 @@ export class LayoutComponent {
             if (this.currentModule === 'FINANCE' && !['/dashboard', '/factures', '/paiements', '/comptes-bancaires', '/journal'].includes(item.path)) return false;
 
             if (this.currentModule === 'HR' && !['/dashboard', '/espace-employe', '/hr-employes', '/hr-contrats', '/hr-conges', '/hr-paie', '/hr-reclamations'].includes(item.path)) return false;
+
+            if (this.currentModule === 'STOCK' && !['/dashboard', '/stock'].includes(item.path)) return false;
 
             if (this.currentModule === 'ADMIN' && !['/dashboard', '/admin'].includes(item.path)) return false;
 

@@ -1,0 +1,33 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: stock-service
+
+  datasource:
+    url: jdbc:postgresql://${STOCK_DB_HOST:localhost}:${STOCK_DB_PORT:5434}/${STOCK_DB_NAME:stock_db}
+    username: ${STOCK_DB_USER:stock_user}
+    password: ${STOCK_DB_PASSWORD:stock_pass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  # Exécute schema.sql au démarrage (crée les tables si elles n'existent pas)
+  sql:
+    init:
+      mode: always
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Chemin vers la clé publique RSA partagée avec auth-service
+          public-key-location: file:${JWT_PUBLIC_KEY_PATH:/app/keys/public.pem}
+
+logging:
+  level:
+    com.maka.stock: DEBUG
+    org.springframework.jdbc: DEBUG

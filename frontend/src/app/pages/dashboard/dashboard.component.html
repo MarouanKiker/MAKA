@@ -59,6 +59,32 @@
             </div>
         </div>
 
+        <!-- Stock Hub -->
+        <div class="hub-card" *ngIf="auth.hasRole('ROLE_COMMERCIAL') || auth.hasRole('ROLE_SUPPORT') || auth.isAdmin()" (click)="goTo('/stock')" style="--glow-color: #14b8a6; --bg-grad: linear-gradient(135deg, #2dd4bf, #0f766e); --shadow-color: rgba(20, 184, 166, 0.4);">
+            <div class="hub-card-content">
+                <div class="hub-icon-wrapper">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+                <h2 class="hub-title">Gestion des Stocks</h2>
+                <div class="hub-desc">
+                    Suivi granulaire par dépôt, alertes de rupture, et gestion des mouvements en temps réel.
+                </div>
+                <div class="hub-stats">
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-box"></i></span>
+                        <span class="hub-stat-label">Articles</span>
+                    </div>
+                    <div class="hub-stat">
+                        <span class="hub-stat-val"><i class="fa-solid fa-warehouse"></i></span>
+                        <span class="hub-stat-label">Dépôts</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hub-action">
+                Acceder <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </div>
+
         <!-- HR Hub -->
         <div class="hub-card" *ngIf="auth.hasRole('ROLE_RH') || auth.isAdmin()" (click)="goTo('/hr-employes')" style="--glow-color: #ec4899; --bg-grad: linear-gradient(135deg, #f43f5e, #be185d); --shadow-color: rgba(244, 63, 94, 0.4);">
             <div class="hub-card-content">

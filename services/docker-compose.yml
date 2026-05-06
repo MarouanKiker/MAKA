@@ -249,6 +249,50 @@ services:
     networks:
       - sales-network
 
+  # ---------------------------------------------------------------------------
+  # STOCK SERVICE (Spoke 5) - Spring Boot 3 + Java 17 + JDBC
+  # ---------------------------------------------------------------------------
+  stock-service:
+    build:
+      context: ./stock-service
+      dockerfile: Dockerfile
+      network: host
+    container_name: stock-service
+    ports:
+      - "8083:8083"
+    volumes:
+      - jwt-keys:/app/keys:ro
+    environment:
+      STOCK_DB_HOST: stock-db
+      STOCK_DB_PORT: 5432
+      STOCK_DB_NAME: ${STOCK_DB_NAME:-stock_db}
+      STOCK_DB_USER: ${STOCK_DB_USER:-stock_user}
+      STOCK_DB_PASSWORD: ${STOCK_DB_PASSWORD:-stock_pass}
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+    depends_on:
+      - stock-db
+      - auth-service
+    networks:
+      - hub-network
+      - stock-network
+
+  # ---------------------------------------------------------------------------
+  # BASE DE DONNÉES STOCK - PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  stock-db:
+    image: postgres:16-alpine
+    container_name: stock-db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: ${STOCK_DB_NAME:-stock_db}
+      POSTGRES_USER: ${STOCK_DB_USER:-stock_user}
+      POSTGRES_PASSWORD: ${STOCK_DB_PASSWORD:-stock_pass}
+    volumes:
+      - stock-db-data:/var/lib/postgresql/data
+    networks:
+      - stock-network
+
 # =============================================================================
 # VOLUMES
 # =============================================================================
@@ -259,6 +303,7 @@ volumes:
   hr-db-data:
   finance-db-data:
   sales-db-data:
+  stock-db-data:
   vendor_data:
 
 # =============================================================================
@@ -276,4 +321,6 @@ networks:
   finance-network:
     driver: bridge
   sales-network:
+    driver: bridge
+  stock-network:
     driver: bridge

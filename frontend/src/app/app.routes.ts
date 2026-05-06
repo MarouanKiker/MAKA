@@ -127,6 +127,15 @@ export const routes: Routes = [
                 },
                 canActivate: [adminGuard]
             },
+            // --- GESTION DES STOCKS ---
+            {
+                path: 'stock',
+                loadComponent: function () {
+                    return import('./pages/stock/stock.component').then(function (m) {
+                        return m.StockComponent;
+                    });
+                }
+            },
             // --- FINANCES (Nouveaux modules importes) ---
             {
                 path: 'comptes-bancaires',
