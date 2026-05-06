@@ -39,8 +39,13 @@
                     <div class="card-meta">
                         <span class="card-meta-item">
                             <i class="fa-regular fa-calendar meta-icon"></i>
-                            {{ l.dateCreation | date:'longDate' }}
+                            {{ l.dateCreation | date:'shortDate' }}
                         </span>
+                    </div>
+
+                    <div *ngIf="l.campagneNom" style="margin-top: 8px; font-size: 0.75rem; padding: 4px 8px; background: var(--bg-1); color: var(--text-2); border-radius: 4px; display: inline-block;">
+                        <i class="fa-solid fa-bullhorn" style="margin-right: 4px; color: var(--accent);"></i>
+                        {{ l.campagneNom }}
                     </div>
 
                     <div class="card-bottom">
@@ -66,16 +71,24 @@
                         <option>Salon</option>
                         <option>Email</option>
                         <option>Recommandation</option>
+                        <option>Appel entrant</option>
                     </select>
                 </div>
                 <div class="champ">
-                    <label>Score</label>
+                    <label>Score (0-100)</label>
                     <input type="number" [(ngModel)]="score" min="0" max="100" />
                 </div>
             </div>
+            <div class="champ">
+                <label>Campagne Marketing associée (Optionnel)</label>
+                <select [(ngModel)]="campagneId">
+                    <option [ngValue]="null">-- Aucune campagne --</option>
+                    <option *ngFor="let c of campaigns" [ngValue]="c.id">{{ c.nom }}</option>
+                </select>
+            </div>
             <div class="modal-actions">
                 <button class="btn-cancel" (click)="showForm = false">Annuler</button>
-                <button class="btn-save" (click)="save()">Enregistrer</button>
+                <button class="btn-save" (click)="save()">Enregistrer le Lead</button>
             </div>
         </div>
     </div>

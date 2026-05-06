@@ -45,24 +45,6 @@ export const routes: Routes = [
                     });
                 }
             },
-            // gestion des comptes
-            {
-                path: 'accounts',
-                loadComponent: function () {
-                    return import('./pages/accounts/accounts.component').then(function (m) {
-                        return m.AccountsComponent;
-                    });
-                }
-            },
-            // gestion des contacts
-            {
-                path: 'contacts',
-                loadComponent: function () {
-                    return import('./pages/contacts/contacts.component').then(function (m) {
-                        return m.ContactsComponent;
-                    });
-                }
-            },
             // gestion des leads
             {
                 path: 'leads',

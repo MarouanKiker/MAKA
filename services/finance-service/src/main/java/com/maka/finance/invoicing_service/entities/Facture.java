@@ -15,6 +15,7 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,12 @@ public class Facture {
     @Column(unique = true, nullable = false, length = 50)
     private String numero;
 
+    @Column(name = "client_nom", length = 200)
+    private String clientNom;
+
+    @Column(name = "date_echeance")
+    private LocalDate dateEcheance;
+
     @Column(name = "montant_ht", nullable = false, precision = 19, scale = 2)
     private BigDecimal montantHT = BigDecimal.ZERO;
 
@@ -47,6 +54,9 @@ public class Facture {
 
     @Column(name = "montant_ttc", nullable = false, precision = 19, scale = 2)
     private BigDecimal montantTTC = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal taxe = BigDecimal.ZERO;
 
     @Column(name = "montant_paye", nullable = false, precision = 19, scale = 2)
     private BigDecimal montantPaye = BigDecimal.ZERO;
@@ -90,7 +100,7 @@ public class Facture {
 
         this.montantHT = money(totalHt);
         this.montantTVA = money(this.montantHT.multiply(this.tauxTVA));
-        this.montantTTC = money(this.montantHT.add(this.montantTVA));
+        this.montantTTC = money(this.montantHT.add(this.montantTVA).add(this.taxe));
 
         if (this.montantPaye.compareTo(this.montantTTC) > 0) {
             throw new BusinessException("Le montant payé ne peut pas dépasser le montant TTC.");

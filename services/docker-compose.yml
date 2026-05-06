@@ -6,6 +6,43 @@
 services:
 
   # ---------------------------------------------------------------------------
+  # RABBITMQ - Bus de messages asynchrone entre microservices
+  # ---------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "${PORT_RABBITMQ:-5672}:5672"
+      - "${PORT_RABBITMQ_UI:-15672}:15672"
+    volumes:
+      - ../rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-maka}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-maka_secret}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\""
+    networks:
+      - hub-network
+      - finance-network
+
+  # ---------------------------------------------------------------------------
+  # FRONTEND - Angular 17 (dev server sur port 4200)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "${PORT_FRONTEND:-4200}:4200"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    depends_on:
+      - gateway
+    networks:
+      - hub-network
+
+  # ---------------------------------------------------------------------------
   # GATEWAY (Hub) - Point d'entrée unique (port 8000 pour éviter conflit Windows)
   # ---------------------------------------------------------------------------
   gateway:
@@ -118,22 +155,25 @@ services:
     volumes:
       - jwt-keys:/app/keys:ro
     environment:
+      SERVER_PORT: 6000
       SPRING_DATASOURCE_URL: "jdbc:postgresql://finance-db:5432/${FINANCE_DB_NAME:-finance_db}"
       DB_URL: "jdbc:postgresql://finance-db:5432/${FINANCE_DB_NAME:-finance_db}"
       DB_USERNAME: ${FINANCE_DB_USER:-finance_user}
       DB_PASSWORD: ${FINANCE_DB_PASSWORD:-finance_pass}
       SPRING_DATASOURCE_USERNAME: ${FINANCE_DB_USER:-finance_user}
       SPRING_DATASOURCE_PASSWORD: ${FINANCE_DB_PASSWORD:-finance_pass}
+      SPRING_CACHE_TYPE: simple
       JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USERNAME: guest
-      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USERNAME: ${RABBITMQ_USER:-maka}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASS:-maka_secret}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       AUTH_JWK_SET_URI: http://auth-service:9000/.well-known/jwks.json
     depends_on:
       - finance-db
+      - auth-service
       - rabbitmq
       - redis
     networks:
@@ -190,19 +230,6 @@ services:
       - finance-network
 
   # ---------------------------------------------------------------------------
-  # RABBITMQ - Message Broker
-  # ---------------------------------------------------------------------------
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    networks:
-      - hub-network
-      - finance-network
-
-  # ---------------------------------------------------------------------------
   # REDIS - Cache
   # ---------------------------------------------------------------------------
   redis:
@@ -226,10 +253,13 @@ services:
     environment:
       DATABASE_URL: "postgresql://${SALES_DB_USER:-sales_user}:${SALES_DB_PASSWORD:-sales_pass}@sales-db:5432/${SALES_DB_NAME:-sales_db}"
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
       GATEWAY_URL: http://gateway:80
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-maka}:${RABBITMQ_PASS:-maka_secret}@rabbitmq:5672/"
     depends_on:
       - sales-db
+      - rabbitmq
     networks:
       - hub-network
       - sales-network

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import {
   Lead, Opportunity, Campaign, Account, Contact,
   Task, CreateTaskDto,
@@ -46,7 +46,21 @@ export class CrmService {
     // ==========================================================
     // LEADS
     // ==========================================================
-    getLeads(): Observable<Lead[]> { return this.http.get<Lead[]>(`${this.apiUrl}/leads`); }
+    getLeads(): Observable<Lead[]> { 
+        return this.http.get<Lead[]>(`${this.apiUrl}/leads`).pipe(
+            map(leads => leads.map(l => ({ ...l, statut: this.mapLeadStatut(l.statut) } as any)))
+        ); 
+    }
+
+    private mapLeadStatut(s: any): string {
+        const mapping: any = { 0: 'NOUVEAU', 1: 'QUALIFIE', 2: 'EN_COURS', 3: 'CONVERTI', 4: 'PERDU' };
+        return mapping[s] || s;
+    }
+
+    private mapOppStatut(s: any): string {
+        const mapping: any = { 0: 'NOUVELLE', 1: 'EN_COURS', 2: 'GAGNEE', 3: 'PERDUE' };
+        return mapping[s] || s;
+    }
     getLead(id: number): Observable<Lead> { return this.http.get<Lead>(`${this.apiUrl}/leads/${id}`); }
     createLead(lead: Partial<Lead>): Observable<Lead> { return this.http.post<Lead>(`${this.apiUrl}/leads`, lead); }
     updateLead(id: number, lead: Partial<Lead>): Observable<any> { return this.http.put(`${this.apiUrl}/leads/${id}`, lead); }
@@ -55,27 +69,22 @@ export class CrmService {
         return this.http.post<Opportunity>(`${this.apiUrl}/leads/${id}/convert`, { titre, valeur });
     }
 
-    // ==========================================================
-    // CAMPAGNES
-    // ==========================================================
     getCampaigns(): Observable<Campaign[]> { return this.http.get<Campaign[]>(`${this.apiUrl}/campagnes`); }
     getCampaign(id: number): Observable<Campaign> { return this.http.get<Campaign>(`${this.apiUrl}/campagnes/${id}`); }
     createCampaign(campaign: Partial<Campaign>): Observable<Campaign> { return this.http.post<Campaign>(`${this.apiUrl}/campagnes`, campaign); }
     updateCampaign(id: number, campaign: Partial<Campaign>): Observable<any> { return this.http.put(`${this.apiUrl}/campagnes/${id}`, campaign); }
     deleteCampaign(id: number): Observable<any> { return this.http.delete(`${this.apiUrl}/campagnes/${id}`); }
 
-    // ==========================================================
-    // OPPORTUNITES
-    // ==========================================================
-    getOpportunities(): Observable<Opportunity[]> { return this.http.get<Opportunity[]>(`${this.apiUrl}/opportunites`); }
+    getOpportunities(): Observable<Opportunity[]> { 
+        return this.http.get<Opportunity[]>(`${this.apiUrl}/opportunites`).pipe(
+            map(opps => opps.map(o => ({ ...o, statut: this.mapOppStatut(o.statut) })))
+        ); 
+    }
     getOpportunity(id: number): Observable<Opportunity> { return this.http.get<Opportunity>(`${this.apiUrl}/opportunites/${id}`); }
     createOpportunity(opp: Partial<Opportunity>): Observable<Opportunity> { return this.http.post<Opportunity>(`${this.apiUrl}/opportunites`, opp); }
     updateOpportunity(id: number, opp: Partial<Opportunity>): Observable<any> { return this.http.put(`${this.apiUrl}/opportunites/${id}`, opp); }
     deleteOpportunity(id: number): Observable<any> { return this.http.delete(`${this.apiUrl}/opportunites/${id}`); }
 
-    // ==========================================================
-    // TASKS  →  api/crm/tasks
-    // ==========================================================
     getTasks(): Observable<Task[]> { return this.http.get<Task[]>(`${this.apiUrl}/tasks`); }
     getTask(id: number): Observable<Task> { return this.http.get<Task>(`${this.apiUrl}/tasks/${id}`); }
     createTask(task: CreateTaskDto): Observable<Task> { return this.http.post<Task>(`${this.apiUrl}/tasks`, task); }
@@ -87,9 +96,6 @@ export class CrmService {
         return this.http.put<Task>(`${this.apiUrl}/tasks/${id}`, { isCompleted });
     }
 
-    // ==========================================================
-    // TICKETS  →  api/crm/tickets
-    // ==========================================================
     getTickets(): Observable<Ticket[]> { return this.http.get<Ticket[]>(`${this.apiUrl}/tickets`); }
     getTicket(id: number): Observable<Ticket> { return this.http.get<Ticket>(`${this.apiUrl}/tickets/${id}`); }
     createTicket(ticket: CreateTicketDto): Observable<Ticket> { return this.http.post<Ticket>(`${this.apiUrl}/tickets`, ticket); }
@@ -98,9 +104,6 @@ export class CrmService {
     }
     deleteTicket(id: number): Observable<any> { return this.http.delete(`${this.apiUrl}/tickets/${id}`); }
 
-    // ==========================================================
-    // INTERACTIONS  →  api/crm/interactions
-    // ==========================================================
     getInteractions(): Observable<Interaction[]> { return this.http.get<Interaction[]>(`${this.apiUrl}/interactions`); }
     getInteraction(id: number): Observable<Interaction> { return this.http.get<Interaction>(`${this.apiUrl}/interactions/${id}`); }
     createInteraction(interaction: CreateInteractionDto): Observable<Interaction> {

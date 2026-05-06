@@ -39,11 +39,29 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/api/v1/debug/**",
+                                "/api/debug/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenResolver(request -> {
+                            // Chercher le token dans le cookie 'maka_jwt'
+                            if (request.getCookies() != null) {
+                                for (var cookie : request.getCookies()) {
+                                    if ("maka_jwt".equals(cookie.getName())) {
+                                        return cookie.getValue();
+                                    }
+                                }
+                            }
+                            // Fallback sur le header Authorization standard
+                            String authHeader = request.getHeader("Authorization");
+                            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                                return authHeader.substring(7);
+                            }
+                            return null;
+                        })
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 );
 
@@ -86,7 +104,11 @@ public class SecurityConfig {
                 throw new org.springframework.security.oauth2.jwt.BadJwtException("Clé publique non configurée");
             };
         } catch (Exception e) {
-            throw new RuntimeException("Erreur de chargement de la clé publique RSA", e);
+            // Empêcher le crash fatal au démarrage
+            System.err.println("❌ Erreur critique : Clé publique RSA corrompue ou illisible. Authentification indisponible.");
+            return token -> {
+                throw new org.springframework.security.oauth2.jwt.BadJwtException("Service de sécurité en cours de maintenance");
+            };
         }
     }
 
@@ -94,7 +116,7 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
         converter.setAuthoritiesClaimName("roles");
-        converter.setAuthorityPrefix("ROLE_");
+        converter.setAuthorityPrefix(""); // Symfony envoie déjà ROLE_ADMIN, pas besoin de re-prefixer
 
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(converter);

@@ -35,35 +35,35 @@ public class FactureController {
 
 	@PostMapping
 	@Operation(summary = "Créer une facture")
-	@PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<FactureResponse> create(@Valid @RequestBody FactureRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(factureService.create(request));
 	}
 
 	@GetMapping("/{id}")
 	@Operation(summary = "Obtenir une facture par id")
-	@PreAuthorize("hasAnyRole('COMPTABLE','GESTIONNAIRE','ADMIN')")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<FactureResponse> getById(@PathVariable Long id) {
 		return ResponseEntity.ok(factureService.getById(id));
 	}
 
 	@GetMapping
 	@Operation(summary = "Lister toutes les factures")
-	@PreAuthorize("hasAnyRole('COMPTABLE','GESTIONNAIRE','ADMIN')")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<List<FactureResponse>> getAll() {
 		return ResponseEntity.ok(factureService.getAll());
 	}
 
 	@PutMapping("/{id}")
 	@Operation(summary = "Mettre à jour une facture")
-	@PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<FactureResponse> update(@PathVariable Long id, @Valid @RequestBody FactureRequest request) {
 		return ResponseEntity.ok(factureService.update(id, request));
 	}
 
 	@PatchMapping("/{id}/statut")
 	@Operation(summary = "Changer le statut d'une facture")
-	@PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<FactureResponse> changeStatus(
 			@PathVariable Long id,
 			@Valid @RequestBody ChangeStatutFactureRequest request
@@ -73,7 +73,7 @@ public class FactureController {
 
 	@DeleteMapping("/{id}")
 	@Operation(summary = "Supprimer une facture")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
 		factureService.delete(id);
 		return ResponseEntity.noContent().build();
@@ -81,7 +81,7 @@ public class FactureController {
 
 	@PostMapping("/{id}/paiements")
 	@Operation(summary = "Appliquer un paiement à une facture")
-	@PreAuthorize("hasAnyRole('COMPTABLE','ADMIN')")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<FactureResponse> appliquerPaiement(
 			@PathVariable Long id,
 			@Valid @RequestBody PaiementRequest request

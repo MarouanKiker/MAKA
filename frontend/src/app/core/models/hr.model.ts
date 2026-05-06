@@ -8,6 +8,8 @@ export interface Employe {
     nom: string;
     email: string;
     dateEmbauche: string;
+    poste?: string;
+    departement?: string;
     authUserId?: number;
 }
 

@@ -10,6 +10,8 @@
         <span class="total-badge">{{ opportunities.length }} opportunites</span>
     </div>
 
+    <div class="toast" *ngIf="message" (click)="message = ''">{{ message }}</div>
+
     <div class="kanban">
         <div class="kanban-col" *ngFor="let col of columns" (dragover)="onDragOver($event)"
             (drop)="onDrop($event, col.key)">
@@ -31,6 +33,12 @@
                             <i class="fa-regular fa-calendar meta-icon"></i>
                             Cloturé le : {{ o.dateCloture | date:'shortDate' }}
                         </span>
+                    </div>
+                    
+                    <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800" *ngIf="o.statut === 'GAGNEE'">
+                        <button class="btn-sm w-full flex items-center justify-center gap-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 border-transparent" (click)="creerFactureFromOpp(o); $event.stopPropagation()">
+                            <i class="fa-solid fa-file-invoice"></i> Générer Facture
+                        </button>
                     </div>
                 </div>
 

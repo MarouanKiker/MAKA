@@ -3,6 +3,7 @@ package com.maka.finance.invoicing_service.dto;
 import com.maka.finance.invoicing_service.entities.StatutFacture;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -10,6 +11,8 @@ import java.util.List;
 public record FactureResponse(
         Long id,
         String numero,
+        String clientNom,
+        LocalDate dateEcheance,
         BigDecimal tauxTVA,
         BigDecimal montantHT,
         BigDecimal montantTVA,

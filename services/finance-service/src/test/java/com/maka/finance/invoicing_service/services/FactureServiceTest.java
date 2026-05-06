@@ -54,7 +54,7 @@ class FactureServiceTest {
 
     @Test
     void create_shouldThrow_whenNumeroAlreadyExists() {
-        FactureRequest request = new FactureRequest("FAC-001", BigDecimal.valueOf(0.2), List.of());
+        FactureRequest request = new FactureRequest("FAC-001", "Client Test", null, BigDecimal.valueOf(0.2), BigDecimal.ZERO, List.of());
         when(factureRepository.existsByNumero("FAC-001")).thenReturn(true);
 
         assertThrows(BusinessException.class, () -> factureService.create(request));
@@ -62,12 +62,12 @@ class FactureServiceTest {
 
     @Test
     void create_shouldSaveAndIncrementMetrics() {
-        FactureRequest request = new FactureRequest("FAC-002", BigDecimal.valueOf(0.2), List.of());
+        FactureRequest request = new FactureRequest("FAC-002", "Client Test", null, BigDecimal.valueOf(0.2), BigDecimal.ZERO, List.of());
         Facture facture = new Facture();
         facture.setNumero("FAC-002");
 
         FactureResponse response = new FactureResponse(
-                1L, "FAC-002", BigDecimal.valueOf(0.2), BigDecimal.ZERO,
+                1L, "FAC-002", "Client Test", null, BigDecimal.valueOf(0.2), BigDecimal.ZERO,
                 BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                 StatutFacture.BROUILLON, null, null, List.of()
         );
@@ -94,7 +94,7 @@ class FactureServiceTest {
         facture.setMontantTTC(new BigDecimal("120.00"));
 
         FactureResponse response = new FactureResponse(
-                10L, "FAC-010", BigDecimal.valueOf(0.2), new BigDecimal("100.00"),
+                10L, "FAC-010", "Client Test", null, BigDecimal.valueOf(0.2), new BigDecimal("100.00"),
                 new BigDecimal("20.00"), new BigDecimal("120.00"), BigDecimal.ZERO, new BigDecimal("120.00"),
                 StatutFacture.VALIDEE, null, null, List.of()
         );

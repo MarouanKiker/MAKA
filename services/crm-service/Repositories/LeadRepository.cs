@@ -17,7 +17,9 @@ public class LeadRepository : ILeadRepository
 
     public async Task<List<Lead>> GetAllAsync(string? source, LeadStatut? statut, int? scoreMin)
     {
-        IQueryable<Lead> query = _context.Leads.Include(l => l.Campagne);
+        IQueryable<Lead> query = _context.Leads
+            .Include(l => l.Campagne)
+            .Include(l => l.Campagne);
 
         if (!string.IsNullOrEmpty(source))
             query = query.Where(l => l.Source.Contains(source));

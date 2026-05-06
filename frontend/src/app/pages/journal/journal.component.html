@@ -1,32 +1,37 @@
 <div class="page-header">
     <div>
         <h1><i class="fa-solid fa-book page-icon"></i> Journal comptable</h1>
-        <span class="page-subtitle">Ecritures de debit et credit automatiques</span>
+        <span class="page-subtitle">Historique des écritures financières de l'entreprise</span>
     </div>
+    <button class="btn-add" (click)="exportCSV()">
+        <i class="fa-solid fa-file-csv"></i> Exporter CSV
+    </button>
 </div>
 
 <!-- cartes de stats -->
-<div class="stats-row">
-    <div class="stat-card credit">
-        <i class="fa-solid fa-arrow-down"></i>
-        <div>
-            <span class="stat-label">Total Credit</span>
-            <span class="stat-value cell-amount">+ {{ stats.totalCredit | number:'1.2-2' }} MAD</span>
+<div class="page-stats">
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="color: #10b981; background: #ecfdf5;">
+            <i class="fa-solid fa-arrow-turn-down"></i>
         </div>
+        <div class="mini-stat-value text-emerald-600">+ {{ stats?.totalCredit || 0 | number:'1.2-2' }}</div>
+        <div class="mini-stat-label">Total des Entrées (Crédit)</div>
     </div>
-    <div class="stat-card debit">
-        <i class="fa-solid fa-arrow-up"></i>
-        <div>
-            <span class="stat-label">Total Debit</span>
-            <span class="stat-value cell-amount">- {{ stats.totalDebit | number:'1.2-2' }} MAD</span>
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="color: #ef4444; background: #fef2f2;">
+            <i class="fa-solid fa-arrow-turn-up"></i>
         </div>
+        <div class="mini-stat-value text-red-500">- {{ stats?.totalDebit || 0 | number:'1.2-2' }}</div>
+        <div class="mini-stat-label">Total des Sorties (Débit)</div>
     </div>
-    <div class="stat-card solde">
-        <i class="fa-solid fa-scale-balanced"></i>
-        <div>
-            <span class="stat-label">Solde</span>
-            <span class="stat-value cell-amount" [style.color]="stats.solde >= 0 ? 'var(--accent)' : 'var(--danger)'">{{ stats.solde | number:'1.2-2' }} MAD</span>
+    <div class="mini-stat">
+        <div class="mini-stat-icon" [style.color]="(stats?.solde || 0) >= 0 ? '#10b981' : '#ef4444'" [style.background]="(stats?.solde || 0) >= 0 ? '#ecfdf5' : '#fef2f2'">
+            <i class="fa-solid fa-scale-balanced"></i>
         </div>
+        <div class="mini-stat-value" [ngClass]="(stats?.solde || 0) >= 0 ? 'text-emerald-600' : 'text-red-500'">
+            {{ stats?.solde || 0 | number:'1.2-2' }}
+        </div>
+        <div class="mini-stat-label">Balance Nette (MAD)</div>
     </div>
 </div>
 
@@ -43,10 +48,10 @@
         </thead>
         <tbody>
             <tr *ngFor="let j of journal">
-                <td>{{ j.date }}</td>
-                <td class="cell-main">{{ j.description }}</td>
-                <td class="debit-cell cell-amount">{{ j.debit > 0 ? (j.debit | number:'1.2-2') + ' MAD' : '-' }}</td>
-                <td class="credit-cell cell-amount">{{ j.credit > 0 ? (j.credit | number:'1.2-2') + ' MAD' : '-' }}</td>
+                <td class="font-medium text-slate-500 dark:text-slate-400">{{ j.dateEcriture | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="font-bold text-slate-900 dark:text-white">{{ j.description }}</td>
+                <td class="font-bold text-red-500">{{ j.debit > 0 ? (j.debit | number:'1.2-2') + ' MAD' : '-' }}</td>
+                <td class="font-bold text-emerald-600">{{ j.credit > 0 ? (j.credit | number:'1.2-2') + ' MAD' : '-' }}</td>
             </tr>
             <tr *ngIf="journal.length === 0">
                 <td colspan="4" class="empty-row">Aucune ecriture</td>

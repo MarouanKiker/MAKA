@@ -60,7 +60,7 @@ export interface Lead {
     score: number;
     dateCreation: string;
     campagneId: number | null;
-    campagneNom?: string;
+    campagneNom?: string | null;
     opportunite?: Opportunity | null;
 }
 
@@ -79,10 +79,17 @@ export interface Opportunity {
 export interface Campaign {
     id: number;
     nom: string;
+    type?: string;
     budget: number;
     dateDebut: string;
     dateFin: string;
     leads?: Lead[];
+    
+    // Propriétés calculées pour l'UI
+    uiStatus?: string;
+    uiLeadsCount?: number;
+    uiRevenue?: number;
+    uiCpl?: number;
 }
 
 // ---- Task ----
@@ -93,7 +100,14 @@ export interface Task {
     dueDate: string;
     isCompleted: boolean;
     leadId?: number | null;
-    opportuniteId?: number | null;
+    
+    // Propriétés calculées pour l'UI
+    uiTitle?: string;
+    uiDescription?: string; // ADDED
+    uiPriority?: string;
+    uiLeadName?: string | null;
+    uiAssignedToName?: string | null; // ADDED
+    isOverdue?: boolean;
 }
 
 export interface CreateTaskDto {
@@ -101,7 +115,6 @@ export interface CreateTaskDto {
     description: string;
     dueDate: string;
     leadId?: number | null;
-    opportuniteId?: number | null;
 }
 
 // ---- Ticket ----

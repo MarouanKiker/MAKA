@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { CrmService } from '../../core/services/crm.service';
-import { Task, CreateTaskDto } from '../../core/models/crm.model';
+import { HrService } from '../../core/services/hr.service';
+import { Task, CreateTaskDto, Lead } from '../../core/models/crm.model';
+import { Employe } from '../../core/models/hr.model';
 
 @Component({
     selector: 'app-tasks',
@@ -13,7 +16,9 @@ import { Task, CreateTaskDto } from '../../core/models/crm.model';
 })
 export class TasksComponent implements OnInit {
 
-    tasks: Task[] = [];
+    tasks: any[] = [];
+    leads: Lead[] = [];
+    employes: Employe[] = [];
     showForm = false;
     message = '';
 
@@ -22,6 +27,8 @@ export class TasksComponent implements OnInit {
     description = '';
     dueDate = '';
     leadId: number | null = null;
+    assignedToId: number | null = null;
+    priority = 'MOYENNE'; // BASSE, MOYENNE, HAUTE
 
     // Colonnes du kanban : false = à faire, true = terminée
     columns = [
@@ -30,19 +37,84 @@ export class TasksComponent implements OnInit {
     ];
 
     draggedTask: Task | null = null;
+    loading = false;
 
-    constructor(private crm: CrmService) {}
+    constructor(
+        private crm: CrmService,
+        private hr: HrService
+    ) {}
 
     ngOnInit(): void {
         this.loadTasks();
     }
 
+    showMessage(msg: string): void {
+        this.message = msg;
+        setTimeout(() => {
+            if (this.message === msg) {
+                this.message = '';
+            }
+        }, 4000);
+    }
+
     loadTasks(): void {
-        this.crm.getTasks().subscribe({
-            next: (data) => this.tasks = data,
+        this.loading = true;
+        forkJoin({
+            tasks: this.crm.getTasks(),
+            leads: this.crm.getLeads(),
+            employes: this.hr.getEmployes()
+        }).subscribe({
+            next: (data) => {
+                this.leads = data.leads;
+                this.employes = data.employes;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                this.tasks = data.tasks.map(t => {
+                    // Parser la priorité depuis le titre
+                    let parsedPriority = 'MOYENNE';
+                    let cleanTitle = t.title;
+                    if (t.title.startsWith('[HAUTE] ')) { parsedPriority = 'HAUTE'; cleanTitle = t.title.substring(8); }
+                    else if (t.title.startsWith('[MOYENNE] ')) { parsedPriority = 'MOYENNE'; cleanTitle = t.title.substring(10); }
+                    else if (t.title.startsWith('[BASSE] ')) { parsedPriority = 'BASSE'; cleanTitle = t.title.substring(8); }
+
+                    // Parser l'assignation depuis la description (ex: "[ASSIGN:5] Faire ceci")
+                    let cleanDesc = t.description || '';
+                    let assignedName = null;
+                    if (cleanDesc.startsWith('[ASSIGN:')) {
+                        const endIdx = cleanDesc.indexOf(']');
+                        if (endIdx > 8) {
+                            const empId = parseInt(cleanDesc.substring(8, endIdx));
+                            const emp = this.employes.find(e => e.id === empId);
+                            if (emp) assignedName = emp.nom;
+                            cleanDesc = cleanDesc.substring(endIdx + 1).trim();
+                        }
+                    }
+
+                    // Trouver le lead associé
+                    const lead = t.leadId ? this.leads.find(l => l.id === t.leadId) : null;
+                    
+                    // Vérifier si en retard
+                    const taskDate = new Date(t.dueDate);
+                    taskDate.setHours(0, 0, 0, 0);
+                    const isOverdue = !t.isCompleted && taskDate < today;
+
+                    return {
+                        ...t,
+                        uiTitle: cleanTitle,
+                        uiDescription: cleanDesc,
+                        uiPriority: parsedPriority,
+                        uiLeadName: lead ? lead.source : null,
+                        uiAssignedToName: assignedName,
+                        isOverdue: isOverdue
+                    };
+                });
+                this.loading = false;
+            },
             error: (err) => {
-                console.error('Erreur chargement tâches', err);
-                this.message = 'Erreur de chargement des tâches';
+                console.error('Erreur chargement', err);
+                this.showMessage('Erreur de chargement des données');
+                this.loading = false;
             }
         });
     }
@@ -54,29 +126,41 @@ export class TasksComponent implements OnInit {
     openForm(): void {
         this.title = '';
         this.description = '';
+        this.priority = 'MOYENNE';
         this.dueDate = new Date().toISOString().split('T')[0];
         this.leadId = null;
+        this.assignedToId = null;
         this.showForm = true;
         this.message = '';
     }
 
     save(): void {
         if (!this.title) return;
+        
+        // Ajouter la priorité au titre pour le backend
+        const fullTitle = `[${this.priority}] ${this.title}`;
+        
+        // Encoder l'assignation dans la description
+        let finalDesc = this.description;
+        if (this.assignedToId) {
+            finalDesc = `[ASSIGN:${this.assignedToId}] ${this.description}`;
+        }
+
         const dto: CreateTaskDto = {
-            title: this.title,
-            description: this.description,
+            title: fullTitle,
+            description: finalDesc,
             dueDate: new Date(this.dueDate).toISOString(),
             leadId: this.leadId || null
         };
         this.crm.createTask(dto).subscribe({
-            next: (created) => {
-                this.tasks.push(created);
+            next: () => {
                 this.showForm = false;
-                this.message = 'Tâche créée !';
+                this.showMessage('Tâche créée !');
+                this.loadTasks();
             },
             error: (err) => {
                 console.error('Erreur création tâche', err);
-                this.message = 'Erreur lors de la création';
+                this.showMessage('Erreur lors de la création');
             }
         });
     }

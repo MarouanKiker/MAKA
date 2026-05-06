@@ -1,74 +1,200 @@
-<div class="shell" [class.collapsed]="!sidebarOpen" [class.hub-mode]="isHub">
+<div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex overflow-hidden font-sans selection:bg-indigo-500/30 selection:text-indigo-600 dark:selection:text-indigo-300">
 
-    <aside class="sidebar" *ngIf="!isHub">
-        <div class="sidebar-brand">
-            <img src="assets/logo.jpeg" alt="MAKA" class="sidebar-logo" />
-            <div *ngIf="sidebarOpen">
-                <span class="sidebar-title">MAKA ERP</span>
-                <span class="sidebar-tagline">OPERATIONAL INTELLIGENCE</span>
+    <!-- SIDEBAR -->
+    <aside *ngIf="!isHub" 
+        [class.translate-x-0]="sidebarOpen" 
+        [class.-translate-x-full]="!sidebarOpen"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 ease-in-out md:relative md:translate-x-0 flex flex-col shadow-sm">
+        
+        <!-- Brand -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-3">
+                <img src="assets/logo.jpeg" class="w-9 h-9 rounded-lg object-cover shadow-sm" alt="MAKA Logo">
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm tracking-tight text-slate-900 dark:text-white">MAKA ERP</span>
+                    <span class="text-[0.6rem] font-medium text-slate-500 tracking-widest uppercase">Intelligence</span>
+                </div>
             </div>
         </div>
 
-        <nav class="sidebar-nav">
-            <a *ngFor="let item of menuItems" [routerLink]="item.path" routerLinkActive="active" class="nav-link">
-                <span class="nav-icon" [style.background]="item.color + '15'" [style.color]="item.color">
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1 scrollbar-hide">
+            <div class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 px-2">Menu Principal</div>
+            <a *ngFor="let item of menuItems" 
+               [routerLink]="item.path" 
+               routerLinkActive="bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-semibold" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 transition-colors group">
+                <span class="flex items-center justify-center w-6 h-6 text-slate-400 group-hover:text-indigo-500 transition-colors" 
+                      [style.color]="item.color">
                     <i [class]="item.icon"></i>
                 </span>
-                <span class="nav-text" *ngIf="sidebarOpen">{{ item.label }}</span>
+                <span>{{ item.label }}</span>
             </a>
         </nav>
 
-        <div class="sidebar-bottom">
-            <button class="nav-link" (click)="toggleTheme()">
-                <span class="nav-icon theme-icon">
+        <!-- Bottom Actions -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-1">
+            <button (click)="toggleTheme()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                <span class="flex items-center justify-center w-6 h-6 text-amber-500">
                     <i class="fa-solid" [class.fa-sun]="themeSvc.isDark()" [class.fa-moon]="!themeSvc.isDark()"></i>
                 </span>
-                <span class="nav-text" *ngIf="sidebarOpen">{{ themeSvc.isDark() ? 'Mode clair' : 'Mode sombre' }}</span>
+                <span>{{ themeSvc.isDark() ? 'Mode Clair' : 'Mode Sombre' }}</span>
             </button>
-            <button class="nav-link logout-link" (click)="logout()">
-                <span class="nav-icon logout-icon">
-                    <i class="fa-solid fa-right-from-bracket"></i>
+            <button (click)="logout()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-colors group">
+                <span class="flex items-center justify-center w-6 h-6 text-slate-400 group-hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </span>
-                <span class="nav-text" *ngIf="sidebarOpen">Deconnexion</span>
+                <span>Déconnexion</span>
             </button>
 
-            <div class="sidebar-user" *ngIf="user && sidebarOpen">
-                <div class="user-avatar">{{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}</div>
-                <div class="user-info">
-                    <span class="user-name">{{ user.prenom }} {{ user.nom.charAt(0) }}.</span>
-                    <span class="user-role">{{ user.roles[0].replace('ROLE_', '') }}</span>
+            <!-- User Info -->
+            <div *ngIf="user" class="mt-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold text-sm">
+                    {{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ user.prenom }} {{ user.nom.charAt(0) }}.</span>
+                    <span class="text-xs text-slate-500 truncate">{{ user.roles[0].replace('ROLE_', '') }}</span>
                 </div>
             </div>
         </div>
     </aside>
 
-    <!-- overlay mobile -->
-    <div class="sidebar-overlay" *ngIf="sidebarOpen && !isHub" (click)="toggleSidebar()"></div>
+    <!-- Overlay Mobile -->
+    <div *ngIf="sidebarOpen && !isHub" 
+         (click)="toggleSidebar()" 
+         class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden animate-fade-in">
+    </div>
 
-    <div class="main">
-        <header class="topbar">
-            <button class="topbar-toggle" (click)="toggleSidebar()" *ngIf="!isHub">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <div class="topbar-spacer"></div>
-            
-            <div style="display: flex; gap: 1rem; align-items: center;" *ngIf="isHub">
-                <button class="maka-icon-btn" (click)="toggleTheme()">
-                    <i class="fa-solid" [class.fa-sun]="themeSvc.isDark()" [class.fa-moon]="!themeSvc.isDark()"></i>
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        
+        <!-- TOPBAR -->
+        <header class="h-16 flex items-center justify-between px-4 md:px-8 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md sticky top-0 z-30">
+            <div class="flex items-center gap-4">
+                <button *ngIf="!isHub" (click)="toggleSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <i class="fa-solid fa-bars"></i>
                 </button>
-                <button class="maka-icon-btn dng" (click)="logout()">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
+                
+                <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    <i class="fa-solid fa-house text-xs"></i>
+                    <span>/</span>
+                    <span class="text-slate-900 dark:text-white">Workspace</span>
+                </div>
             </div>
 
-            <div class="topbar-user" *ngIf="user">
-                <div class="topbar-avatar">{{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}</div>
-                <span class="topbar-user-name">{{ user.prenom }} {{ user.nom.charAt(0) }}.</span>
+            <!-- Hub Mode Actions -->
+            <div class="flex items-center gap-2" *ngIf="isHub">
+                <button (click)="toggleTheme()" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors">
+                    <i class="fa-solid" [class.fa-sun]="themeSvc.isDark()" [class.fa-moon]="!themeSvc.isDark()"></i>
+                </button>
+                <button (click)="logout()" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 transition-colors">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
+            
+            <div *ngIf="user && !isHub" class="flex items-center gap-3">
+                <!-- Search Trigger -->
+                <button (click)="toggleSearch()" class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-medium transition-colors border border-transparent hover:border-slate-300 dark:hover:border-slate-600">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Rechercher...</span>
+                    <div class="flex items-center gap-1 px-1.5 py-0.5 bg-white dark:bg-slate-900 rounded text-[10px] font-bold shadow-sm">
+                        <span>Ctrl</span><span>K</span>
+                    </div>
+                </button>
+
+                <!-- Notifications Dropdown -->
+                <div class="relative">
+                    <button (click)="toggleNotifs()" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors relative">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-950 animate-pulse"></span>
+                    </button>
+                    <!-- Panel -->
+                    <div *ngIf="showNotifPanel" class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-slide-up z-50">
+                        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-900 dark:text-white">Notifications</h3>
+                            <span class="text-xs text-indigo-500 hover:text-indigo-600 cursor-pointer font-medium">Tout marquer comme lu</span>
+                        </div>
+                        <div class="max-h-96 overflow-y-auto">
+                            <div *ngFor="let notif of mockNotifications" class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors flex gap-3">
+                                <div class="mt-1 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                    <i [class]="notif.icon + ' ' + notif.color"></i>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-slate-900 dark:text-white">{{ notif.title }}</span>
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">{{ notif.text }}</span>
+                                    <span class="text-[10px] text-slate-400 mt-1 font-medium">{{ notif.time }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-2 text-center bg-slate-50 dark:bg-slate-800/30">
+                            <a class="text-xs font-semibold text-indigo-500 hover:text-indigo-600 cursor-pointer">Voir toutes les notifications</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Dropdown -->
+                <div class="relative">
+                    <button (click)="toggleUserMenu()" class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-xs flex items-center justify-center shadow-md hover:shadow-lg transition-shadow border-2 border-white dark:border-slate-950">
+                        {{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}
+                    </button>
+                    <!-- Panel -->
+                    <div *ngIf="showUserMenu" class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-slide-up z-50 p-2">
+                        <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-2 flex flex-col">
+                            <span class="text-sm font-bold text-slate-900 dark:text-white">{{ user.prenom }} {{ user.nom }}</span>
+                            <span class="text-xs text-slate-500">{{ user.email }}</span>
+                        </div>
+                        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                            <i class="fa-regular fa-user w-4 text-center"></i> Mon Profil
+                        </a>
+                        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                            <i class="fa-solid fa-gear w-4 text-center"></i> Paramètres
+                        </a>
+                        <div class="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                        <button (click)="logout()" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left">
+                            <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center"></i> Déconnexion
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <main class="content">
-            <router-outlet></router-outlet>
+        <!-- Command Palette Overlay -->
+        <div *ngIf="showSearch" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex justify-center items-start pt-24 px-4" (click)="toggleSearch()">
+            <div class="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-slide-up" (click)="$event.stopPropagation()">
+                <div class="flex items-center px-4 border-b border-slate-100 dark:border-slate-800">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 text-lg"></i>
+                    <input id="globalSearchInput" type="text" [(ngModel)]="searchQuery" (keyup.enter)="performSearch()" class="w-full px-4 py-4 bg-transparent border-none text-slate-900 dark:text-white placeholder-slate-400 outline-none text-lg" placeholder="Rechercher un module, un client, une facture..." autocomplete="off">
+                    <div class="flex gap-1 text-[10px] font-bold text-slate-400 cursor-pointer" (click)="toggleSearch()">
+                        <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-colors">ESC</span>
+                    </div>
+                </div>
+                <div class="p-2 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Suggestions Rapides</div>
+                    <div class="space-y-1">
+                        <a routerLink="/factures" (click)="toggleSearch()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Créer une facture</span>
+                        </a>
+                        <a routerLink="/leads" (click)="toggleSearch()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-bullseye"></i></div>
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Voir les leads</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div *ngIf="toastMessage" class="toast" (click)="toastMessage = ''">
+            {{ toastMessage }}
+        </div>
+
+        <!-- PAGE CONTENT -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+            <div class="max-w-6xl mx-auto w-full animate-slide-up">
+                <router-outlet></router-outlet>
+            </div>
         </main>
     </div>
 </div>

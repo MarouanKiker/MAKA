@@ -1,16 +1,17 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../core/services/auth.service';
 import { ThemeService } from '../core/services/theme.service';
 import { User } from '../core/models/auth.model';
 
-// composant principal du layout (sidebar + topbar + contenu)
+// layout principal : sidebar + topbar + contenu
 @Component({
     selector: 'app-layout',
     standalone: true,
-    imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+    imports: [CommonModule, FormsModule, RouterOutlet, RouterLink, RouterLinkActive],
     templateUrl: './layout.component.html',
     styleUrl: './layout.component.scss'
 })
@@ -19,22 +20,14 @@ export class LayoutComponent {
     // utilisateur connecte
     user: User | null;
 
-    // sidebar ouverte ou fermee
+    // sidebar ouverte/fermee
     sidebarOpen = true;
 
-    // liens du menu avec leurs icones Font Awesome
+    // liens du menu lateral
     allMenuItems = [
         {
             path: '/dashboard', label: 'Hub Principal', color: '#818cf8',
             icon: 'fa-solid fa-house', roles: ['ROLE_EMPLOYE', 'ROLE_USER']
-        },
-        {
-            path: '/accounts', label: 'Comptes', color: '#60a5fa',
-            icon: 'fa-solid fa-building', roles: ['ROLE_COMMERCIAL', 'ROLE_SUPPORT']
-        },
-        {
-            path: '/contacts', label: 'Contacts', color: '#a78bfa',
-            icon: 'fa-solid fa-address-book', roles: ['ROLE_COMMERCIAL', 'ROLE_SUPPORT']
         },
         {
             path: '/leads', label: 'Leads', color: '#fbbf24',
@@ -58,7 +51,7 @@ export class LayoutComponent {
         },
         {
             path: '/intelligence', label: 'MAKA Intelligence', color: '#22d3ee',
-            icon: 'fa-solid fa-brain', roles: ['ROLE_EMPLOYE', 'ROLE_USER'] // tout le monde
+            icon: 'fa-solid fa-brain', roles: ['ROLE_EMPLOYE', 'ROLE_USER'] // visible par tous
         },
         // --- GESTION DES STOCKS ---
         {
@@ -118,13 +111,26 @@ export class LayoutComponent {
 
     isHub = false;
     currentModule = '';
+    toastMessage = '';
+
+    // Nouveaux états UI
+    showNotifPanel = false;
+    showUserMenu = false;
+    showSearch = false;
+    searchQuery = '';
+
+    mockNotifications = [
+        { icon: 'fa-solid fa-file-invoice', color: 'text-emerald-500', title: 'Nouvelle facture', text: 'La facture FAC-2026-003 a été réglée.', time: 'Il y a 5 min' },
+        { icon: 'fa-solid fa-plane-departure', color: 'text-rose-500', title: 'Demande de congé', text: 'Marouan a demandé des congés.', time: 'Il y a 2 heures' },
+        { icon: 'fa-solid fa-shield-halved', color: 'text-amber-500', title: 'Sécurité système', text: 'Mise à jour réussie des habilitations.', time: 'Hier' }
+    ];
 
     constructor(
         private auth: AuthService,
         public themeSvc: ThemeService,
         private router: Router
     ) {
-        // recuperer les infos de l'utilisateur connecte
+        // recup infos utilisateur co
         this.user = this.auth.getUser();
 
         this.router.events.pipe(
@@ -133,8 +139,8 @@ export class LayoutComponent {
             const url = event.urlAfterRedirects || event.url;
             this.isHub = url === '/dashboard';
             
-            // Determine current module
-            if (url.includes('/accounts') || url.includes('/contacts') || url.includes('/leads') || url.includes('/opportunities') || url.includes('/campaigns') || url.includes('/tasks')) {
+            // detect quel module est actif
+            if (url.includes('/leads') || url.includes('/opportunities') || url.includes('/campaigns') || url.includes('/tasks')) {
                 this.currentModule = 'CRM';
             } else if (url.includes('/tickets')) {
                 this.currentModule = 'SUPPORT';
@@ -155,7 +161,7 @@ export class LayoutComponent {
             this.updateMenu();
         });
 
-        // si l'ecran est petit, fermer la sidebar par defaut
+        // sidebar fermee par defaut sur mobile
         if (window.innerWidth < 768) {
             this.sidebarOpen = false;
         }
@@ -163,32 +169,56 @@ export class LayoutComponent {
 
     updateMenu(): void {
         this.menuItems = this.allMenuItems.filter(item => {
-            // Check roles
+            // verif si l'utilisateur a le role requis
             const hasRole = this.auth.isAdmin() || item.roles.some((r: string) => this.auth.hasRole(r) || r === 'ROLE_EMPLOYE');
             if (!hasRole) return false;
 
-            // Check module logic
-            if (this.currentModule === 'CRM' && !['/dashboard', '/accounts', '/contacts', '/leads', '/opportunities', '/campaigns', '/tasks', '/tickets'].includes(item.path)) return false;
-            
-            if (this.currentModule === 'IA' && !['/dashboard', '/intelligence'].includes(item.path)) return false;
-            
-            if (this.currentModule === 'FINANCE' && !['/dashboard', '/factures', '/paiements', '/comptes-bancaires', '/journal'].includes(item.path)) return false;
+            // le hub principal reste toujours visible
+            if (item.path === '/dashboard') return true;
 
-            if (this.currentModule === 'HR' && !['/dashboard', '/espace-employe', '/hr-employes', '/hr-contrats', '/hr-conges', '/hr-paie', '/hr-reclamations'].includes(item.path)) return false;
+            // filtrer par module actif (ex: pas la compta dans le CRM)
+            if (this.currentModule === 'CRM' && !['/leads', '/opportunities', '/campaigns', '/tasks'].includes(item.path)) return false;
+            
+            if (this.currentModule === 'SUPPORT' && !['/tickets'].includes(item.path)) return false;
+            
+            if (this.currentModule === 'IA' && !['/intelligence'].includes(item.path)) return false;
+            
+            if (this.currentModule === 'FINANCE' && !['/factures', '/paiements', '/comptes-bancaires', '/journal'].includes(item.path)) return false;
 
             if (this.currentModule === 'STOCK' && !['/dashboard', '/stock'].includes(item.path)) return false;
 
+            if (this.currentModule === 'HR' && !['/espace-employe', '/hr-employes', '/hr-contrats', '/hr-conges', '/hr-paie', '/hr-reclamations'].includes(item.path)) return false;
+
             if (this.currentModule === 'ADMIN' && !['/dashboard', '/admin'].includes(item.path)) return false;
+
+            // Hide Espace Employe for Admin and RH users
+            if (item.path === '/espace-employe' && (this.auth.isAdmin() || this.auth.hasRole('ROLE_RH'))) {
+                return false;
+            }
 
             return true;
         });
     }
 
-    // detecter le redimensionnement de la fenetre
+    // si la fenetre change de taille
     @HostListener('window:resize')
     onResize(): void {
         if (window.innerWidth < 768) {
             this.sidebarOpen = false;
+        }
+    }
+
+    // Raccourci clavier (Ctrl+K pour la recherche globale)
+    @HostListener('window:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+            event.preventDefault();
+            this.toggleSearch();
+        }
+        if (event.key === 'Escape') {
+            this.showSearch = false;
+            this.showNotifPanel = false;
+            this.showUserMenu = false;
         }
     }
 
@@ -197,13 +227,52 @@ export class LayoutComponent {
         this.sidebarOpen = !this.sidebarOpen;
     }
 
-    // changer de theme
+    // basculer theme clair/sombre
     toggleTheme(): void {
         this.themeSvc.toggle();
     }
 
-    // se deconnecter
+    // deconnecter l'utilisateur
     logout(): void {
         this.auth.logout();
+    }
+
+    toggleNotifs(): void {
+        this.showNotifPanel = !this.showNotifPanel;
+        if (this.showNotifPanel) {
+            this.showUserMenu = false;
+            this.showSearch = false;
+        }
+    }
+
+    toggleUserMenu(): void {
+        this.showUserMenu = !this.showUserMenu;
+        if (this.showUserMenu) {
+            this.showNotifPanel = false;
+            this.showSearch = false;
+        }
+    }
+
+    toggleSearch(): void {
+        this.showSearch = !this.showSearch;
+        if (this.showSearch) {
+            this.showNotifPanel = false;
+            this.showUserMenu = false;
+            // focus automatique sur l'input (simulé avec un petit délai)
+            setTimeout(() => {
+                const searchInput = document.getElementById('globalSearchInput');
+                if (searchInput) searchInput.focus();
+            }, 50);
+        }
+    }
+
+    performSearch(): void {
+        if (this.searchQuery) {
+            this.toastMessage = `Recherche en cours pour "${this.searchQuery}"...`;
+            setTimeout(() => {
+                this.toastMessage = 'Aucun résultat trouvé pour cette recherche.';
+                setTimeout(() => this.toastMessage = '', 3000);
+            }, 1000);
+        }
     }
 }

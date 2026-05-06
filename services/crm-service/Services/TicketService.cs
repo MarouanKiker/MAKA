@@ -25,7 +25,7 @@ public class TicketService : ITicketService
         return ticket == null ? null : TicketMapper.ToResponseDto(ticket);
     }
 
-    public async Task<TicketResponseDto> CreateAsync(CreateTicketDto dto)
+    public async Task<TicketResponseDto> CreateAsync(CreateTicketDto dto, int? authUserId)
     {
         var ticket = TicketMapper.ToEntity(dto);
         var created = await _repo.CreateAsync(ticket);

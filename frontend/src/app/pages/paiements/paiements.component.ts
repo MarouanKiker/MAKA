@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinanceService } from '../../core/services/finance.service';
-import { Paiement, Facture, CreatePaiementRequest, ModePaiement, StatutPaiement } from '../../core/models/finance.model';
+import { Paiement, Facture, CreatePaiementRequest, ModePaiement, CompteBancaire, StatutPaiement } from '../../core/models/finance.model';
 
 @Component({
     selector: 'app-paiements',
@@ -15,6 +15,8 @@ export class PaiementsComponent implements OnInit {
 
     paiements: Paiement[] = [];
     factures: Facture[] = [];
+    modesPaiement: ModePaiement[] = [];
+    comptesBancaires: CompteBancaire[] = [];
     showForm = false;
     message = '';
     isLoading = false;
@@ -22,23 +24,16 @@ export class PaiementsComponent implements OnInit {
     // Champs du formulaire
     factureId: number | null = null;
     montant = 0;
-    modePaiement: ModePaiement = 'VIREMENT';
+    modePaiementId: number | null = null;
+    compteBancaireId: number | null = null;
     referenceTransaction = '';
 
-    modesPaiement: ModePaiement[] = ['VIREMENT', 'CARTE_BANCAIRE', 'CHEQUE', 'ESPECES'];
-    modeLabels: Record<ModePaiement, string> = {
-        VIREMENT: '🏦 Virement',
-        CARTE_BANCAIRE: '💳 Carte bancaire',
-        CHEQUE: '📝 Chèque',
-        ESPECES: '💵 Espèces'
-    };
-
-    statutColors: Record<StatutPaiement, string> = {
+    statutColors: Record<string, string> = {
         EN_ATTENTE: '#f5c748',
         VALIDE: '#44d492',
         REJETE: '#e84c3d'
     };
-    statutLabels: Record<StatutPaiement, string> = {
+    statutLabels: Record<string, string> = {
         EN_ATTENTE: 'En attente',
         VALIDE: 'Validé',
         REJETE: 'Rejeté'
@@ -48,6 +43,8 @@ export class PaiementsComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadAll();
+        this.loadModes();
+        this.loadComptes();
     }
 
     loadAll(): void {
@@ -61,50 +58,79 @@ export class PaiementsComponent implements OnInit {
         });
     }
 
+    loadModes(): void {
+        this.financeSvc.getModesPaiement().subscribe({
+            next: (data) => { 
+                this.modesPaiement = data; 
+                if (data.length > 0) this.modePaiementId = data[0].id;
+            }
+        });
+    }
+
+    loadComptes(): void {
+        this.financeSvc.getComptesBancaires().subscribe({
+            next: (data) => { this.comptesBancaires = data; }
+        });
+    }
+
+    getEnAttenteCount(): number {
+        return this.paiements.filter(p => p.statut === 'EN_ATTENTE').length;
+    }
+
     openForm(): void {
         this.factureId = null;
         this.montant = 0;
-        this.modePaiement = 'VIREMENT';
+        this.compteBancaireId = null;
         this.referenceTransaction = '';
         this.showForm = true;
         this.message = '';
     }
 
+    showMessage(msg: string): void {
+        this.message = msg;
+        setTimeout(() => {
+            if (this.message === msg) {
+                this.message = '';
+            }
+        }, 4000); // Disparaît après 4 secondes
+    }
+
     save(): void {
-        if (!this.factureId || this.montant <= 0) {
-            this.message = 'Veuillez sélectionner une facture et saisir un montant.';
+        if (!this.factureId || !this.modePaiementId || this.montant <= 0) {
+            this.showMessage('Veuillez remplir tous les champs.');
             return;
         }
         const request: CreatePaiementRequest = {
             factureId: this.factureId,
             montant: this.montant,
-            modePaiement: this.modePaiement,
+            modePaiementId: this.modePaiementId,
+            compteBancaireId: this.compteBancaireId || undefined,
+            type: 'CLIENT',
             referenceTransaction: this.referenceTransaction || undefined
         };
         this.financeSvc.createPaiement(request).subscribe({
             next: () => {
                 this.showForm = false;
-                this.message = 'Paiement enregistré !';
+                this.showMessage('Paiement enregistré !');
                 this.loadAll();
             },
             error: (err) => {
-                console.error('Erreur création paiement', err);
-                this.message = err.error?.message || 'Erreur lors de l\'enregistrement';
+                this.showMessage(err.error?.message || 'Erreur lors de l\'enregistrement');
             }
         });
     }
 
     valider(paiement: Paiement): void {
         this.financeSvc.validerPaiement(paiement.id).subscribe({
-            next: (updated) => { paiement.statut = updated.statut; this.message = 'Paiement validé !'; },
-            error: () => { this.message = 'Erreur lors de la validation'; }
+            next: (updated: Paiement) => { paiement.statut = updated.statut; this.showMessage('Paiement validé !'); },
+            error: () => { this.showMessage('Erreur lors de la validation'); }
         });
     }
 
     rejeter(paiement: Paiement): void {
         this.financeSvc.rejeterPaiement(paiement.id).subscribe({
-            next: (updated) => { paiement.statut = updated.statut; this.message = 'Paiement rejeté.'; },
-            error: () => { this.message = 'Erreur lors du rejet'; }
+            next: (updated: Paiement) => { paiement.statut = updated.statut; this.showMessage('Paiement rejeté.'); },
+            error: () => { this.showMessage('Erreur lors du rejet'); }
         });
     }
 

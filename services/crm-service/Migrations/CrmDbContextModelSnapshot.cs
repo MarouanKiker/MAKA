@@ -23,18 +23,31 @@ namespace CrmService.Migrations
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("CrmService.Models.CampagneMarketing", b =>
-            {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer");
-                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-                b.Property<decimal>("Budget").HasColumnType("numeric(18,2)");
-                b.Property<DateTime>("DateDebut").HasColumnType("timestamp with time zone");
-                b.Property<DateTime>("DateFin").HasColumnType("timestamp with time zone");
-                b.Property<string>("Nom").IsRequired().HasMaxLength(200).HasColumnType("character varying(200)");
-                b.HasKey("Id");
-                b.ToTable("campagnes_marketing", (string)null);
-            });
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Budget")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("DateDebut")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateFin")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("campagnes_marketing", (string)null);
+                });
 
             modelBuilder.Entity("CrmService.Models.Compte", b =>
             {
@@ -129,165 +142,238 @@ namespace CrmService.Migrations
                 b.ToTable("contacts", (string)null);
             });
 
+            modelBuilder.Entity("CrmService.Models.Interaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int?>("LeadId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeadId");
+
+                    b.ToTable("interactions", (string)null);
+                });
+
             modelBuilder.Entity("CrmService.Models.Lead", b =>
-            {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer");
-                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-                b.Property<int?>("CampagneId").HasColumnType("integer");
-                b.Property<DateTime>("DateCreation")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("timestamp with time zone")
-                    .HasDefaultValueSql("NOW()");
-                b.Property<int>("Score").HasColumnType("integer");
-                b.Property<string>("Source").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
-                b.Property<int>("Statut").HasColumnType("integer");
-                b.Property<int?>("UtilisateurId").HasColumnType("integer");
-                b.HasKey("Id");
-                b.HasIndex("CampagneId");
-                b.ToTable("leads", (string)null);
-            });
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CampagneId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateCreation")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UtilisateurId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampagneId");
+
+                    b.ToTable("leads", (string)null);
+                });
 
             modelBuilder.Entity("CrmService.Models.Opportunite", b =>
-            {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer");
-                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-                b.Property<DateTime?>("DateCloture").HasColumnType("timestamp with time zone");
-                b.Property<int>("LeadId").HasColumnType("integer");
-                b.Property<int>("Statut").HasColumnType("integer");
-                b.Property<string>("Titre").IsRequired().HasMaxLength(200).HasColumnType("character varying(200)");
-                b.Property<decimal>("Valeur").HasColumnType("numeric(18,2)");
-                b.HasKey("Id");
-                b.HasIndex("LeadId").IsUnique();
-                b.ToTable("opportunites", (string)null);
-            });
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
 
-            modelBuilder.Entity("CrmService.Models.Contact", b =>
-            {
-                b.HasOne("CrmService.Models.Compte", "Compte")
-                    .WithMany("Contacts")
-                    .HasForeignKey("CompteId")
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .IsRequired();
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                b.Navigation("Compte");
-            });
+                    b.Property<DateTime?>("DateCloture")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LeadId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Titre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("Valeur")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeadId")
+                        .IsUnique();
+
+                    b.ToTable("opportunites", (string)null);
+                });
 
             modelBuilder.Entity("CrmService.Models.TaskItem", b =>
-            {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer");
-                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-                b.Property<string>("Title").IsRequired().HasMaxLength(200).HasColumnType("character varying(200)");
-                b.Property<string>("Description").HasMaxLength(1000).HasColumnType("character varying(1000)");
-                b.Property<DateTime>("DueDate").HasColumnType("timestamp with time zone");
-                b.Property<bool>("IsCompleted").HasColumnType("boolean").HasDefaultValue(false);
-                b.Property<int?>("LeadId").HasColumnType("integer");
-                b.Property<int?>("OpportuniteId").HasColumnType("integer");
-                b.HasKey("Id");
-                b.HasIndex("LeadId");
-                b.HasIndex("OpportuniteId");
-                b.ToTable("tasks", (string)null);
-            });
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<int?>("LeadId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeadId");
+
+                    b.ToTable("tasks", (string)null);
+                });
 
             modelBuilder.Entity("CrmService.Models.Ticket", b =>
-            {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer");
-                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-                b.Property<string>("Title").IsRequired().HasMaxLength(200).HasColumnType("character varying(200)");
-                b.Property<string>("Description").HasMaxLength(1000).HasColumnType("character varying(1000)");
-                b.Property<string>("Status").IsRequired().HasMaxLength(50).HasColumnType("character varying(50)");
-                b.Property<DateTime>("CreatedAt")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("timestamp with time zone")
-                    .HasDefaultValueSql("NOW()");
-                b.Property<int?>("LeadId").HasColumnType("integer");
-                b.HasKey("Id");
-                b.HasIndex("LeadId");
-                b.ToTable("tickets", (string)null);
-            });
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int?>("LeadId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeadId");
+
+                    b.ToTable("tickets", (string)null);
+                });
 
             modelBuilder.Entity("CrmService.Models.Interaction", b =>
-            {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer");
-                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-                b.Property<string>("Type").IsRequired().HasMaxLength(50).HasColumnType("character varying(50)");
-                b.Property<string>("Notes").HasMaxLength(1000).HasColumnType("character varying(1000)");
-                b.Property<DateTime>("Date")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("timestamp with time zone")
-                    .HasDefaultValueSql("NOW()");
-                b.Property<int?>("LeadId").HasColumnType("integer");
-                b.HasKey("Id");
-                b.HasIndex("LeadId");
-                b.ToTable("interactions", (string)null);
-            });
+                {
+                    b.HasOne("CrmService.Models.Lead", "Lead")
+                        .WithMany()
+                        .HasForeignKey("LeadId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
-            // Relations
+                    b.Navigation("Lead");
+                });
+
             modelBuilder.Entity("CrmService.Models.Lead", b =>
-            {
-                b.HasOne("CrmService.Models.CampagneMarketing", "Campagne")
-                    .WithMany("Leads")
-                    .HasForeignKey("CampagneId")
-                    .OnDelete(DeleteBehavior.SetNull);
-                b.Navigation("Campagne");
-            });
+                {
+                    b.HasOne("CrmService.Models.CampagneMarketing", "Campagne")
+                        .WithMany("Leads")
+                        .HasForeignKey("CampagneId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Campagne");
+                });
 
             modelBuilder.Entity("CrmService.Models.Opportunite", b =>
-            {
-                b.HasOne("CrmService.Models.Lead", "Lead")
-                    .WithOne("Opportunite")
-                    .HasForeignKey("CrmService.Models.Opportunite", "LeadId")
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .IsRequired();
-                b.Navigation("Lead");
-            });
+                {
+                    b.HasOne("CrmService.Models.Lead", "Lead")
+                        .WithOne("Opportunite")
+                        .HasForeignKey("CrmService.Models.Opportunite", "LeadId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Lead");
+                });
 
             modelBuilder.Entity("CrmService.Models.TaskItem", b =>
-            {
-                b.HasOne("CrmService.Models.Lead", "Lead")
-                    .WithMany()
-                    .HasForeignKey("LeadId")
-                    .OnDelete(DeleteBehavior.SetNull);
-                b.HasOne("CrmService.Models.Opportunite", "Opportunite")
-                    .WithMany()
-                    .HasForeignKey("OpportuniteId")
-                    .OnDelete(DeleteBehavior.SetNull);
-                b.Navigation("Lead");
-                b.Navigation("Opportunite");
-            });
+                {
+                    b.HasOne("CrmService.Models.Lead", "Lead")
+                        .WithMany()
+                        .HasForeignKey("LeadId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Lead");
+                });
 
             modelBuilder.Entity("CrmService.Models.Ticket", b =>
-            {
-                b.HasOne("CrmService.Models.Lead", "Lead")
-                    .WithMany()
-                    .HasForeignKey("LeadId")
-                    .OnDelete(DeleteBehavior.SetNull);
-                b.Navigation("Lead");
-            });
+                {
+                    b.HasOne("CrmService.Models.Lead", "Lead")
+                        .WithMany()
+                        .HasForeignKey("LeadId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity("CrmService.Models.Interaction", b =>
-            {
-                b.HasOne("CrmService.Models.Lead", "Lead")
-                    .WithMany()
-                    .HasForeignKey("LeadId")
-                    .OnDelete(DeleteBehavior.SetNull);
-                b.Navigation("Lead");
-            });
+                    b.Navigation("Lead");
+                });
 
             modelBuilder.Entity("CrmService.Models.CampagneMarketing", b =>
                 {
                     b.Navigation("Leads");
                 });
-
             modelBuilder.Entity("CrmService.Models.Compte", b =>
                 {
                     b.Navigation("Contacts");

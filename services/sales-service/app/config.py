@@ -13,8 +13,14 @@ DATABASE_URL = os.getenv(
 # cle API Gemini (gratuit via Google AI Studio)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
+# cle API OpenRouter (optionnel)
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+
 # chemin vers la cle publique JWT (volume Docker partage)
 JWT_PUBLIC_KEY_PATH = os.getenv("JWT_PUBLIC_KEY_PATH", "/app/keys/public.pem")
 
 # url de la gateway pour appeler les autres services
 GATEWAY_URL = os.getenv("GATEWAY_URL", "http://gateway:80")
+
+# url de connexion RabbitMQ (bus de messages entre microservices)
+RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://maka:maka_secret@localhost:5672/")

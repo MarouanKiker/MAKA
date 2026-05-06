@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Employe, Contrat, DemandeConge, FicheDePaie, Reclamation } from '../models/hr.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class HrService {
     private http = inject(HttpClient);
-    private apiUrl = 'http://localhost:8000/api/hr';
+    private apiUrl = `${environment.apiUrl}/api/hr`;
 
     // ========================
     // EMPLOYÉS (lecture seule — créés via Auth Service)
@@ -16,6 +17,12 @@ export class HrService {
     }
     getEmploye(id: number): Observable<Employe> {
         return this.http.get<Employe>(`${this.apiUrl}/employes/${id}`);
+    }
+    createEmploye(employe: Partial<Employe>): Observable<Employe> {
+        return this.http.post<Employe>(`${this.apiUrl}/employes`, employe);
+    }
+    deleteEmploye(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/employes/${id}`);
     }
 
     // ========================

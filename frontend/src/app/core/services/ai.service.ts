@@ -1,36 +1,52 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 // ============================================================
-// Service IA — Appels API vers le module Intelligence
+// Service IA — Appels API vers le module Intelligence (gateway /api/sales)
+// Inclut : Cross-Analytics, Chatbot RAG++, Forecast, Segmentation
 // ============================================================
 
 @Injectable({ providedIn: 'root' })
 export class AiService {
 
-    // url de base du service sales (via la gateway nginx)
-    private baseUrl = 'http://localhost:8000/api/sales/ai';
+    private baseUrl = `${environment.apiUrl}/api/sales/ai`;
 
     constructor(private http: HttpClient) {}
 
-    // envoyer un message au chatbot
-    chat(message: string): Observable<any> {
-        return this.http.post(this.baseUrl + '/chat', { message: message });
+    /** Rapport cross-modules : score sante, alertes, KPIs agreges */
+    getCrossAnalytics(): Observable<any> {
+        return this.http.get(this.baseUrl + '/cross-analytics');
     }
 
-    // recuperer les previsions de ventes
+    /** Chatbot RAG++ connecte a tous les modules */
+    chat(message: string): Observable<any> {
+        return this.http.post(this.baseUrl + '/chat', { message });
+    }
+
+    /** Previsions ML (Gradient Boosting) */
     getForecast(): Observable<any> {
         return this.http.get(this.baseUrl + '/forecast');
     }
 
-    // recuperer les KPI intelligents
+    /** KPIs ventes calcules depuis la BDD */
     getKpis(): Observable<any> {
         return this.http.get(this.baseUrl + '/kpis');
     }
 
-    // recuperer les insights
+    /** Insights intelligents */
     getInsights(): Observable<any> {
         return this.http.get(this.baseUrl + '/insights');
+    }
+
+    /** Segmentation K-Means des clients */
+    getSegmentation(): Observable<any> {
+        return this.http.get(this.baseUrl + '/segmentation');
+    }
+
+    /** Scoring ML d'un lead */
+    scoreLead(leadData: any): Observable<any> {
+        return this.http.post(this.baseUrl + '/lead-score', leadData);
     }
 }

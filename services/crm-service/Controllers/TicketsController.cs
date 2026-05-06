@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CrmService.Auth;
 using CrmService.DTOs.Tickets;
 using CrmService.Interfaces;
 
@@ -40,7 +41,8 @@ public class TicketsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTicketDto dto)
     {
-        var ticket = await _service.CreateAsync(dto);
+        var uid = User.GetAuthUserId();
+        var ticket = await _service.CreateAsync(dto, uid);
         return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, ticket);
     }
 

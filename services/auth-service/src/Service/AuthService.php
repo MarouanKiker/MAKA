@@ -49,7 +49,40 @@ class AuthService
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
+        // Création automatique du profil dans le service RH
+        $this->syncToHrService($user);
+
         return $user;
+    }
+
+    /**
+     * Notifie le microservice RH pour créer un profil employé
+     */
+    private function syncToHrService(User $user): void
+    {
+        $url = 'http://hr-service:8080/api/hr/employes';
+        $data = [
+            'nom' => $user->getFirstName() . ' ' . $user->getLastName(),
+            'email' => $user->getEmail(),
+            'dateEmbauche' => (new \DateTime())->format('Y-m-d')
+        ];
+
+        $options = [
+            'http' => [
+                'header'  => "Content-type: application/json\r\n",
+                'method'  => 'POST',
+                'content' => json_encode($data),
+                'timeout' => 2,
+                'ignore_errors' => true
+            ]
+        ];
+
+        try {
+            $context = stream_context_create($options);
+            @file_get_contents($url, false, $context);
+        } catch (\Exception $e) {
+            // On ne bloque pas l'inscription si le service RH est indisponible
+        }
     }
 
     // =========================================================================

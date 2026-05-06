@@ -55,6 +55,8 @@ if (keyLoaded)
         })
         .AddJwtBearer(options =>
         {
+            options.MapInboundClaims = false;
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -62,7 +64,31 @@ if (keyLoaded)
                 ValidateIssuer = false,
                 ValidateAudience = false,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromMinutes(1)
+                ClockSkew = TimeSpan.FromMinutes(1),
+                NameClaimType = "user_id",
+                RoleClaimType = "roles"
+            };
+
+            // Permettre la lecture du token depuis le cookie 'maka_jwt'
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    // Cookie HttpOnly (gateway) puis Authorization Bearer (fallback dev / intercepteur Angular)
+                    var token = context.Request.Cookies["maka_jwt"];
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        var auth = context.Request.Headers.Authorization.ToString();
+                        if (!string.IsNullOrEmpty(auth) &&
+                            auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            token = auth["Bearer ".Length..].Trim();
+                        }
+                    }
+
+                    context.Token = token;
+                    return Task.CompletedTask;
+                }
             };
         });
 
@@ -79,9 +105,13 @@ else
 
     builder.Services.AddAuthorization(options =>
     {
+        // En mode dev sans cle, on autorise tout par defaut
         options.DefaultPolicy = new AuthorizationPolicyBuilder()
             .RequireAssertion(_ => true)
             .Build();
+        
+        // On permet aussi l'acces anonyme si l'attribut [Authorize] est present sans roles specifiques
+        options.FallbackPolicy = null;
     });
 }
 
@@ -95,6 +125,8 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);

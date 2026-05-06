@@ -16,6 +16,15 @@ export class EmployesComponent implements OnInit {
     employes: Employe[] = [];
     searchTerm = '';
     errorMsg = '';
+    successMsg = '';
+
+    // Formulaire creation
+    showForm = false;
+    newEmploye: Partial<Employe> = {
+        nom: '',
+        email: '',
+        dateEmbauche: new Date().toISOString().split('T')[0]
+    };
 
     constructor(private hr: HrService) {}
 
@@ -27,6 +36,41 @@ export class EmployesComponent implements OnInit {
         this.hr.getEmployes().subscribe({
             next: (data) => this.employes = data,
             error: (err) => this.errorMsg = 'Erreur chargement employés : ' + err.status
+        });
+    }
+
+    saveEmploye(): void {
+        if (!this.newEmploye.nom || !this.newEmploye.email) {
+            this.errorMsg = 'Veuillez remplir le nom et l\'email.';
+            return;
+        }
+
+        this.hr.createEmploye(this.newEmploye).subscribe({
+            next: (emp) => {
+                this.successMsg = 'Employé créé avec succès !';
+                this.loadEmployes();
+                this.showForm = false;
+                this.newEmploye = {
+                    nom: '',
+                    email: '',
+                    dateEmbauche: new Date().toISOString().split('T')[0]
+                };
+                setTimeout(() => this.successMsg = '', 3000);
+            },
+            error: (err) => this.errorMsg = 'Erreur lors de la création de l\'employé.'
+        });
+    }
+
+    deleteEmploye(id: number): void {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cet employé ? Cela supprimera aussi ses contrats et fiches de paie.')) return;
+        
+        this.hr.deleteEmploye(id).subscribe({
+            next: () => {
+                this.successMsg = 'Employé supprimé.';
+                this.loadEmployes();
+                setTimeout(() => this.successMsg = '', 3000);
+            },
+            error: () => this.errorMsg = 'Erreur lors de la suppression.'
         });
     }
 

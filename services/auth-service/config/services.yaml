@@ -29,3 +29,8 @@ services:
     App\EventListener\AuthenticationSuccessListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess }
+
+    # Déplace le JWT de login dans un cookie HttpOnly sécurisé.
+    App\EventListener\LoginJwtCookieListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.response, method: onKernelResponse }

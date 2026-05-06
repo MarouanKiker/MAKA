@@ -1,17 +1,6 @@
 package com.maka.finance.invoicing_service.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import lombok.Getter;
@@ -35,12 +24,19 @@ public class Paiement {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal montant;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "mode_paiement", nullable = false, length = 30)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "mode_paiement_id")
     private ModePaiement modePaiement;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "compte_bancaire_id")
+    private CompteBancaire compteBancaire;
 
     @Column(name = "reference_transaction", nullable = false, unique = true, length = 120)
     private String referenceTransaction;
+
+    @Column(nullable = false, length = 20)
+    private String type; // "CLIENT" ou "FOURNISSEUR"
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)

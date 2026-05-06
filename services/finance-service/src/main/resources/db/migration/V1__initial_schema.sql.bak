@@ -1,0 +1,2 @@
+-- This file has been replaced by V1__init_schema.sql
+-- Renamed to .bak to avoid Flyway conflict

@@ -14,29 +14,64 @@
 <!-- Indicateur de chargement -->
 <div class="loading" *ngIf="isLoading">Chargement des factures...</div>
 
+<!-- Stats rapides -->
+<div class="page-stats mt-6">
+    <div class="mini-stat">
+        <div class="mini-stat-icon text-indigo-600 bg-indigo-50"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="mini-stat-value">{{ factures.length }}</div>
+        <div class="mini-stat-label">Factures</div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-icon text-emerald-600 bg-emerald-50"><i class="fa-solid fa-coins"></i></div>
+        <div class="mini-stat-value">{{ getTotalCA() | number:'1.0-0' }}</div>
+        <div class="mini-stat-label">CA Total (MAD)</div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-icon text-amber-600 bg-amber-50"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div class="mini-stat-value">{{ getTotalResteAPayer() | number:'1.0-0' }}</div>
+        <div class="mini-stat-label">Reste à encaisser (MAD)</div>
+    </div>
+    <div class="mini-stat" *ngIf="getFacturesEnRetard() > 0">
+        <div class="mini-stat-icon text-red-600 bg-red-50"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="mini-stat-value">{{ getFacturesEnRetard() }}</div>
+        <div class="mini-stat-label">En retard</div>
+    </div>
+</div>
+
 <!-- formulaire de création -->
 <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
-    <div class="modal-card wide-modal" (click)="$event.stopPropagation()">
+    <div class="modal w-full max-w-4xl" (click)="$event.stopPropagation()">
         <h2>Nouvelle facture</h2>
         <form (ngSubmit)="save()">
-            <div class="form-row">
-                <div class="form-group">
+            <div class="row">
+                <div class="champ">
                     <label>Numéro de facture *</label>
                     <input type="text" [(ngModel)]="numero" name="numero" required placeholder="FAC-2026-0001" />
                 </div>
-                <div class="form-group">
+                <div class="champ">
+                    <label>Client *</label>
+                    <input type="text" [(ngModel)]="clientNom" name="clientNom" required placeholder="Nom du client ou société" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="champ">
+                    <label>Date d'échéance</label>
+                    <input type="date" [(ngModel)]="dateEcheance" name="dateEcheance" />
+                </div>
+                <div class="champ">
                     <label>Taux TVA (ex: 0.20 pour 20%) *</label>
                     <input type="number" [(ngModel)]="tauxTVA" name="tauxTVA" step="0.01" min="0" max="1" required />
                 </div>
             </div>
 
             <!-- Lignes de facture -->
-            <div class="lignes-section">
-                <div class="lignes-header">
-                    <h3>Lignes de facture</h3>
-                    <button type="button" class="btn-add-ligne" (click)="addLigne()">+ Ajouter une ligne</button>
+            <div class="mt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Lignes de facture</h3>
+                    <button type="button" class="btn-sm" (click)="addLigne()">+ Ajouter une ligne</button>
                 </div>
-                <table class="lignes-table">
+                <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                <table class="maka-table">
                     <thead>
                         <tr>
                             <th>Produit / Service *</th>
@@ -48,29 +83,30 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let ligne of lignes; let i = index">
-                            <td><input type="text" [(ngModel)]="ligne.produit" [name]="'produit_' + i" required placeholder="Nom du produit/service" /></td>
-                            <td><input type="number" [(ngModel)]="ligne.quantite" [name]="'qte_' + i" min="1" required /></td>
-                            <td><input type="number" [(ngModel)]="ligne.prixUnitaire" [name]="'pu_' + i" min="0.01" step="0.01" required /></td>
-                            <td class="cell-amount">{{ getMontantHTLigne(ligne) | number:'1.2-2' }} MAD</td>
-                            <td><button type="button" class="btn-remove-ligne" (click)="removeLigne(i)" [disabled]="lignes.length === 1">×</button></td>
+                            <td><input type="text" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none" [(ngModel)]="ligne.produit" [name]="'produit_' + i" required placeholder="Nom du produit/service" /></td>
+                            <td><input type="number" class="w-20 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none" [(ngModel)]="ligne.quantite" [name]="'qte_' + i" min="1" required /></td>
+                            <td><input type="number" class="w-32 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none" [(ngModel)]="ligne.prixUnitaire" [name]="'pu_' + i" min="0.01" step="0.01" required /></td>
+                            <td class="font-medium text-slate-900 dark:text-white text-right">{{ getMontantHTLigne(ligne) | number:'1.2-2' }} MAD</td>
+                            <td class="text-right"><button type="button" class="btn-icon danger ml-auto" (click)="removeLigne(i)" [disabled]="lignes.length === 1"><i class="fa-solid fa-xmark"></i></button></td>
                         </tr>
                     </tbody>
                     <tfoot>
-                        <tr>
-                            <td colspan="3" class="total-label">Total HT :</td>
-                            <td class="cell-amount cell-bold">{{ getTotalHT() | number:'1.2-2' }} MAD</td>
+                        <tr class="bg-slate-50 dark:bg-slate-800/30">
+                            <td colspan="3" class="text-right font-semibold text-slate-600 dark:text-slate-400">Total HT :</td>
+                            <td class="text-right font-bold text-slate-900 dark:text-white">{{ getTotalHT() | number:'1.2-2' }} MAD</td>
                             <td></td>
                         </tr>
-                        <tr>
-                            <td colspan="3" class="total-label">Total TTC (TVA {{ tauxTVA * 100 | number:'1.0-0' }}%) :</td>
-                            <td class="cell-amount cell-bold" style="color: var(--accent)">{{ getTotalTTC() | number:'1.2-2' }} MAD</td>
+                        <tr class="bg-indigo-50/50 dark:bg-indigo-900/10">
+                            <td colspan="3" class="text-right font-bold text-slate-900 dark:text-white">Total TTC (TVA {{ tauxTVA * 100 | number:'1.0-0' }}%) :</td>
+                            <td class="text-right font-black text-indigo-600 dark:text-indigo-400 text-lg">{{ getTotalTTC() | number:'1.2-2' }} MAD</td>
                             <td></td>
                         </tr>
                     </tfoot>
                 </table>
+                </div>
             </div>
 
-            <div class="form-actions">
+            <div class="modal-actions">
                 <button type="button" class="btn-cancel" (click)="showForm = false">Annuler</button>
                 <button type="submit" class="btn-save">Créer la facture</button>
             </div>
@@ -84,11 +120,11 @@
         <thead>
             <tr>
                 <th>Numéro</th>
-                <th>Montant HT</th>
-                <th>TVA</th>
+                <th>Client</th>
+                <th>Échéance</th>
                 <th>Montant TTC</th>
                 <th>Payé</th>
-                <th>Reste à payer</th>
+                <th>Reste</th>
                 <th>Statut</th>
                 <th>Lignes</th>
                 <th>Actions</th>
@@ -96,31 +132,48 @@
         </thead>
         <tbody>
             <tr *ngFor="let f of factures">
-                <td class="cell-main">{{ f.numero }}</td>
-                <td class="cell-amount">{{ f.montantHT | number:'1.2-2' }} MAD</td>
-                <td>{{ (f.tauxTVA * 100) | number:'1.0-0' }}%</td>
-                <td class="cell-bold cell-amount" style="color:var(--accent)">{{ f.montantTTC | number:'1.2-2' }} MAD</td>
-                <td class="cell-amount" style="color: #44d492">{{ f.montantPaye | number:'1.2-2' }} MAD</td>
-                <td class="cell-amount" [style.color]="f.resteAPayer > 0 ? '#e84c3d' : '#44d492'">{{ f.resteAPayer | number:'1.2-2' }} MAD</td>
+                <td class="font-bold text-slate-900 dark:text-white">{{ f.numero }}</td>
+                <td class="text-slate-700 dark:text-slate-300">{{ f.clientNom || '—' }}</td>
                 <td>
-                    <select class="statut-select" [value]="f.statut" (change)="changeStatut(f, $any($event.target).value)"
-                        [style.border-color]="statutColors[f.statut]">
+                    <span *ngIf="f.dateEcheance" class="text-xs font-medium"
+                        [ngClass]="f.dateEcheance < today && f.statut !== 'PAYEE' && f.statut !== 'ANNULEE' ? 'text-red-500 font-bold' : 'text-slate-500'">
+                        {{ f.dateEcheance }}
+                    </span>
+                    <span *ngIf="!f.dateEcheance" class="text-slate-400">—</span>
+                </td>
+                <td class="font-bold text-indigo-600 dark:text-indigo-400">{{ f.montantTTC | number:'1.2-2' }} MAD</td>
+                <td class="font-medium text-emerald-600 dark:text-emerald-400">{{ f.montantPaye | number:'1.2-2' }} MAD</td>
+                <td class="font-bold" [ngClass]="f.resteAPayer > 0 ? 'text-red-500' : 'text-emerald-500'">{{ f.resteAPayer | number:'1.2-2' }} MAD</td>
+                <td>
+                    <select class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold uppercase tracking-wider outline-none" [value]="f.statut" (change)="changeStatut(f, $any($event.target).value)"
+                        [style.color]="statutColors[f.statut]">
                         <option *ngFor="let s of ['BROUILLON','VALIDEE','ENVOYEE','PARTIELLEMENT_PAYEE','PAYEE','ANNULEE']" [value]="s">
                             {{ $any(statutLabels)[s] }}
                         </option>
                     </select>
                 </td>
                 <td>
-                    <span class="badge-count">{{ f.lignes ? f.lignes.length : 0 }} ligne(s)</span>
+                    <span class="badge" *ngIf="f.lignes">{{ f.lignes.length }} ligne(s)</span>
+                    <span class="badge" *ngIf="!f.lignes">0 ligne</span>
                 </td>
                 <td>
-                    <button class="btn-icon delete" (click)="deleteFacture(f.id)" title="Supprimer">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button class="btn-icon text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50" (click)="generatePDF(f)" title="Télécharger en PDF">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </button>
+                        <button class="btn-icon delete" (click)="deleteFacture(f.id)" title="Supprimer">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
             <tr *ngIf="factures.length === 0 && !isLoading">
-                <td colspan="9" class="empty-row">Aucune facture enregistrée</td>
+                <td colspan="9">
+                    <div class="empty">
+                        <i class="fa-solid fa-file-invoice text-4xl mb-4"></i>
+                        <p>Aucune facture enregistrée</p>
+                    </div>
+                </td>
             </tr>
         </tbody>
     </table>

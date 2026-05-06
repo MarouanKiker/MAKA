@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface JournalTransactionRepository extends JpaRepository<JournalTransaction, Long> {
     List<JournalTransaction> findByCompteDebitOrCompteCreditOrderByDateEcritureDesc(String compteDebit, String compteCredit);
     List<JournalTransaction> findByReferenceTypeAndReferenceIdOrderByDateEcritureDesc(String referenceType, Long referenceId);
+    List<JournalTransaction> findAllByOrderByDateEcritureDesc();
 }

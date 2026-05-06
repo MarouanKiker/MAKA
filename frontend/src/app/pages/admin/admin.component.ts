@@ -13,6 +13,8 @@ import { AdminService, UserAdmin } from '../../core/services/admin.service';
 export class AdminComponent implements OnInit {
   users: UserAdmin[] = [];
   loading = true;
+  errorMsg = '';
+  successMsg = '';
   availableRoles = [
     { value: 'ROLE_ADMIN', label: 'Administration Globale' },
     { value: 'ROLE_COMMERCIAL', label: 'Commercial (CRM)' },
@@ -49,28 +51,28 @@ export class AdminComponent implements OnInit {
     let currentRoles = [...user.roles];
     
     if (currentRoles.includes(role)) {
-      // Remove role
+      // retirer le role
       currentRoles = currentRoles.filter(r => r !== role);
     } else {
-      // Add role
+      // ajouter le role
       currentRoles.push(role);
     }
 
-    // always ensure they have at least one valid role if empty
+    // garder au moins le role employe de base
     if (currentRoles.length === 0) {
       currentRoles = ['ROLE_EMPLOYE'];
     }
 
-    // Optimistic UI update
+    // maj visuelle immediate (optimiste)
     const previousRoles = [...user.roles];
     user.roles = currentRoles;
 
     this.adminSvc.updateRoles(user.id, currentRoles).subscribe({
       next: () => {
-        // Success
+        // ok
       },
       error: (err) => {
-        user.roles = previousRoles; // Revert on error
+        user.roles = previousRoles; // erreur -> on remet les anciens roles
         alert(err.error?.error || 'Erreur lors de la mise à jour des roles');
       }
     });
@@ -87,5 +89,10 @@ export class AdminComponent implements OnInit {
 
   hasRole(userRoles: string[], role: string): boolean {
       return userRoles.includes(role);
+  }
+
+  getRoleLabel(roleValue: string): string {
+      const found = this.availableRoles.find(r => r.value === roleValue);
+      return found ? found.label : roleValue;
   }
 }

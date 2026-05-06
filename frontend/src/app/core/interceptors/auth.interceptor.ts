@@ -5,26 +5,27 @@ import { Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
-// intercepteur HTTP : il ajoute automatiquement le token JWT
-// dans les headers de chaque requete envoyee au backend
-// comme ca on n'a pas a le faire manuellement a chaque appel
+/**
+ * Intercepteur auth : `withCredentials: true` pour envoyer le cookie HttpOnly `maka_jwt`
+ * vers la gateway. Si le backend a aussi renvoyé `token` au login (stocké par compatibilité),
+ * on ajoute `Authorization: Bearer` pour les services qui lisent le header (CRM .NET, Finance).
+ */
 export const authInterceptor: HttpInterceptorFn = function (req, next) {
-    // recuperer le token depuis le service d'authentification
-    let auth = inject(AuthService);
-    let router = inject(Router);
-    let token = auth.getToken();
+    const auth = inject(AuthService);
+    const router = inject(Router);
+    const token = auth.getToken() || localStorage.getItem('maka_token');
 
-    // si on a un token, on l'ajoute dans le header Authorization
+    let cloned = req.clone({ withCredentials: true });
+
     if (token) {
-        req = req.clone({
+        cloned = cloned.clone({
             setHeaders: {
-                Authorization: 'Bearer ' + token
+                Authorization: `Bearer ${token}`
             }
         });
     }
 
-    // on continue la requete et on gère les erreurs
-    return next(req).pipe(
+    return next(cloned).pipe(
         catchError((error: HttpErrorResponse) => {
             if (error.status === 401) {
                 // Token expiré ou invalide : on déconnecte et on redirige

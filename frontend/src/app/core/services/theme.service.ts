@@ -36,8 +36,13 @@ export class ThemeService {
         return this.theme === 'dark';
     }
 
-    // appliquer le theme sur le body de la page
+    // appliquer le theme sur le document html
     private applyTheme(): void {
-        document.body.setAttribute('data-theme', this.theme);
+        document.body.setAttribute('data-theme', this.theme); // pour la compatibilite avec l'ancien SCSS
+        if (this.theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     }
 }
