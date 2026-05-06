@@ -57,14 +57,15 @@
     z-index: 2;
     width: 100%;
     max-width: 420px;
-    background: rgba(18, 19, 26, .7);
+    background: var(--glass);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, .06);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-xl);
     padding: 2.25rem 2rem;
-    box-shadow: var(--shadow-lg), 0 0 80px rgba(163, 166, 255, .04);
+    box-shadow: var(--shadow-lg), 0 0 80px rgba(var(--accent-rgb), .04);
     animation: scaleIn .45s ease;
+    color: var(--text-0);
 
     /* signature gradient top border */
     &::before {
@@ -86,9 +87,9 @@
     right: 1rem;
     width: 30px;
     height: 30px;
-    border: 1px solid rgba(255, 255, 255, .06);
+    border: 1px solid var(--border-0);
     border-radius: 50%;
-    background: transparent;
+    background: var(--bg-hover);
     color: var(--text-2);
     display: flex;
     align-items: center;
@@ -182,7 +183,7 @@
     width: 100%;
     padding: .6rem .85rem;
     background: var(--bg-3);
-    border: none;
+    border: 1px solid var(--border-0);
     border-radius: var(--radius-sm);
     color: var(--text-0);
     font-size: .85rem;
@@ -192,6 +193,7 @@
 
 .form-group input:focus {
     outline: none;
+    border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(var(--accent-rgb), .25);
 }
 

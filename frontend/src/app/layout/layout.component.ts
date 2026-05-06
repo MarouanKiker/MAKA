@@ -1,11 +1,33 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { forkJoin, Subscription, interval } from 'rxjs';
 import { AuthService } from '../core/services/auth.service';
 import { ThemeService } from '../core/services/theme.service';
+import { CrmService } from '../core/services/crm.service';
+import { FinanceService } from '../core/services/finance.service';
+import { HrService } from '../core/services/hr.service';
 import { User } from '../core/models/auth.model';
+
+export interface LiveNotification {
+    icon: string;
+    color: string;
+    title: string;
+    text: string;
+    time: string;
+    route?: string;
+    read: boolean;
+}
+
+export interface SearchResult {
+    icon: string;
+    color: string;
+    label: string;
+    detail: string;
+    route: string;
+}
 
 // layout principal : sidebar + topbar + contenu
 @Component({
@@ -15,7 +37,9 @@ import { User } from '../core/models/auth.model';
     templateUrl: './layout.component.html',
     styleUrl: './layout.component.scss'
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit, OnDestroy {
+
+    private refreshSub?: Subscription;
 
     // utilisateur connecte
     user: User | null;
@@ -108,24 +132,27 @@ export class LayoutComponent {
     currentModule = '';
     toastMessage = '';
 
-    // Nouveaux états UI
+    // Live notifications from real backend data
     showNotifPanel = false;
     showUserMenu = false;
     showSearch = false;
     searchQuery = '';
+    notifications: LiveNotification[] = [];
+    unreadCount = 0;
 
-    mockNotifications = [
-        { icon: 'fa-solid fa-file-invoice', color: 'text-emerald-500', title: 'Nouvelle facture', text: 'La facture FAC-2026-003 a été réglée.', time: 'Il y a 5 min' },
-        { icon: 'fa-solid fa-plane-departure', color: 'text-rose-500', title: 'Demande de congé', text: 'Marouan a demandé des congés.', time: 'Il y a 2 heures' },
-        { icon: 'fa-solid fa-shield-halved', color: 'text-amber-500', title: 'Sécurité système', text: 'Mise à jour réussie des habilitations.', time: 'Hier' }
-    ];
+    // Search results
+    searchResults: SearchResult[] = [];
+    searchLoading = false;
+    allSearchableItems: SearchResult[] = [];
 
     constructor(
         private auth: AuthService,
         public themeSvc: ThemeService,
-        private router: Router
+        private router: Router,
+        private crmService: CrmService,
+        private financeService: FinanceService,
+        private hrService: HrService
     ) {
-        // recup infos utilisateur co
         this.user = this.auth.getUser();
 
         this.router.events.pipe(
@@ -134,7 +161,6 @@ export class LayoutComponent {
             const url = event.urlAfterRedirects || event.url;
             this.isHub = url === '/dashboard';
             
-            // detect quel module est actif
             if (url.includes('/leads') || url.includes('/opportunities') || url.includes('/campaigns') || url.includes('/tasks')) {
                 this.currentModule = 'CRM';
             } else if (url.includes('/tickets')) {
@@ -154,10 +180,133 @@ export class LayoutComponent {
             this.updateMenu();
         });
 
-        // sidebar fermee par defaut sur mobile
         if (window.innerWidth < 768) {
             this.sidebarOpen = false;
         }
+    }
+
+    ngOnInit(): void {
+        this.loadNotifications();
+        this.loadSearchIndex();
+        // Refresh notifications every 60 seconds
+        this.refreshSub = interval(60000).subscribe(() => this.loadNotifications());
+    }
+
+    ngOnDestroy(): void {
+        this.refreshSub?.unsubscribe();
+    }
+
+    // Fetch LIVE notifications from all backend services
+    loadNotifications(): void {
+        const notifs: LiveNotification[] = [];
+
+        // Fetch tickets, factures, congés in parallel
+        forkJoin({
+            tickets: this.crmService.getTickets(),
+            factures: this.financeService.getFactures(),
+            conges: this.hrService.getDemandesConge()
+        }).subscribe({
+            next: (data) => {
+                // Tickets ouverts
+                const openTickets = (data.tickets || []).filter((t: any) =>
+                    ['Open', 'OPEN', 'Nouveau', 'NOUVEAU', 'Pending'].includes(t.status || t.statut || '')
+                );
+                if (openTickets.length > 0) {
+                    notifs.push({
+                        icon: 'fa-solid fa-ticket', color: 'text-rose-500',
+                        title: `${openTickets.length} ticket${openTickets.length > 1 ? 's' : ''} ouvert${openTickets.length > 1 ? 's' : ''}`,
+                        text: openTickets.length > 0 ? `Dernier : ${openTickets[0].title || 'Sans titre'}` : '',
+                        time: 'En cours', route: '/tickets', read: false
+                    });
+                }
+
+                // Factures impayées
+                const impayees = (data.factures || []).filter((f: any) =>
+                    !['PAYEE', 'PAYÉE', 'ANNULEE'].includes(f.statut || '')
+                );
+                if (impayees.length > 0) {
+                    const totalDu = impayees.reduce((s: number, f: any) => s + (f.resteAPayer || 0), 0);
+                    notifs.push({
+                        icon: 'fa-solid fa-file-invoice-dollar', color: 'text-amber-500',
+                        title: `${impayees.length} facture${impayees.length > 1 ? 's' : ''} impayée${impayees.length > 1 ? 's' : ''}`,
+                        text: `Montant total dû : ${totalDu.toLocaleString('fr-FR')} MAD`,
+                        time: 'Finance', route: '/factures', read: false
+                    });
+                }
+
+                // Congés en attente
+                const enAttente = (data.conges || []).filter((c: any) =>
+                    ['EnAttente', 'EN_ATTENTE', 'Pending'].includes(c.etat || c.statut || '')
+                );
+                if (enAttente.length > 0) {
+                    notifs.push({
+                        icon: 'fa-solid fa-calendar-check', color: 'text-cyan-500',
+                        title: `${enAttente.length} demande${enAttente.length > 1 ? 's' : ''} de congé`,
+                        text: 'En attente de validation',
+                        time: 'RH', route: '/hr-conges', read: false
+                    });
+                }
+
+                // Factures payées récemment (bonne nouvelle)
+                const payees = (data.factures || []).filter((f: any) => f.statut === 'PAYEE');
+                if (payees.length > 0) {
+                    notifs.push({
+                        icon: 'fa-solid fa-circle-check', color: 'text-emerald-500',
+                        title: `${payees.length} facture${payees.length > 1 ? 's' : ''} réglée${payees.length > 1 ? 's' : ''}`,
+                        text: 'Paiements confirmés',
+                        time: 'Finance', route: '/paiements', read: true
+                    });
+                }
+
+                this.notifications = notifs;
+                this.unreadCount = notifs.filter(n => !n.read).length;
+            },
+            error: () => {
+                // Fallback si les services sont down
+                this.notifications = [{
+                    icon: 'fa-solid fa-circle-info', color: 'text-slate-400',
+                    title: 'Services en cours de chargement',
+                    text: 'Les notifications seront disponibles sous peu.',
+                    time: '', read: true
+                }];
+                this.unreadCount = 0;
+            }
+        });
+    }
+
+    // Build searchable index from real data
+    loadSearchIndex(): void {
+        // Static navigation items
+        this.allSearchableItems = [
+            { icon: 'fa-solid fa-house', color: 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600', label: 'Hub Principal', detail: 'Dashboard principal', route: '/dashboard' },
+            { icon: 'fa-solid fa-bullseye', color: 'bg-amber-100 dark:bg-amber-500/20 text-amber-600', label: 'Leads', detail: 'Gestion des leads CRM', route: '/leads' },
+            { icon: 'fa-solid fa-arrow-trend-up', color: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600', label: 'Opportunités', detail: 'Pipeline des opportunités', route: '/opportunities' },
+            { icon: 'fa-solid fa-list-check', color: 'bg-orange-100 dark:bg-orange-500/20 text-orange-600', label: 'Tâches', detail: 'Gestion des tâches', route: '/tasks' },
+            { icon: 'fa-solid fa-ticket', color: 'bg-rose-100 dark:bg-rose-500/20 text-rose-600', label: 'Tickets', detail: 'Support client', route: '/tickets' },
+            { icon: 'fa-solid fa-bullhorn', color: 'bg-pink-100 dark:bg-pink-500/20 text-pink-600', label: 'Campagnes', detail: 'Campagnes marketing', route: '/campaigns' },
+            { icon: 'fa-solid fa-brain', color: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600', label: 'Intelligence IA', detail: 'MAKA Intelligence — Chatbot & Analytics', route: '/intelligence' },
+            { icon: 'fa-solid fa-file-invoice-dollar', color: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600', label: 'Factures', detail: 'Gestion des factures', route: '/factures' },
+            { icon: 'fa-solid fa-money-bill-transfer', color: 'bg-teal-100 dark:bg-teal-500/20 text-teal-600', label: 'Paiements', detail: 'Suivi des paiements', route: '/paiements' },
+            { icon: 'fa-solid fa-book-journal-whills', color: 'bg-green-100 dark:bg-green-500/20 text-green-600', label: 'Journal Comptable', detail: 'Écritures comptables', route: '/journal' },
+            { icon: 'fa-solid fa-users', color: 'bg-pink-100 dark:bg-pink-500/20 text-pink-600', label: 'Employés', detail: 'Gestion du personnel RH', route: '/hr-employes' },
+            { icon: 'fa-solid fa-file-contract', color: 'bg-purple-100 dark:bg-purple-500/20 text-purple-600', label: 'Contrats', detail: 'Contrats de travail', route: '/hr-contrats' },
+            { icon: 'fa-solid fa-calendar-check', color: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600', label: 'Congés', detail: 'Demandes de congé', route: '/hr-conges' },
+            { icon: 'fa-solid fa-money-check-dollar', color: 'bg-red-100 dark:bg-red-500/20 text-red-600', label: 'Fiches de Paie', detail: 'Génération des bulletins', route: '/hr-paie' },
+            { icon: 'fa-solid fa-user-tie', color: 'bg-green-100 dark:bg-green-500/20 text-green-600', label: 'Mon Espace', detail: 'Espace employé self-service', route: '/espace-employe' },
+            { icon: 'fa-solid fa-users-gear', color: 'bg-amber-100 dark:bg-amber-500/20 text-amber-600', label: 'Administration', detail: 'Gestion des utilisateurs', route: '/admin' },
+        ];
+    }
+
+    markAllRead(): void {
+        this.notifications.forEach(n => n.read = true);
+        this.unreadCount = 0;
+    }
+
+    goToNotif(notif: LiveNotification): void {
+        notif.read = true;
+        this.unreadCount = this.notifications.filter(n => !n.read).length;
+        this.showNotifPanel = false;
+        if (notif.route) this.router.navigate([notif.route]);
     }
 
     updateMenu(): void {
@@ -258,12 +407,21 @@ export class LayoutComponent {
     }
 
     performSearch(): void {
-        if (this.searchQuery) {
-            this.toastMessage = `Recherche en cours pour "${this.searchQuery}"...`;
-            setTimeout(() => {
-                this.toastMessage = 'Aucun résultat trouvé pour cette recherche.';
-                setTimeout(() => this.toastMessage = '', 3000);
-            }, 1000);
+        if (!this.searchQuery || this.searchQuery.trim().length === 0) {
+            this.searchResults = [];
+            return;
         }
+        const q = this.searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        this.searchResults = this.allSearchableItems.filter(item =>
+            item.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(q) ||
+            item.detail.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(q)
+        );
+    }
+
+    goToSearchResult(result: SearchResult): void {
+        this.showSearch = false;
+        this.searchQuery = '';
+        this.searchResults = [];
+        this.router.navigate([result.route]);
     }
 }
