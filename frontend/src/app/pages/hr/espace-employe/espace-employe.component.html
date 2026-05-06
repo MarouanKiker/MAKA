@@ -85,6 +85,11 @@
                     class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-500 transition-all duration-300 flex items-center gap-2">
                 <i class="fa-solid fa-comment-dots" [ngClass]="activeTab === 'reclamations' ? 'text-indigo-500' : ''"></i> Mes Réclamations
             </button>
+            <button (click)="setTab('taches')" 
+                    [ngClass]="activeTab === 'taches' ? 'bg-white dark:bg-white/10 shadow-sm text-slate-900 dark:text-white' : ''"
+                    class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-500 transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-check-double" [ngClass]="activeTab === 'taches' ? 'text-orange-500' : ''"></i> Mes Tâches
+            </button>
         </div>
 
         <!-- ONGLET : CONGÉS -->
@@ -202,6 +207,55 @@
             <div *ngIf="mesReclamations.length === 0" class="flex flex-col items-center justify-center p-12 bg-white/50 dark:bg-white/5 border border-border/50 rounded-3xl text-slate-500 border-dashed">
                 <i class="fa-solid fa-comments-slash text-4xl mb-4 text-slate-300 dark:text-slate-600"></i>
                 <p class="font-medium">Vous n'avez ouvert aucune réclamation.</p>
+            </div>
+        </div>
+
+        <!-- ONGLET : TÂCHES -->
+        <div *ngIf="activeTab === 'taches'" class="animate-fade-in space-y-6">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Tâches qui m'ont été assignées</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="mesTaches.length > 0">
+                <div *ngFor="let t of mesTaches" class="bg-white dark:bg-[#12131a] border border-border/50 rounded-2xl p-5 shadow-sm space-y-4" [class.opacity-60]="t.isCompleted">
+                    <div class="flex justify-between items-start">
+                        <div class="space-y-1">
+                            <h4 class="font-bold text-slate-900 dark:text-white" [class.line-through]="t.isCompleted">{{ t.uiTitle }}</h4>
+                            <div class="flex gap-2">
+                                <span class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider"
+                                      [ngClass]="{
+                                          'bg-red-500/10 text-red-500': t.title.includes('[HAUTE]'),
+                                          'bg-orange-500/10 text-orange-500': t.title.includes('[MOYENNE]'),
+                                          'bg-blue-500/10 text-blue-500': t.title.includes('[BASSE]')
+                                      }">
+                                    {{ t.title.includes('[HAUTE]') ? 'Urgente' : (t.title.includes('[MOYENNE]') ? 'Normale' : 'Basse') }}
+                                </span>
+                            </div>
+                        </div>
+                        <i *ngIf="t.isCompleted" class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
+                    </div>
+                    
+                    <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 italic" *ngIf="t.uiDescription">"{{ t.uiDescription }}"</p>
+                    
+                    <div class="pt-4 border-t border-border/50 flex justify-between items-center text-[10px] font-medium">
+                        <div class="text-slate-400">
+                            <i class="fa-regular fa-calendar-alt mr-1"></i> Échéance : {{ t.dueDate | date:'dd/MM/yyyy' }}
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div [class.text-emerald-500]="t.isCompleted" [class.text-amber-500]="!t.isCompleted">
+                                {{ t.isCompleted ? 'Terminée' : 'En cours' }}
+                            </div>
+                            <button (click)="toggleMesTaches(t)" 
+                                    class="px-3 py-1 rounded-lg text-[9px] font-bold uppercase transition-all"
+                                    [ngClass]="t.isCompleted ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm'">
+                                {{ t.isCompleted ? 'Réouvrir' : 'Terminer' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="mesTaches.length === 0" class="flex flex-col items-center justify-center p-12 bg-white/50 dark:bg-white/5 border border-border/50 rounded-3xl text-slate-500 border-dashed">
+                <i class="fa-solid fa-tasks text-4xl mb-4 text-slate-300 dark:text-slate-600"></i>
+                <p class="font-medium">Aucune tâche ne vous est assignée pour le moment.</p>
             </div>
         </div>
 

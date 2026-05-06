@@ -3,7 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { CrmService } from '../../core/services/crm.service';
-import { Lead } from '../../core/models/crm.model';
+import { Lead, Campaign } from '../../core/models/crm.model';
 
 @Component({
     selector: 'app-leads',
@@ -17,8 +17,10 @@ export class LeadsComponent implements OnInit {
     showForm = false;
     source = 'Site Web';
     score = 50;
+    campagneId: number | null = null;
 
     leads: Lead[] = [];
+    campaigns: Campaign[] = [];
 
     columns = [
         { key: 'NOUVEAU', label: 'Nouveau', color: '#4a9eff' },
@@ -33,12 +35,40 @@ export class LeadsComponent implements OnInit {
     constructor(private crm: CrmService) { }
 
     ngOnInit(): void {
-        this.loadLeads();
+        this.loadData();
+    }
+
+    loadData(): void {
+        forkJoin({
+            leads: this.crm.getLeads(),
+            campaigns: this.crm.getCampaigns()
+        }).subscribe({
+            next: (data) => {
+                this.campaigns = data.campaigns;
+                // Assigner le nom de la campagne à chaque lead pour l'affichage
+                this.leads = data.leads.map(l => {
+                    if (l.campagneId) {
+                        const camp = this.campaigns.find(c => c.id === l.campagneId);
+                        if (camp) l.campagneNom = camp.nom;
+                    }
+                    return l;
+                });
+            },
+            error: (err) => console.error('Erreur chargement données', err)
+        });
     }
 
     loadLeads(): void {
         this.crm.getLeads().subscribe({
-            next: (data) => this.leads = data,
+            next: (data) => {
+                this.leads = data.map(l => {
+                    if (l.campagneId) {
+                        const camp = this.campaigns.find(c => c.id === l.campagneId);
+                        if (camp) l.campagneNom = camp.nom;
+                    }
+                    return l;
+                });
+            },
             error: (err) => console.error('Erreur chargement leads', err)
         });
     }
@@ -50,6 +80,7 @@ export class LeadsComponent implements OnInit {
     openForm(): void {
         this.source = 'Site Web';
         this.score = 50;
+        this.campagneId = null;
         this.showForm = true;
     }
 
@@ -58,6 +89,7 @@ export class LeadsComponent implements OnInit {
             source: this.source,
             statut: 'NOUVEAU',
             score: this.score,
+            campagneId: this.campagneId,
             dateCreation: new Date().toISOString()
         };
 

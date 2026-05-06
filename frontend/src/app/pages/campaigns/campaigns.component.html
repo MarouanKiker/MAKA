@@ -26,15 +26,41 @@
             </div>
             <div>
                 <span class="mini-stat-value">{{ totalBudget | number }} MAD</span>
-                <span class="mini-stat-label">Budget total</span>
+                <span class="mini-stat-label">Budget investi</span>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: var(--success-soft); color: var(--success)">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+                <span class="mini-stat-value">{{ totalLeads }}</span>
+                <span class="mini-stat-label">Leads générés</span>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: #e0e7ff; color: #4f46e5;">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+            </div>
+            <div>
+                <span class="mini-stat-value">{{ totalRevenue | number }} MAD</span>
+                <span class="mini-stat-label">Revenus (ROI)</span>
             </div>
         </div>
     </div>
 
     <div class="card-grid">
         <div class="item-card" *ngFor="let c of campaigns">
-            <div class="card-top">
-                <span class="card-title">{{ c.nom }}</span>
+            <div class="card-top" style="align-items: flex-start;">
+                <div>
+                    <span class="card-title" style="display:block;">{{ c.nom }}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-2); background: var(--bg-1); padding: 2px 6px; border-radius: 4px;">{{ c.type || 'Générale' }}</span>
+                </div>
+                <span class="badge" 
+                      [ngClass]="{'success': c.uiStatus === 'EN_COURS', 'warning': c.uiStatus === 'PLANIFIEE', 'danger': c.uiStatus === 'TERMINEE'}"
+                      style="font-size: 0.7rem;">
+                    {{ c.uiStatus }}
+                </span>
             </div>
 
             <div class="card-meta">
@@ -42,6 +68,24 @@
                     <i class="fa-regular fa-calendar meta-icon"></i>
                     {{ c.dateDebut | date:'shortDate' }} → {{ c.dateFin | date:'shortDate' }}
                 </span>
+            </div>
+            
+            <!-- Statistiques de la campagne -->
+            <div style="background: var(--bg-1); padding: 10px; border-radius: 8px; margin-bottom: 12px; margin-top: 8px;">
+                <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="text-align: center; flex: 1;">
+                        <div style="font-size: 1.1rem; font-weight: bold; color: var(--text-1);">{{ c.uiLeadsCount }}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-2);">Leads</div>
+                    </div>
+                    <div style="text-align: center; flex: 1; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">
+                        <div style="font-size: 1.1rem; font-weight: bold; color: var(--success);">{{ c.uiRevenue | number }}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-2);">Revenus</div>
+                    </div>
+                    <div style="text-align: center; flex: 1;">
+                        <div style="font-size: 1.1rem; font-weight: bold; color: var(--warning);">{{ c.uiCpl | number:'1.0-0' }}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-2);">CPL (MAD)</div>
+                    </div>
+                </div>
             </div>
 
             <div
@@ -68,12 +112,20 @@
         <div class="modal" (click)="$event.stopPropagation()">
             <h2>Nouvelle campagne</h2>
             <div class="champ">
-                <label>Nom</label>
-                <input type="text" [(ngModel)]="nom" placeholder="Nom de la campagne" />
+                <label>Nom de la campagne</label>
+                <input type="text" [(ngModel)]="nom" placeholder="Ex: Promo Hiver 2026" />
             </div>
-            <div class="champ">
-                <label>Budget (MAD)</label>
-                <input type="number" [(ngModel)]="budget" />
+            <div class="row">
+                <div class="champ">
+                    <label>Type / Canal</label>
+                    <select [(ngModel)]="type">
+                        <option *ngFor="let t of campaignTypes" [value]="t.id">{{ t.label }}</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Budget alloué (MAD)</label>
+                    <input type="number" [(ngModel)]="budget" />
+                </div>
             </div>
             <div class="row">
                 <div class="champ">

@@ -31,18 +31,37 @@
                     (dragstart)="onDragStart(t)" (dragend)="onDragEnd()" [class.dragging]="draggedTask === t"
                     [class.task-done]="t.isCompleted">
 
-                    <div class="card-top">
-                        <span class="card-title">{{ t.title }}</span>
+                    <div class="card-top" style="align-items: flex-start; justify-content: space-between;">
+                        <div style="display:flex; flex-direction:column; gap: 4px;">
+                            <span class="card-title">{{ t.uiTitle }}</span>
+                            <span *ngIf="t.uiPriority" class="badge" 
+                                  [ngClass]="{'danger': t.uiPriority === 'HAUTE', 'warning': t.uiPriority === 'MOYENNE', 'success': t.uiPriority === 'BASSE'}"
+                                  style="font-size: 0.65rem; width: fit-content;">
+                                {{ t.uiPriority }}
+                            </span>
+                        </div>
                         <input type="checkbox" [checked]="t.isCompleted" (change)="toggleComplete(t)"
-                            title="Marquer comme terminé" />
+                            title="Marquer comme terminé" style="margin-top: 4px; transform: scale(1.2);" />
                     </div>
 
-                    <p class="card-desc">{{ t.description }}</p>
+                    <p class="card-desc">{{ t.uiDescription }}</p>
 
-                    <div class="card-meta">
-                        <span class="card-meta-item meta-date">
+                    <div class="card-meta" style="display:flex; flex-direction:column; gap:6px;">
+                        <span class="card-meta-item meta-date" [ngStyle]="{'color': t.isOverdue ? 'var(--danger)' : ''}">
                             <i class="fa-regular fa-calendar meta-icon"></i>
-                            Échéance : {{ t.dueDate | date:'dd/MM/yyyy' }}
+                            <span *ngIf="t.isOverdue">⚠️ En retard : </span>
+                            <span *ngIf="!t.isOverdue">Échéance : </span>
+                            {{ t.dueDate | date:'dd/MM/yyyy' }}
+                        </span>
+                        
+                        <span *ngIf="t.uiLeadName" style="font-size: 0.75rem; padding: 4px 8px; background: var(--bg-1); color: var(--text-2); border-radius: 4px; display: inline-block;">
+                            <i class="fa-solid fa-bullseye" style="margin-right: 4px; color: var(--accent);"></i>
+                            Lead: {{ t.uiLeadName }}
+                        </span>
+
+                        <span *ngIf="t.uiAssignedToName" style="font-size: 0.75rem; padding: 4px 8px; background: #eff6ff; color: #1d4ed8; border-radius: 4px; display: inline-block;">
+                            <i class="fa-solid fa-user" style="margin-right: 4px;"></i>
+                            Pour: {{ t.uiAssignedToName }}
                         </span>
                     </div>
 
@@ -70,9 +89,35 @@
                 <label>Description</label>
                 <textarea [(ngModel)]="description" placeholder="Détails..."></textarea>
             </div>
-            <div class="champ">
-                <label>Échéance *</label>
-                <input type="date" [(ngModel)]="dueDate" />
+            <div class="row">
+                <div class="champ">
+                    <label>Priorité</label>
+                    <select [(ngModel)]="priority">
+                        <option value="BASSE">Basse</option>
+                        <option value="MOYENNE">Moyenne</option>
+                        <option value="HAUTE">Haute 🔥</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Échéance *</label>
+                    <input type="date" [(ngModel)]="dueDate" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="champ">
+                    <label>Lier à un Lead (Optionnel)</label>
+                    <select [(ngModel)]="leadId">
+                        <option [ngValue]="null">-- Aucun Lead --</option>
+                        <option *ngFor="let l of leads" [ngValue]="l.id">{{ l.source }} (Score: {{ l.score }})</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Assigner à un collaborateur</label>
+                    <select [(ngModel)]="assignedToId">
+                        <option [ngValue]="null">-- Non assigné --</option>
+                        <option *ngFor="let emp of employes" [ngValue]="emp.id">{{ emp.nom }}</option>
+                    </select>
+                </div>
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" (click)="showForm = false">Annuler</button>

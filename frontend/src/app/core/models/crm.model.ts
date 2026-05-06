@@ -24,10 +24,17 @@ export interface Opportunity {
 export interface Campaign {
     id: number;
     nom: string;
+    type?: string;
     budget: number;
     dateDebut: string;
     dateFin: string;
     leads?: Lead[];
+    
+    // Propriétés calculées pour l'UI
+    uiStatus?: string;
+    uiLeadsCount?: number;
+    uiRevenue?: number;
+    uiCpl?: number;
 }
 
 // Task : aligné avec TaskItem.cs du backend
@@ -38,6 +45,14 @@ export interface Task {
     dueDate: string;
     isCompleted: boolean;
     leadId?: number | null;
+    
+    // Propriétés calculées pour l'UI
+    uiTitle?: string;
+    uiDescription?: string; // ADDED
+    uiPriority?: string;
+    uiLeadName?: string | null;
+    uiAssignedToName?: string | null; // ADDED
+    isOverdue?: boolean;
 }
 
 export interface CreateTaskDto {

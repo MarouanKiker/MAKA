@@ -3,7 +3,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HrService } from '../../../core/services/hr.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CrmService } from '../../../core/services/crm.service'; // ADDED
 import { Employe, Contrat, DemandeConge, FicheDePaie, Reclamation } from '../../../core/models/hr.model';
+import { forkJoin } from 'rxjs'; // ADDED
 
 @Component({
     selector: 'app-espace-employe',
@@ -21,6 +23,7 @@ export class EspaceEmployeComponent implements OnInit {
     mesConges: DemandeConge[] = [];
     mesFiches: FicheDePaie[] = [];
     mesReclamations: Reclamation[] = [];
+    mesTaches: any[] = []; // ADDED
 
     errorMsg = '';
     successMsg = '';
@@ -37,7 +40,8 @@ export class EspaceEmployeComponent implements OnInit {
 
     constructor(
         private hr: HrService,
-        private auth: AuthService
+        private auth: AuthService,
+        private crm: CrmService // ADDED
     ) {}
 
     ngOnInit(): void {
@@ -73,6 +77,30 @@ export class EspaceEmployeComponent implements OnInit {
         this.hr.getMesConges(id).subscribe({ next: (data) => this.mesConges = data });
         this.hr.getMesFiches(id).subscribe({ next: (data) => this.mesFiches = data });
         this.hr.getMesReclamations(id).subscribe({ next: (data) => this.mesReclamations = data });
+
+        // Charger les tâches assignées (via CRM service)
+        this.crm.getTasks().subscribe({
+            next: (allTasks) => {
+                this.mesTaches = allTasks.filter(t => {
+                    const desc = t.description || '';
+                    if (desc.startsWith('[ASSIGN:')) {
+                        const endIdx = desc.indexOf(']');
+                        const empId = parseInt(desc.substring(8, endIdx));
+                        return empId === id;
+                    }
+                    return false;
+                }).map(t => {
+                    // Nettoyer le titre et la description pour l'affichage
+                    let cleanTitle = t.title;
+                    if (t.title.includes('] ')) cleanTitle = t.title.split('] ')[1];
+                    
+                    let cleanDesc = t.description;
+                    if (t.description?.includes('] ')) cleanDesc = t.description.split('] ')[1];
+
+                    return { ...t, uiTitle: cleanTitle, uiDescription: cleanDesc };
+                });
+            }
+        });
     }
 
     setTab(tab: string): void {
@@ -108,6 +136,27 @@ export class EspaceEmployeComponent implements OnInit {
                 this.showMessage('Réclamation envoyée !');
             },
             error: (err) => this.errorMsg = 'Erreur lors de l\'envoi de la réclamation.'
+        });
+    }
+
+    toggleMesTaches(task: any): void {
+        const newState = !task.isCompleted;
+        this.crm.updateTask(task.id, {
+            title: task.title,
+            description: task.description,
+            dueDate: task.dueDate,
+            isCompleted: newState
+        }).subscribe({
+            next: () => {
+                task.isCompleted = newState;
+                if (newState) {
+                    this.showMessage('Bravo ! Tâche marquée comme terminée.');
+                }
+            },
+            error: (err) => {
+                console.error('Erreur mise à jour tâche', err);
+                this.errorMsg = 'Impossible de mettre à jour la tâche.';
+            }
         });
     }
 
