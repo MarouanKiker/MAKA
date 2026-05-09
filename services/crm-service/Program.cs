@@ -115,6 +115,7 @@ else
     });
 }
 
+<<<<<<< HEAD
 // --- CORS : autoriser Angular (localhost:4200) à appeler l'API ---
 builder.Services.AddCors(options =>
 {
@@ -125,8 +126,9 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
-
+=======
 builder.Services.AddHttpContextAccessor();
+>>>>>>> b3b249abf22bce7d0c3be4eb721af2db04cb48df
 
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);

@@ -13,7 +13,7 @@ import { throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = function (req, next) {
     const auth = inject(AuthService);
     const router = inject(Router);
-    const token = auth.getToken() || localStorage.getItem('maka_token');
+    const token = localStorage.getItem('maka_token');
 
     let cloned = req.clone({ withCredentials: true });
 

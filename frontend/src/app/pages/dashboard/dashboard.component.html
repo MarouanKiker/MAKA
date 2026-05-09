@@ -28,14 +28,15 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 animate-slide-up" style="animation-delay: 0.1s;">
         
         <!-- CRM Hub -->
-        <div class="hub-card" *ngIf="auth.hasRole('ROLE_COMMERCIAL') || auth.hasRole('ROLE_SUPPORT') || auth.isAdmin()" (click)="goTo('/leads')" style="--glow-color: #818cf8; --bg-grad: linear-gradient(135deg, #a855f7, #6366f1); --shadow-color: rgba(99, 102, 241, 0.4);">
+<<<<<<< HEAD
+        <div class="hub-card" *ngIf="auth.hasRole('ROLE_COMMERCIAL') || auth.hasRole('ROLE_SUPPORT') || auth.isAdmin()" (click)="goTo('/accounts')" style="--glow-color: #818cf8; --bg-grad: linear-gradient(135deg, #a855f7, #6366f1); --shadow-color: rgba(99, 102, 241, 0.4);">
             <div class="hub-card-content">
                 <div class="hub-icon-wrapper">
                     <i class="fa-solid fa-users-viewfinder"></i>
                 </div>
                 <h2 class="hub-title">CRM & Ventes</h2>
                 <div class="hub-desc">
-                    Gestion globale de la force de vente, base clients, prospects et suivi des opportunités.
+                    Gestion globale de la force de vente, base clients, prospects et suivi des opportunites.
                 </div>
                 <div class="hub-stats">
                     <div class="hub-stat">
@@ -45,10 +46,34 @@
                     <div class="hub-stat">
                         <span class="hub-stat-val">{{ leads.length }}</span>
                         <span class="hub-stat-label">Leads</span>
+                    </div>
+=======
+        <div *ngIf="auth.hasRole('ROLE_COMMERCIAL') || auth.hasRole('ROLE_SUPPORT') || auth.isAdmin()" 
+             (click)="goTo('/leads')" 
+             class="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/5 transition-all duration-200">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <i class="fa-solid fa-users-viewfinder text-lg"></i>
+>>>>>>> b3b249abf22bce7d0c3be4eb721af2db04cb48df
                 </div>
+                <span class="text-slate-400 group-hover:text-indigo-500 transition-colors">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </span>
             </div>
-            <div class="hub-action">
-                Accéder <i class="fa-solid fa-arrow-right"></i>
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white mb-1">CRM & Ventes</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 flex-1 mb-4 leading-relaxed">
+                Gestion des clients, prospects et suivi des opportunités.
+            </p>
+            <div class="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                <div class="flex flex-col">
+                    <span class="text-lg font-bold text-slate-900 dark:text-white">{{ leads.length }}</span>
+                    <span class="text-[0.6rem] font-semibold text-slate-400 uppercase tracking-wider">Leads</span>
+                </div>
+                <div class="w-px h-6 bg-slate-200 dark:bg-slate-800"></div>
+                <div class="flex flex-col">
+                    <span class="text-lg font-bold text-slate-900 dark:text-white">{{ opportunities.length }}</span>
+                    <span class="text-[0.6rem] font-semibold text-slate-400 uppercase tracking-wider">Opportunités</span>
+                </div>
             </div>
         </div>
 

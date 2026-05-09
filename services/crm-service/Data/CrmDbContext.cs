@@ -87,7 +87,10 @@ public class CrmDbContext : DbContext
                   .OnDelete(DeleteBehavior.SetNull);
         });
 
+<<<<<<< HEAD
         // --- Configuration Ticket ---
+=======
+>>>>>>> b3b249abf22bce7d0c3be4eb721af2db04cb48df
         modelBuilder.Entity<Ticket>(entity =>
         {
             entity.ToTable("tickets");

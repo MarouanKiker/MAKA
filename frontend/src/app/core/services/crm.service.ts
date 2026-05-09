@@ -48,19 +48,22 @@ export class CrmService {
     // ==========================================================
     getLeads(): Observable<Lead[]> { 
         return this.http.get<Lead[]>(`${this.apiUrl}/leads`).pipe(
-            map(leads => leads.map(l => ({ ...l, statut: this.mapLeadStatut(l.statut) } as any)))
+            map(leads => leads.map(l => ({ ...l, statut: this.mapLeadStatut(l.statut) as any })))
         ); 
     }
 
     private mapLeadStatut(s: any): string {
+        if (typeof s === 'string') return s;
         const mapping: any = { 0: 'NOUVEAU', 1: 'QUALIFIE', 2: 'EN_COURS', 3: 'CONVERTI', 4: 'PERDU' };
         return mapping[s] || s;
     }
 
     private mapOppStatut(s: any): string {
+        if (typeof s === 'string') return s;
         const mapping: any = { 0: 'NOUVELLE', 1: 'EN_COURS', 2: 'GAGNEE', 3: 'PERDUE' };
         return mapping[s] || s;
     }
+
     getLead(id: number): Observable<Lead> { return this.http.get<Lead>(`${this.apiUrl}/leads/${id}`); }
     createLead(lead: Partial<Lead>): Observable<Lead> { return this.http.post<Lead>(`${this.apiUrl}/leads`, lead); }
     updateLead(id: number, lead: Partial<Lead>): Observable<any> { return this.http.put(`${this.apiUrl}/leads/${id}`, lead); }
@@ -77,7 +80,7 @@ export class CrmService {
 
     getOpportunities(): Observable<Opportunity[]> { 
         return this.http.get<Opportunity[]>(`${this.apiUrl}/opportunites`).pipe(
-            map(opps => opps.map(o => ({ ...o, statut: this.mapOppStatut(o.statut) })))
+            map(opps => opps.map(o => ({ ...o, statut: this.mapOppStatut(o.statut) as any })))
         ); 
     }
     getOpportunity(id: number): Observable<Opportunity> { return this.http.get<Opportunity>(`${this.apiUrl}/opportunites/${id}`); }
@@ -114,3 +117,4 @@ export class CrmService {
     }
     deleteInteraction(id: number): Observable<any> { return this.http.delete(`${this.apiUrl}/interactions/${id}`); }
 }
+

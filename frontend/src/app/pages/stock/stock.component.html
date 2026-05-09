@@ -243,7 +243,7 @@
 <!-- ═══════════════ MODALS ═══════════════ -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
   <div class="modal-content glass-panel"
-       [class.modal-lg]="modalType==='INVENTAIRE_DETAILS'"
+       [class.modal-lg]="modalType==='INVENTAIRE_DETAILS' || modalType==='MOUVEMENT_DETAILS'"
        (click)="$event.stopPropagation()">
 
     <!-- Error inside modal -->
@@ -261,7 +261,7 @@
         <span *ngIf="modalType==='DEPOT_EDIT'">Modifier Dépôt — {{editDepot?.nom}}</span>
         <span *ngIf="modalType==='INVENTAIRE_START'">Démarrer un Inventaire</span>
         <span *ngIf="modalType==='INVENTAIRE_DETAILS'">Inventaire #{{selectedInventaire?.id}}</span>
-        <span *ngIf="modalType==='MOUVEMENT_DETAILS'">Mouvement #{{selectedMouvement?.id}}</span>
+        <span *ngIf="modalType==='MOUVEMENT_DETAILS'">Détails du Mouvement #{{selectedMouvement?.id}}</span>
         <span *ngIf="modalType==='CONFIRM_DELETE'">Confirmer la suppression</span>
       </h3>
       <button class="btn-close" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -457,23 +457,24 @@
 
       <!-- ── Mouvement Details ── -->
       <div *ngIf="modalType==='MOUVEMENT_DETAILS'">
-        <div style="padding:.75rem 1rem;background:var(--bg-color);border-radius:8px;margin-bottom:1rem">
-          <strong>Type :</strong> <span class="badge" [ngClass]="getTypeBadge(selectedMouvement?.typeMvt || '')">{{selectedMouvement?.typeMvt}}</span> &nbsp;|&nbsp;
-          <strong>Statut :</strong>
-          <span class="badge"
-                [class.badge-success]="selectedMouvement?.statut==='VALIDE'"
-                [class.badge-warning]="selectedMouvement?.statut==='BROUILLON'"
-                [class.badge-danger]="selectedMouvement?.statut==='ANNULE'">
-            {{selectedMouvement?.statut}}
-          </span> &nbsp;|&nbsp;
-          <strong>Source :</strong> {{selectedMouvement?.sourceType || 'MANUEL'}}
+        <div style="padding:.75rem 1rem;background:var(--bg-color);border-radius:8px;margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap">
+          <div><strong>Type :</strong> <span class="badge" [ngClass]="getTypeBadge(selectedMouvement?.typeMvt||'')">{{selectedMouvement?.typeMvt}}</span></div>
+          <div><strong>Statut :</strong> <span class="badge" [class.badge-success]="selectedMouvement?.statut==='VALIDE'" [class.badge-warning]="selectedMouvement?.statut==='BROUILLON'" [class.badge-danger]="selectedMouvement?.statut==='ANNULE'">{{selectedMouvement?.statut}}</span></div>
+          <div><strong>Source :</strong> {{selectedMouvement?.sourceType||'MANUEL'}}</div>
+          <div><strong>Dépôt Source :</strong> {{getDepotName(selectedMouvement?.depotSourceId)}}</div>
+          <div><strong>Dépôt Dest. :</strong> {{getDepotName(selectedMouvement?.depotDestinationId)}}</div>
+          <div *ngIf="selectedMouvement?.motif" style="width:100%"><strong>Motif :</strong> {{selectedMouvement?.motif}}</div>
         </div>
         <div class="table-responsive" style="max-height:350px;overflow-y:auto">
           <table class="maka-table">
-            <thead><tr><th>Article ID</th><th>Quantité</th></tr></thead>
+            <thead><tr><th>Article</th><th>Quantité</th></tr></thead>
             <tbody>
               <tr *ngFor="let line of mouvementLignes">
-                <td>#{{line.articleId}}</td>
+                <td>
+                  <span class="fw-bold" style="color:var(--primary-color)">{{line.articleId}}</span> 
+                  <!-- Ideally we'd fetch article names, but we only have ID in the line model currently unless we map it -->
+                  <span class="text-muted ml-2">Article #{{line.articleId}}</span>
+                </td>
                 <td><span class="badge badge-primary">{{line.quantite}}</span></td>
               </tr>
               <tr *ngIf="mouvementLignes.length===0">

@@ -56,7 +56,7 @@ export interface CreateContactPayload {
 export interface Lead {
     id: number;
     source: string;
-    statut: number; // 0=NOUVEAU, 1=CONTACTE, 2=QUALIFIE, 3=CONVERTI, 4=PERDU
+    statut: string | number; // 0=NOUVEAU, 1=CONTACTE, 2=QUALIFIE, 3=CONVERTI, 4=PERDU
     score: number;
     dateCreation: string;
     campagneId: number | null;
@@ -69,7 +69,7 @@ export interface Opportunity {
     id: number;
     titre: string;
     valeur: number;
-    statut: number; // 0=NOUVELLE, 1=EN_COURS, 2=GAGNEE, 3=PERDUE
+    statut: string | number; // 0=NOUVELLE, 1=EN_COURS, 2=GAGNEE, 3=PERDUE
     dateCloture?: string;
     leadId: number;
     leadSource?: string;
