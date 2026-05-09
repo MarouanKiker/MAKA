@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CrmService } from '../../core/services/crm.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Ticket, CreateTicketDto } from '../../core/models/crm.model';
 
 @Component({
@@ -31,7 +32,10 @@ export class TicketsComponent implements OnInit {
 
     draggedTicket: Ticket | null = null;
 
-    constructor(private crm: CrmService) {}
+    constructor(
+        private crm: CrmService,
+        private confirmService: ConfirmService
+    ) {}
 
     ngOnInit(): void {
         this.loadTickets();
@@ -101,9 +105,18 @@ export class TicketsComponent implements OnInit {
     }
 
     delete(id: number): void {
-        this.crm.deleteTicket(id).subscribe({
-            next: () => { this.tickets = this.tickets.filter(t => t.id !== id); },
-            error: (err) => console.error('Erreur suppression ticket', err)
+        this.confirmService.ask({
+            title: 'Supprimer le ticket',
+            message: 'Êtes-vous sûr de vouloir supprimer ce ticket de support ?',
+            confirmText: 'Oui, supprimer',
+            cancelText: 'Annuler',
+            type: 'danger',
+            onConfirm: () => {
+                this.crm.deleteTicket(id).subscribe({
+                    next: () => { this.tickets = this.tickets.filter(t => t.id !== id); },
+                    error: (err) => console.error('Erreur suppression ticket', err)
+                });
+            }
         });
     }
 

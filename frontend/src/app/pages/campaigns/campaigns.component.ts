@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CrmService } from '../../core/services/crm.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Campaign, Lead, Opportunity } from '../../core/models/crm.model';
 import { forkJoin } from 'rxjs';
 
@@ -31,7 +32,10 @@ export class CampaignsComponent implements OnInit {
 
     campaigns: Campaign[] = [];
 
-    constructor(private crm: CrmService) { }
+    constructor(
+        private crm: CrmService,
+        private confirmService: ConfirmService
+    ) { }
 
     ngOnInit(): void {
         this.loadCampaigns();
@@ -121,13 +125,20 @@ export class CampaignsComponent implements OnInit {
     }
 
     delete(id: number): void {
-        if (confirm('Etes-vous sur de supprimer cette campagne ?')) {
-            this.crm.deleteCampaign(id).subscribe({
-                next: () => {
-                    this.campaigns = this.campaigns.filter(c => c.id !== id);
-                },
-                error: (err) => console.error('Erreur suppression campagne', err)
-            });
-        }
+        this.confirmService.ask({
+            title: 'Supprimer la campagne',
+            message: 'Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action supprimera également les liaisons, elle est irréversible.',
+            confirmText: 'Oui, supprimer',
+            cancelText: 'Annuler',
+            type: 'danger',
+            onConfirm: () => {
+                this.crm.deleteCampaign(id).subscribe({
+                    next: () => {
+                        this.campaigns = this.campaigns.filter(c => c.id !== id);
+                    },
+                    error: (err) => console.error('Erreur suppression campagne', err)
+                });
+            }
+        });
     }
 }

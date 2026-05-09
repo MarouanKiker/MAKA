@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { CrmService } from '../../core/services/crm.service';
 import { HrService } from '../../core/services/hr.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Task, CreateTaskDto, Lead } from '../../core/models/crm.model';
 import { Employe } from '../../core/models/hr.model';
 
@@ -41,7 +42,8 @@ export class TasksComponent implements OnInit {
 
     constructor(
         private crm: CrmService,
-        private hr: HrService
+        private hr: HrService,
+        private confirmService: ConfirmService
     ) {}
 
     ngOnInit(): void {
@@ -179,9 +181,18 @@ export class TasksComponent implements OnInit {
     }
 
     delete(id: number): void {
-        this.crm.deleteTask(id).subscribe({
-            next: () => { this.tasks = this.tasks.filter(t => t.id !== id); },
-            error: (err) => console.error('Erreur suppression tâche', err)
+        this.confirmService.ask({
+            title: 'Supprimer la tâche',
+            message: 'Êtes-vous sûr de vouloir supprimer cette tâche ?',
+            confirmText: 'Oui, supprimer',
+            cancelText: 'Annuler',
+            type: 'danger',
+            onConfirm: () => {
+                this.crm.deleteTask(id).subscribe({
+                    next: () => { this.tasks = this.tasks.filter(t => t.id !== id); },
+                    error: (err) => console.error('Erreur suppression tâche', err)
+                });
+            }
         });
     }
 

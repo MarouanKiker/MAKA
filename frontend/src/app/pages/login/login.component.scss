@@ -57,15 +57,14 @@
     z-index: 2;
     width: 100%;
     max-width: 420px;
-    background: var(--glass);
+    background: var(--surface);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--border-0);
     border-radius: var(--radius-xl);
     padding: 2.25rem 2rem;
-    box-shadow: var(--shadow-lg), 0 0 80px rgba(var(--accent-rgb), .04);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
     animation: scaleIn .45s ease;
-    color: var(--text-0);
 
     /* signature gradient top border */
     &::before {
@@ -89,7 +88,7 @@
     height: 30px;
     border: 1px solid var(--border-0);
     border-radius: 50%;
-    background: var(--bg-hover);
+    background: transparent;
     color: var(--text-2);
     display: flex;
     align-items: center;
@@ -183,7 +182,7 @@
     width: 100%;
     padding: .6rem .85rem;
     background: var(--bg-3);
-    border: 1px solid var(--border-0);
+    border: none;
     border-radius: var(--radius-sm);
     color: var(--text-0);
     font-size: .85rem;
@@ -193,7 +192,6 @@
 
 .form-group input:focus {
     outline: none;
-    border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(var(--accent-rgb), .25);
 }
 

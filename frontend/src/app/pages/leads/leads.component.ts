@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { CrmService } from '../../core/services/crm.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Lead, Campaign } from '../../core/models/crm.model';
 
 @Component({
@@ -32,7 +33,10 @@ export class LeadsComponent implements OnInit {
 
     draggedLead: Lead | null = null;
 
-    constructor(private crm: CrmService) { }
+    constructor(
+        private crm: CrmService,
+        private confirmService: ConfirmService
+    ) { }
 
     ngOnInit(): void {
         this.loadData();
@@ -144,10 +148,18 @@ export class LeadsComponent implements OnInit {
     }
 
     delete(id: number): void {
-        if (!confirm('Supprimer ce lead ?')) return;
-        this.crm.deleteLead(id).subscribe({
-            next: () => this.loadLeads(),
-            error: (err) => console.error('Erreur suppression lead', err)
+        this.confirmService.ask({
+            title: 'Supprimer le lead',
+            message: 'Êtes-vous sûr de vouloir supprimer ce lead ? Cette action est irréversible.',
+            confirmText: 'Oui, supprimer',
+            cancelText: 'Annuler',
+            type: 'danger',
+            onConfirm: () => {
+                this.crm.deleteLead(id).subscribe({
+                    next: () => this.loadLeads(),
+                    error: (err) => console.error('Erreur suppression lead', err)
+                });
+            }
         });
     }
 

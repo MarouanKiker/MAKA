@@ -109,6 +109,15 @@ export const routes: Routes = [
                 },
                 canActivate: [adminGuard]
             },
+            // profil utilisateur
+            {
+                path: 'profile',
+                loadComponent: function () {
+                    return import('./pages/profile/profile.component').then(function (m) {
+                        return m.ProfileComponent;
+                    });
+                }
+            },
             // --- FINANCES (Nouveaux modules importes) ---
             {
                 path: 'comptes-bancaires',

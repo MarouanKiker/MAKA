@@ -1,0 +1,91 @@
+<div class="max-w-3xl mx-auto p-4 md:p-8 animate-fade-in">
+    <!-- En-tête -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Mon Profil</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-2">Gérez vos informations personnelles et votre photo de profil.</p>
+    </div>
+
+    <!-- Alertes -->
+    <div *ngIf="successMessage" class="mb-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-3 animate-slide-up">
+        <i class="fa-solid fa-check-circle"></i>
+        {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-medium flex items-center gap-3 animate-slide-up">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        {{ errorMessage }}
+    </div>
+
+    <!-- Contenu Principal -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        
+        <!-- Section Photo -->
+        <div class="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center gap-6">
+            <div class="relative group cursor-pointer">
+                <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 border-4 border-white dark:border-slate-900 shadow-lg overflow-hidden">
+                    <img *ngIf="profilePicture" [src]="profilePicture" class="w-full h-full object-cover">
+                    <i *ngIf="!profilePicture" class="fa-solid fa-user text-3xl"></i>
+                </div>
+                <!-- Overlay de modification -->
+                <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fa-solid fa-camera text-white"></i>
+                </div>
+                <!-- Input fichier caché -->
+                <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" (change)="onFileSelected($event)">
+            </div>
+            <div class="text-center md:text-left">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Photo de Profil</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Cliquez sur l'image pour télécharger une nouvelle photo.</p>
+                <p class="text-xs text-slate-400 mt-2">JPG, GIF ou PNG. Max 2MB.</p>
+            </div>
+        </div>
+
+        <!-- Section Formulaire -->
+        <div class="p-6 md:p-8">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Informations Personnelles</h3>
+            
+            <form (ngSubmit)="saveProfile()" class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Prénom -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Prénom <span class="text-rose-500">*</span></label>
+                        <input type="text" [(ngModel)]="firstName" name="firstName" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-shadow" required>
+                    </div>
+                    
+                    <!-- Nom -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Nom <span class="text-rose-500">*</span></label>
+                        <input type="text" [(ngModel)]="lastName" name="lastName" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-shadow" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+                    <!-- Email (Read-only) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Adresse Email</label>
+                        <div class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-lg text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed">
+                            {{ email }}
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">L'adresse email ne peut pas être modifiée.</p>
+                    </div>
+                    
+                    <!-- Rôle (Read-only) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Rôle d'accès</label>
+                        <div class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-lg text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed flex items-center gap-2">
+                            <i class="fa-solid fa-shield-halved text-indigo-500"></i>
+                            {{ role }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm shadow-indigo-500/30 transition-colors">
+                        Enregistrer les modifications
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
