@@ -1,95 +1,117 @@
-# 🚀 MAKA ERP — Enterprise Intelligence Platform
+<p align="center">
+  <img src="frontend/src/assets/logo.jpeg" alt="MAKA ERP" width="120" />
+</p>
 
-![MAKA Logo](https://raw.githubusercontent.com/MarouanKiker/MAKA/main/frontend/src/assets/logo.png)
+<h1 align="center">MAKA — ERP Modulaire Microservices & IA</h1>
 
-**MAKA ERP** est une plateforme de gestion d'entreprise modulaire, basée sur une architecture microservices polyglotte et pilotée par l'intelligence artificielle. Ce projet démontre l'intégration de systèmes hétérogènes complexes orchestrés par Docker, offrant une solution complète pour le CRM, la Finance, les RH, la Gestion de Stock et les Ventes.
+<p align="center">
+  <strong>Solution ERP moderne et polyglotte pour la gestion d'entreprise intelligente</strong><br>
+  CRM · Finance · Stock · RH · Sales · Intelligence Artificielle
+</p>
 
----
-
-## 🏛️ Architecture du Système
-
-Le projet repose sur une architecture **Microservices Polyglotte** composée de **24 conteneurs Docker** :
-
-*   **Frontend :** Angular 17 (Standalone Components, SCSS, Responsive Design).
-*   **API Gateway :** Nginx (Routage centralisé et gestion CORS).
-*   **Backend Services :**
-    *   **Auth Service :** PHP 8.2 / Symfony 7 (Sécurité JWT RSA).
-    *   **CRM Service :** .NET 8 / C# (Gestion des leads et opportunités).
-    *   **Finance Service :** Java 17 / Spring Boot 3 (Comptabilité en partie double & Redis).
-    *   **Stock Service :** Java 17 / Spring Boot 3 (Gestion d'inventaire haute performance JDBC).
-    *   **HR Service :** Java 17 / Spring Boot 3 (Gestion des employés et paie).
-    *   **Sales & IA Service :** Python 3.11 / FastAPI (Machine Learning & RAG++ Chatbot).
-*   **Messaging :** RabbitMQ (Communication événementielle asynchrone).
-*   **Observabilité (SRE Stack) :** Prometheus, Grafana, cAdvisor, ELK (Elasticsearch, Logstash, Kibana).
+<p align="center">
+  <img src="https://img.shields.io/badge/Angular-17-DD0031?logo=angular&logoColor=white" />
+  <img src="https://img.shields.io/badge/.NET_Core-8-512BD4?logo=dotnet&logoColor=white" />
+  <img src="https://img.shields.io/badge/Java-Spring_Boot_3-6DB33F?logo=spring&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-Python_3.11-009688?logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/Symfony-7-000?logo=symfony&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-24_Containers-2496ED?logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" />
+</p>
 
 ---
 
-## ✨ Fonctionnalités Clés
+## 📋 Présentation
 
-### 📊 Intelligence Artificielle & Data Science
-*   **Lead Scoring :** Algorithme Random Forest pour prédire la conversion des prospects.
-*   **Sales Forecast :** Prévisions de ventes via Gradient Boosting.
-*   **Segmentation Client :** Clustering K-Means pour l'analyse marketing.
-*   **Assistant RAG++ :** Chatbot IA (Gemini/OpenRouter) avec contexte métier en temps réel.
+Le projet **MAKA** est un ERP (Enterprise Resource Planning) de nouvelle génération conçu pour centraliser la gestion d'une entreprise via une architecture **microservices polyglotte**. 
 
-### 💼 Modules Métier
-*   **CRM 360° :** Pipeline Kanban, gestion des tickets, interactions clients et synchronisation d'agenda.
-*   **Finance & Comptabilité :** Génération de factures PDF, gestion des paiements et journal comptable automatique.
-*   **Gestion de Stock :** Suivi multi-dépôts, mouvements de stock et alertes de seuil critique.
-*   **Ressources Humaines :** Gestion des contrats, congés, fiches de paie et portail employé dédié.
-
-### 🛡️ Sécurité & Infrastructure
-*   **Authentification Centralisée :** Système JWT avec clés privées/publiques RSA partagées.
-*   **Résilience :** Implémentation de Circuit Breakers (Resilience4j) et pattern SAGA pour les transactions distribuées.
-*   **Performance :** Cache distribué Redis et optimisation des requêtes via JDBC natif pour le module Stock.
+L'écosystème orchestre **24 conteneurs Docker** incluant 6 microservices métiers, une infrastructure de messagerie RabbitMQ, du cache Redis et une stack d'observabilité SRE complète.
 
 ---
 
-## 📈 Observabilité & Monitoring
+## 🏗️ Architecture Technique
 
-MAKA ERP intègre une stack de supervision de niveau industriel :
-*   **Grafana :** Tableaux de bord en temps réel pour le CPU, la RAM et les métriques métier.
-*   **Prometheus :** Collecte automatique des métriques de chaque microservice.
-*   **ELK Stack :** Centralisation et analyse des logs applicatifs.
-*   **Blackbox Exporter :** Monitoring de la disponibilité (Uptime) des endpoints API.
+<p align="center">
+  <img src="schema_technique.png" alt="Architecture Technique MAKA ERP" width="900" />
+</p>
+
+L'architecture repose sur une isolation stricte des données (une base PostgreSQL par service) et une communication sécurisée via un **API Gateway Nginx**.
+
+### 🧩 Les 6 Microservices
+
+| Service | Technologie | Rôle Principal | Base de données |
+|:---:|:---:|---|:---:|
+| **Auth** | Symfony 7 | Gestion JWT RSA, RBAC, Profils | `auth_db` |
+| **CRM** | .NET 8 | Leads, Opportunités, Campagnes, Tickets | `crm_db` |
+| **Finance** | Spring Boot 3 | Facturation, Paiements, Journal Comptable | `finance_db` |
+| **Stock** | Spring Boot 3 | Stocks (JDBC), Mouvements, Inventaires | `stock_db` |
+| **HR** | Spring Boot 3 | Employés, Contrats, Congés, Paie | `hr_db` |
+| **Sales & IA** | FastAPI | Ventes, Scraping, Modules IA (ML/RAG) | `sales_db` |
 
 ---
 
-## 🚀 Installation Rapide
+## 🤖 Intelligence Artificielle & Data Science
 
-### Prérequis
-*   Docker & Docker Compose
-*   Node.js 20+ (pour le développement frontend)
+MAKA intègre un module d'intelligence artificielle avancé (FastAPI / Scikit-Learn) :
+- **Lead Scoring** : Prédiction de conversion des prospects via Random Forest.
+- **Sales Forecast** : Prédiction des ventes futures via Gradient Boosting.
+- **Client Segmentation** : Regroupement automatique (K-Means) pour marketing ciblé.
+- **Chatbot RAG++** : Assistant intelligent (Gemini/OpenRouter) avec accès au contexte métier.
+- **Cross-Analytics** : Calcul du score de santé global de l'entreprise (0-100).
 
-### Lancement via Docker
+---
+
+## 🔐 Sécurité & Authentification (JWT RSA)
+
+Le système utilise une authentification asymétrique **RSA**. Le service Auth signe les jetons avec une clé privée, tandis que les autres services valident les accès de manière autonome avec la clé publique.
+
+| Rôle | CRM | Finance | Stock | RH | Admin |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **ADMIN** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **COMMERCIAL** | ✅ | ❌ | ✅ | ❌ | ❌ |
+| **COMPTABLE** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **RH_MANAGER** | ❌ | ❌ | ❌ | ✅ | ❌ |
+
+---
+
+## 📊 Observabilité & SRE
+
+Une stack complète assure la résilience du système :
+- **Supervision** : Prometheus (métriques) & Grafana (dashboards live).
+- **Disponibilité** : Blackbox Exporter & Health Checks automatiques.
+- **Logs** : Stack ELK (Elasticsearch, Logstash, Kibana) centralisée.
+- **Infrastructure** : cAdvisor & Docker Stats pour le suivi des ressources.
+
+---
+
+## 🚀 Démarrage Rapide
+
+### 1. Backend (Docker)
 ```bash
-# Cloner le projet
-git clone https://github.com/MarouanKiker/MAKA.git
-cd MAKA/services
-
-# Lancer l'infrastructure et les microservices
-docker-compose up -d
+cd services
+docker compose up -d --build
 ```
 
-### Lancement du Frontend (Dev Mode)
+### 2. Frontend (Local)
 ```bash
-cd ../frontend
+cd frontend
 npm install
 npm start
 ```
-Accédez à l'application sur : `http://localhost:4200` (API Gateway sur le port `8000`).
+
+**Accès :**
+- 💻 App : `http://localhost:4200`
+- 🛡️ Gateway : `http://localhost:8000`
+- 📈 Grafana : `http://localhost:3000` (admin/admin)
+- 🐰 RabbitMQ : `http://localhost:15672` (maka/maka_secret)
 
 ---
 
-## 👥 Contributeurs
+## 👥 Équipe de Développement
 
-Ce projet a été réalisé par une équipe de passionnés :
-*   **Marouan Kiker** — Architecte Système & Fullstack
-*   **Abdellah Ajebli** — Backend Developer & CRM Expert
-*   **Abderrahmane Missaoui** — DevOps & SRE Engineer
-*   **Abdelilah Hamdaoui** — Frontend & CRM Specialist
+- **Marwan Kiker**
+- **Abdellah Ajebli**
+- **Abdelilah Hamdaoui**
+- **Abderrahmane Missaoui**
 
----
 
-## 📄 Licence
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
