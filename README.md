@@ -111,8 +111,6 @@ Documentation technique SRE pour le rapport : [`docs/OBSERVABILITE_SRE.md`](docs
 
 Rapport académique du projet : [`docs/RAPPORT_ACADEMIQUE_MAKA.md`](docs/RAPPORT_ACADEMIQUE_MAKA.md)
 
-Integration MCP Email/Agenda : [`docs/MCP_EMAIL_AGENDA.md`](docs/MCP_EMAIL_AGENDA.md)
-
 Guide des tests de performance et exports : [`performance/README.md`](performance/README.md)
 
 ---

@@ -1,36 +1,72 @@
 <div class="intel">
 
-    <!-- Barre de commande premium -->
-    <header class="intel-cmd">
-        <div class="intel-cmd__shell">
-            <span class="intel-cmd__icon" aria-hidden="true">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-            </span>
-            <input
-                type="text"
-                class="intel-cmd__input"
-                [(ngModel)]="commandQuery"
-                (keydown)="onCommandKeydown($event)"
-                placeholder="Demandez à MAKA Intelligence — prévisions, alertes, ou une question en langage naturel…"
-                [disabled]="commandBusy()"
-                autocomplete="off"
-                aria-label="Commande Intelligence"
-            />
-            <button
-                type="button"
-                class="intel-cmd__send"
-                (click)="submitCommand()"
-                [disabled]="commandBusy() || !commandQuery.trim()"
-                aria-label="Envoyer"
-            >
-                @if (commandBusy()) {
-                    <span class="intel-cmd__mini-spin" aria-hidden="true"></span>
-                } @else {
-                    <i class="fa-solid fa-arrow-right"></i>
-                }
-            </button>
+    <!-- Copilot — héros visuel en tête de page -->
+    <header class="intel-hero" aria-label="MAKA Copilot">
+        <div class="intel-hero__glow" aria-hidden="true"></div>
+        <div class="intel-hero__grid" aria-hidden="true"></div>
+        <div class="intel-hero__inner">
+            <div class="intel-hero__eyebrow">
+                <span class="intel-hero__dot"></span>
+                Assistant conversationnel
+            </div>
+            <h1 class="intel-hero__title">MAKA Copilot</h1>
+            <p class="intel-hero__subtitle">
+                Interrogez vos modules en langage naturel : chiffres, tendances et synthèses croisées
+                (ventes, CRM, finance, RH).
+            </p>
+
+            <div class="intel-cmd intel-cmd--hero">
+                <div class="intel-cmd__shell">
+                    <span class="intel-cmd__icon" aria-hidden="true">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </span>
+                    <input
+                        type="text"
+                        class="intel-cmd__input"
+                        [(ngModel)]="commandQuery"
+                        (keydown)="onCommandKeydown($event)"
+                        placeholder="Ex. Quel est l’état de mes devis ? Combien de leads ce mois-ci ?"
+                        [disabled]="commandBusy()"
+                        autocomplete="off"
+                        aria-label="Votre question à MAKA Copilot"
+                    />
+                    <button
+                        type="button"
+                        class="intel-cmd__send"
+                        (click)="submitCommand()"
+                        [disabled]="commandBusy() || !commandQuery.trim()"
+                        aria-label="Envoyer la question"
+                    >
+                        @if (commandBusy()) {
+                            <span class="intel-cmd__mini-spin" aria-hidden="true"></span>
+                        } @else {
+                            <span class="intel-cmd__send-label">Envoyer</span>
+                            <i class="fa-solid fa-arrow-right intel-cmd__send-ico" aria-hidden="true"></i>
+                        }
+                    </button>
+                </div>
+                <div class="intel-cmd__foot">
+                    <span><kbd class="intel-kbd">Entrée</kbd> pour envoyer</span>
+                    <span class="intel-cmd__sep">·</span>
+                    <span>Réponses dans le fil Pulse ci-dessous</span>
+                </div>
+            </div>
+
+            <div class="intel-hero__chips" role="group" aria-label="Exemples de questions">
+                <button type="button" class="intel-hero__chip" (click)="useExamplePrompt('Quel est mon chiffre d’affaires et ma tendance ?')">
+                    CA & tendance
+                </button>
+                <button type="button" class="intel-hero__chip" (click)="useExamplePrompt('Résume l’état de mes leads et opportunités CRM.')">
+                    Pipeline CRM
+                </button>
+                <button type="button" class="intel-hero__chip" (click)="useExamplePrompt('Y a-t-il des factures ou impayés à surveiller ?')">
+                    Factures & trésorerie
+                </button>
+                <button type="button" class="intel-hero__chip" (click)="useExamplePrompt('Combien d’employés et de congés en cours ?')">
+                    Effectif & congés
+                </button>
+            </div>
         </div>
-        <p class="intel-cmd__hint">Entrée pour envoyer · Données réelles via /api/sales/ai</p>
     </header>
 
     <!-- Bento Control Center -->
@@ -105,6 +141,55 @@
             </div>
         </article>
 
+        <!-- Prévision + alertes -->
+        <article class="intel-tile intel-tile--wide">
+            <div class="intel-wide__split">
+                <div class="intel-wide__col">
+                    <h2 class="intel-tile__title intel-tile__title--sm">Prévision vs réel</h2>
+                    <p class="intel-tile__desc">Aperçu mensuel depuis la base Sales</p>
+                    <div class="intel-mini-chart">
+                        @for (row of forecastPreview(); track row.month) {
+                            <div class="intel-mini-chart__cell">
+                                <div class="intel-mini-chart__bars">
+                                    @if (row.actual > 0) {
+                                        <div
+                                            class="intel-mini-chart__bar intel-mini-chart__bar--real"
+                                            [style.height.%]="barHeight(row.actual)"
+                                            title="Réel {{ row.actual }}"
+                                        ></div>
+                                    }
+                                    <div
+                                        class="intel-mini-chart__bar intel-mini-chart__bar--pred"
+                                        [style.height.%]="barHeight(row.predicted)"
+                                        title="Prévu {{ row.predicted }}"
+                                    ></div>
+                                </div>
+                                <span class="intel-mini-chart__mo">{{ row.month }}</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="intel-mini-chart__legend">
+                        <span><i class="intel-legend-dot intel-legend-dot--real"></i> Réel</span>
+                        <span><i class="intel-legend-dot intel-legend-dot--pred"></i> Prévu IA</span>
+                    </div>
+                </div>
+                <div class="intel-wide__col intel-wide__col--alerts">
+                    <h2 class="intel-tile__title intel-tile__title--sm">Alertes prioritaires</h2>
+                    <ul class="intel-alerts">
+                        @for (a of spotlightAlerts(); track a.title) {
+                            <li class="intel-alerts__item" [attr.data-sev]="a.severity">
+                                <span class="intel-alerts__mod">{{ a.module }}</span>
+                                <span class="intel-alerts__txt">{{ a.title }}</span>
+                            </li>
+                        } @empty {
+                            <li class="intel-alerts__empty">Aucune alerte.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </article>
+
+        <!-- Segmentation / Marketing Intelligence -->
         <article class="intel-tile intel-tile--wide">
             <div class="intel-marketing__head">
                 <div>
@@ -174,97 +259,6 @@
                     </div>
                 } @empty {
                     <div class="intel-marketing__empty">Aucun client prioritaire à afficher.</div>
-                }
-            </div>
-        </article>
-
-        <!-- Tuile pleine largeur : prévision + alertes -->
-        <article class="intel-tile intel-tile--wide">
-            <div class="intel-wide__split">
-                <div class="intel-wide__col">
-                    <h2 class="intel-tile__title intel-tile__title--sm">Prévision vs réel</h2>
-                    <p class="intel-tile__desc">Aperçu mensuel depuis la base Sales</p>
-                    <div class="intel-mini-chart">
-                        @for (row of forecastPreview(); track row.month) {
-                            <div class="intel-mini-chart__cell">
-                                <div class="intel-mini-chart__bars">
-                                    @if (row.actual > 0) {
-                                        <div
-                                            class="intel-mini-chart__bar intel-mini-chart__bar--real"
-                                            [style.height.%]="barHeight(row.actual)"
-                                            title="Réel {{ row.actual }}"
-                                        ></div>
-                                    }
-                                    <div
-                                        class="intel-mini-chart__bar intel-mini-chart__bar--pred"
-                                        [style.height.%]="barHeight(row.predicted)"
-                                        title="Prévu {{ row.predicted }}"
-                                    ></div>
-                                </div>
-                                <span class="intel-mini-chart__mo">{{ row.month }}</span>
-                            </div>
-                        }
-                    </div>
-                    <div class="intel-mini-chart__legend">
-                        <span><i class="intel-legend-dot intel-legend-dot--real"></i> Réel</span>
-                        <span><i class="intel-legend-dot intel-legend-dot--pred"></i> Prévu IA</span>
-                    </div>
-                </div>
-                <div class="intel-wide__col intel-wide__col--alerts">
-                    <h2 class="intel-tile__title intel-tile__title--sm">Alertes prioritaires</h2>
-                    <ul class="intel-alerts">
-                        @for (a of spotlightAlerts(); track a.title) {
-                            <li class="intel-alerts__item" [attr.data-sev]="a.severity">
-                                <span class="intel-alerts__mod">{{ a.module }}</span>
-                                <span class="intel-alerts__txt">{{ a.title }}</span>
-                            </li>
-                        } @empty {
-                            <li class="intel-alerts__empty">Aucune alerte.</li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        </article>
-
-        <article class="intel-tile intel-tile--wide">
-            <div class="intel-mcp__head">
-                <div>
-                    <h2 class="intel-tile__title intel-tile__title--sm">Connecteurs MCP</h2>
-                    <p class="intel-tile__desc">Email et agenda relies au module Intelligence</p>
-                </div>
-                <span class="intel-tile__badge">
-                    <span class="intel-tile__dot"></span>
-                    Bridge
-                </span>
-            </div>
-            <div class="intel-mcp">
-                @for (connector of mcpConnectors(); track connector.label) {
-                    <div class="intel-mcp__item">
-                        <span class="intel-mcp__icon" aria-hidden="true"><i [class]="connector.icon"></i></span>
-                        <div class="intel-mcp__body">
-                            <div class="intel-mcp__top">
-                                <span class="intel-mcp__name">{{ connector.label }}</span>
-                                <span [class]="mcpStatusClass(connector)">{{ connector.statusLabel }}</span>
-                            </div>
-                            <span class="intel-mcp__provider">{{ connector.provider }}</span>
-                            <code class="intel-mcp__route">{{ connector.route }}</code>
-                            @if (connector.label === 'Email') {
-                                <button
-                                    type="button"
-                                    class="intel-mcp__button"
-                                    (click)="prepareEmailDraft()"
-                                    [disabled]="emailBusy()"
-                                >
-                                    @if (emailBusy()) {
-                                        <span class="intel-cmd__mini-spin" aria-hidden="true"></span>
-                                    } @else {
-                                        <i class="fa-solid fa-envelope-open-text"></i>
-                                    }
-                                    Préparer email
-                                </button>
-                            }
-                        </div>
-                    </div>
                 }
             </div>
         </article>

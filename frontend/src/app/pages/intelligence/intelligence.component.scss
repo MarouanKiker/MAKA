@@ -7,14 +7,220 @@
 }
 
 .intel {
-    padding: 1rem 1rem 2rem;
+    padding: 0.5rem 1rem 2.5rem;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* ----- Command bar ----- */
+/* ----- Héros Copilot (haut de page) ----- */
+.intel-hero {
+    position: relative;
+    margin: 0 -0.25rem 2.25rem;
+    padding: 2rem 1.25rem 2.25rem;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background:
+        linear-gradient(165deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.98) 45%, rgba(238, 242, 255, 0.55) 100%);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 20px 50px -24px rgba(79, 70, 229, 0.35),
+        0 12px 40px -32px rgba(15, 23, 42, 0.12);
+}
+
+:host-context(.dark) .intel-hero {
+    border-color: rgba(71, 85, 105, 0.65);
+    background:
+        linear-gradient(165deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.92) 50%, rgba(49, 46, 129, 0.22) 100%);
+    box-shadow:
+        0 1px 0 rgba(148, 163, 184, 0.08) inset,
+        0 24px 60px -20px rgba(0, 0, 0, 0.55);
+}
+
+.intel-hero__glow {
+    position: absolute;
+    inset: -40% -20% auto;
+    height: 70%;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(99, 102, 241, 0.28), transparent 70%);
+    pointer-events: none;
+}
+
+:host-context(.dark) .intel-hero__glow {
+    background: radial-gradient(ellipse 65% 55% at 50% 0%, rgba(129, 140, 248, 0.2), transparent 68%);
+}
+
+.intel-hero__grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.35;
+    background-image:
+        linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(to bottom, black 0%, transparent 85%);
+    pointer-events: none;
+}
+
+:host-context(.dark) .intel-hero__grid {
+    opacity: 0.2;
+}
+
+.intel-hero__inner {
+    position: relative;
+    z-index: 1;
+    max-width: 44rem;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.intel-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(99 102 241);
+    margin-bottom: 0.65rem;
+}
+
+:host-context(.dark) .intel-hero__eyebrow {
+    color: rgb(165 180 252);
+}
+
+.intel-hero__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #6366f1, #a855f7);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.8);
+    animation: intel-pulse-dot 2.2s ease-in-out infinite;
+}
+
+@keyframes intel-pulse-dot {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.75;
+        transform: scale(1.15);
+    }
+}
+
+.intel-hero__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.65rem, 4vw, 2.15rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: rgb(15 23 42);
+}
+
+:host-context(.dark) .intel-hero__title {
+    color: rgb(248 250 252);
+}
+
+.intel-hero__subtitle {
+    margin: 0 auto 1.5rem;
+    max-width: 36rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: rgb(71 85 105);
+    font-weight: 500;
+}
+
+:host-context(.dark) .intel-hero__subtitle {
+    color: rgb(148 163 184);
+}
+
+.intel-hero__chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.15rem;
+}
+
+.intel-hero__chip {
+    cursor: pointer;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: rgba(255, 255, 255, 0.65);
+    color: rgb(51 65 85);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.intel-hero__chip:hover {
+    border-color: rgba(99, 102, 241, 0.55);
+    background: rgba(238, 242, 255, 0.95);
+    transform: translateY(-1px);
+}
+
+:host-context(.dark) .intel-hero__chip {
+    background: rgba(30, 41, 59, 0.75);
+    border-color: rgba(71, 85, 105, 0.9);
+    color: rgb(203 213 225);
+}
+
+:host-context(.dark) .intel-hero__chip:hover {
+    background: rgba(51, 65, 85, 0.85);
+    border-color: rgba(129, 140, 248, 0.45);
+}
+
+.intel-kbd {
+    display: inline-block;
+    padding: 0.12rem 0.4rem;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    font-family: ui-monospace, monospace;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    background: rgba(241, 245, 249, 0.9);
+    color: rgb(71 85 105);
+}
+
+:host-context(.dark) .intel-kbd {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(71, 85, 105, 0.9);
+    color: rgb(203 213 225);
+}
+
+/* ----- Command bar (chatbot) ----- */
 .intel-cmd {
     margin-bottom: 2rem;
+}
+
+.intel-cmd--hero {
+    margin-bottom: 0;
+    text-align: left;
+}
+
+.intel-cmd--hero .intel-cmd__shell {
+    max-width: none;
+    margin: 0;
+    padding: 0.5rem 0.6rem 0.5rem 0.85rem;
+    border-radius: 18px;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    box-shadow:
+        0 4px 28px rgba(79, 70, 229, 0.12),
+        0 1px 0 rgba(255, 255, 255, 0.95) inset;
+}
+
+:host-context(.dark) .intel-cmd--hero .intel-cmd__shell {
+    background: rgba(15, 23, 42, 0.75);
+    border-color: rgba(71, 85, 105, 0.85);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 .intel-cmd__shell {
@@ -42,14 +248,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
+    width: 2.65rem;
+    height: 2.65rem;
+    border-radius: 14px;
     background: linear-gradient(145deg, #6366f1, #8b5cf6);
     color: #fff;
-    font-size: 1rem;
+    font-size: 1.05rem;
     flex-shrink: 0;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5);
+}
+
+.intel-cmd--hero .intel-cmd__icon {
+    border-radius: 12px;
 }
 
 .intel-cmd__input {
@@ -57,11 +267,11 @@
     min-width: 0;
     border: none;
     background: transparent;
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 500;
     color: rgb(15 23 42);
     outline: none;
-    padding: 0.5rem 0;
+    padding: 0.55rem 0;
 }
 
 :host-context(.dark) .intel-cmd__input {
@@ -74,27 +284,55 @@
 
 .intel-cmd__send {
     flex-shrink: 0;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 50%;
+    min-width: 2.75rem;
+    height: 2.85rem;
+    padding: 0 1rem;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgb(79 70 229);
+    gap: 0.45rem;
+    background: linear-gradient(145deg, #4f46e5, #6366f1);
     color: #fff;
-    transition: transform 0.15s ease, background 0.15s ease;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        filter 0.15s ease;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+}
+
+.intel-cmd__send-ico {
+    font-size: 0.85rem;
 }
 
 .intel-cmd__send:hover:not(:disabled) {
-    background: rgb(67 56 202);
-    transform: scale(1.04);
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
 }
 
 .intel-cmd__send:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+@media (max-width: 520px) {
+    .intel-cmd__send-label {
+        display: none;
+    }
+
+    .intel-cmd__send {
+        width: 2.85rem;
+        padding: 0;
+        border-radius: 12px;
+    }
 }
 
 .intel-cmd__mini-spin {
@@ -110,6 +348,26 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+.intel-cmd__foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgb(100 116 139);
+}
+
+:host-context(.dark) .intel-cmd__foot {
+    color: rgb(148 163 184);
+}
+
+.intel-cmd__sep {
+    opacity: 0.55;
 }
 
 .intel-cmd__hint {
@@ -876,7 +1134,23 @@
     text-align: center;
 }
 
-/* MCP connectors */
+/* LLM status (anciennement bloc MCP) */
+.intel-tile__desc--hint {
+    margin-top: -0.35rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: rgb(100 116 139);
+}
+
+:host-context(.dark) .intel-tile__desc--hint {
+    color: rgb(148 163 184);
+}
+
+.intel-mcp__actions {
+    margin-top: 1rem;
+}
+
 .intel-mcp__head {
     display: flex;
     align-items: flex-start;

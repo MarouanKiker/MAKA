@@ -207,7 +207,11 @@ def trouver_reponse_demo(message: str, db: Session):
         return "Je vous en prie ! N'hésitez pas si vous avez d'autres questions sur vos données ERP."
 
     # Reponse par defaut
-    return "Je suis en mode Copilot Local. Pour des réponses IA avancées, une clé API (Gemini/OpenRouter) est nécessaire. En attendant, je peux vous renseigner sur le CA, les devis, les clients, la santé de l'entreprise !"
+    return (
+        "Je suis en mode Copilot local (sans LLM cloud). Pour activer Gemini, ajoutez GEMINI_API_KEY "
+        "dans le fichier services/.env puis redémarrez le conteneur sales-service. "
+        "Je peux quand même répondre sur le CA, les devis ou les clients à partir des données déjà chargées."
+    )
 
 
 def _reponse_demo_securisee(message: str, db: Session | None):
@@ -242,21 +246,28 @@ async def chat(message: str, db: Session = None, token: str = None):
         full_prompt += f"\n\nDONNEES ACTUELLES DE L'ENTREPRISE (temps reel depuis tous les modules) :\n{contexte_bdd}"
     full_prompt += f"\n\nQuestion de l'utilisateur : {message}"
 
-    # Etape 2 : Gemini en PRIORITE (plus rapide)
+    # Etape 2 : Gemini en PRIORITE (essai de plusieurs id de modele selon dispo du compte / region)
     if GEMINI_API_KEY:
         try:
             genai.configure(api_key=GEMINI_API_KEY)
-            model = genai.GenerativeModel("gemini-2.0-flash")
-
-            print(f"[RAG++] Gemini avec contexte cross-modules ({len(contexte_bdd)} chars)")
-            response = await asyncio.to_thread(model.generate_content, full_prompt)
-            return {
-                "reponse": getattr(response, "text", "") or _reponse_demo_securisee(message, db),
-                "source": "gemini_rag_plus",
-                "contexte_utilise": bool(contexte_bdd),
-            }
+            for model_name in ("gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"):
+                try:
+                    model = genai.GenerativeModel(model_name)
+                    logger.info("[RAG++] Gemini model=%s, contexte=%s chars", model_name, len(contexte_bdd))
+                    response = await asyncio.to_thread(model.generate_content, full_prompt)
+                    text = getattr(response, "text", "") or ""
+                    if text:
+                        return {
+                            "reponse": text,
+                            "source": "gemini_rag_plus",
+                            "contexte_utilise": bool(contexte_bdd),
+                            "model": model_name,
+                        }
+                except Exception as e:
+                    logger.warning("Gemini %s indisponible: %s", model_name, e)
+                    continue
         except Exception as e:
-            logger.warning("Exception Gemini: %s", e)
+            logger.warning("Exception Gemini (configure / boucle modeles): %s", e)
 
     # Etape 3 : Fallback OpenRouter
     if OPENROUTER_API_KEY:

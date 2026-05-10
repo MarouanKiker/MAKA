@@ -306,6 +306,8 @@ services:
       dockerfile: Dockerfile
     container_name: sales-service
     logging: *centralized-logging
+    env_file:
+      - .env
     volumes:
       - ./sales-service:/app
       - jwt-keys:/app/keys:ro
@@ -315,10 +317,6 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
       GATEWAY_URL: http://gateway:80
-      MCP_EMAIL_CONNECTOR_URL: ${MCP_EMAIL_CONNECTOR_URL:-}
-      MCP_CALENDAR_CONNECTOR_URL: ${MCP_CALENDAR_CONNECTOR_URL:-}
-      MCP_CONNECTOR_TOKEN: ${MCP_CONNECTOR_TOKEN:-}
-      MCP_TIMEOUT_SECONDS: ${MCP_TIMEOUT_SECONDS:-8}
       RABBITMQ_URL: "amqp://${RABBITMQ_USER:-maka}:${RABBITMQ_PASS:-maka_secret}@rabbitmq:5672/"
     depends_on:
       - sales-db

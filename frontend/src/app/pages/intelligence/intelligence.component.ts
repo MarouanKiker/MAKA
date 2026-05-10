@@ -19,15 +19,6 @@ export interface QuickMetric {
     positive?: boolean;
 }
 
-export interface McpConnectorView {
-    label: string;
-    provider: string;
-    route: string;
-    configured: boolean;
-    statusLabel: string;
-    icon: string;
-}
-
 export interface MarketingSummaryView {
     totalCustomers: string;
     totalRevenue: string;
@@ -102,25 +93,6 @@ export class IntelligenceComponent implements OnInit {
     readonly marketingSegments = signal<MarketingSegmentView[]>([]);
     readonly marketingCustomers = signal<MarketingCustomerView[]>([]);
 
-    readonly mcpConnectors = signal<McpConnectorView[]>([
-        {
-            label: 'Email',
-            provider: 'local-draft',
-            route: '/api/sales/ai/mcp/email/draft',
-            configured: false,
-            statusLabel: 'Mode local',
-            icon: 'fa-solid fa-envelope'
-        },
-        {
-            label: 'Agenda',
-            provider: 'local-proposal',
-            route: '/api/sales/ai/mcp/calendar/event',
-            configured: false,
-            statusLabel: 'Mode local',
-            icon: 'fa-solid fa-calendar-days'
-        }
-    ]);
-
     readonly spotlightAlerts = signal<{ title: string; module: string; severity: 'low' | 'med' | 'high' }[]>([
         { title: 'Chargement des alertes IA', module: 'IA', severity: 'low' }
     ]);
@@ -137,14 +109,12 @@ export class IntelligenceComponent implements OnInit {
     });
 
     readonly commandBusy = signal(false);
-    readonly emailBusy = signal(false);
 
     constructor(private readonly ai: AiService) {}
 
     ngOnInit(): void {
         this.loadIntelligenceData();
         this.loadMarketingIntelligence();
-        this.loadMcpStatus();
     }
 
     loadIntelligenceData(): void {
@@ -270,48 +240,6 @@ export class IntelligenceComponent implements OnInit {
         });
     }
 
-    loadMcpStatus(): void {
-        this.ai.getMcpStatus().subscribe({
-            next: (data) => {
-                const connectors = data?.connectors || {};
-                const email = connectors.email || {};
-                const calendar = connectors.calendar || {};
-
-                const nextConnectors: McpConnectorView[] = [
-                    {
-                        label: email.name || 'Email',
-                        provider: email.provider || 'local-draft',
-                        route: email.route || '/api/sales/ai/mcp/email/draft',
-                        configured: Boolean(email.configured),
-                        statusLabel: email.configured ? 'Connecte' : 'Brouillon local',
-                        icon: 'fa-solid fa-envelope'
-                    },
-                    {
-                        label: calendar.name || 'Agenda',
-                        provider: calendar.provider || 'local-proposal',
-                        route: calendar.route || '/api/sales/ai/mcp/calendar/event',
-                        configured: Boolean(calendar.configured),
-                        statusLabel: calendar.configured ? 'Connecte' : 'Proposition locale',
-                        icon: 'fa-solid fa-calendar-days'
-                    }
-                ];
-
-                this.mcpConnectors.set(nextConnectors);
-                const active = nextConnectors.filter((connector) => connector.configured);
-                this.pushPulse(
-                    'Connecteurs MCP',
-                    active.length
-                        ? `${active.map((connector) => connector.label).join(', ')} connecte(s) au bridge MCP.`
-                        : 'Email et Agenda sont prets en mode local. Configurez les URLs MCP pour activer la connexion externe.',
-                    active.length ? 'success' : 'info'
-                );
-            },
-            error: () => {
-                this.pushPulse('Connecteurs MCP', 'Etat MCP indisponible pour le moment.', 'warning');
-            }
-        });
-    }
-
     submitCommand(): void {
         const q = this.commandQuery.trim();
         if (!q || this.commandBusy()) return;
@@ -332,47 +260,8 @@ export class IntelligenceComponent implements OnInit {
         });
     }
 
-    prepareEmailDraft(): void {
-        if (this.emailBusy()) return;
-
-        const metrics = this.quickMetrics();
-        const alert = this.spotlightAlerts()[0];
-        const subject = alert?.title ? `[MAKA Intelligence] ${alert.title}` : '[MAKA Intelligence] Synthese automatique';
-        const body = [
-            'Bonjour,',
-            '',
-            'Voici une synthese generee par MAKA Intelligence :',
-            `- Sante entreprise : ${this.healthLabel()} (${this.healthScore()}/100)`,
-            ...metrics.map((metric) => `- ${metric.label} : ${metric.value}${metric.delta ? ` (${metric.delta})` : ''}`),
-            alert?.title ? `- Alerte prioritaire ${alert.module} : ${alert.title}` : '',
-            '',
-            'Cordialement,',
-            'MAKA Intelligence'
-        ].filter(Boolean).join('\n');
-
-        this.emailBusy.set(true);
-        this.ai.createEmailDraft({
-            to: [],
-            subject,
-            body,
-            context: 'MAKA Intelligence'
-        }).subscribe({
-            next: (res) => {
-                const draftSubject = res?.draft?.subject || subject;
-                const provider = res?.provider || 'local-draft';
-                this.pushPulse(
-                    'Email MCP',
-                    `Brouillon prepare avec ${provider} : ${draftSubject}`,
-                    res?.connected ? 'success' : 'info'
-                );
-            },
-            error: () => {
-                this.pushPulse('Email MCP', 'Impossible de preparer le brouillon email.', 'warning');
-            },
-            complete: () => {
-                this.emailBusy.set(false);
-            }
-        });
+    useExamplePrompt(text: string): void {
+        this.commandQuery = text;
     }
 
     onCommandKeydown(event: KeyboardEvent): void {
@@ -389,10 +278,6 @@ export class IntelligenceComponent implements OnInit {
 
     pulseRowClass(ev: PulseAiEvent): string {
         return `intel-pulse__row intel-pulse__row--${ev.tone}`;
-    }
-
-    mcpStatusClass(connector: McpConnectorView): string {
-        return connector.configured ? 'intel-mcp__badge intel-mcp__badge--on' : 'intel-mcp__badge';
     }
 
     private formatMoney(value: unknown): string {

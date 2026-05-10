@@ -77,6 +77,16 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 400 : État métier invalide (ex. stock insuffisant — souvent jeté en IllegalStateException)
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalState(IllegalStateException ex) {
+        log.warn("Illegal state: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    /**
      * 500 : Toute autre erreur inattendue
      */
     @ExceptionHandler(Exception.class)

@@ -11,6 +11,7 @@ from app.ai.lead_scoring import entrainer_modele, scorer_lead, scorer_leads_batc
 from app.ai.segmentation import segmenter_clients
 from app.ai.marketing_intelligence import generer_marketing_intelligence
 from app.ai.cross_analytics import generer_cross_analytics
+from app import config as app_config
 from app.config import GATEWAY_URL
 
 logger = logging.getLogger(__name__)
@@ -101,11 +102,35 @@ def data_sources():
             "hr": f"{gateway}/api/hr",
             "sales": "local SQLAlchemy session on sales-db",
         },
-        "mcp_routes": {
-            "status": "/api/sales/ai/mcp/status",
-            "email_draft": "/api/sales/ai/mcp/email/draft",
-            "calendar_event": "/api/sales/ai/mcp/calendar/event",
-        },
+        "llm_status_route": "/api/sales/ai/llm-status",
+    }
+
+
+@router.get("/llm-status")
+def llm_status():
+    """
+    Indique si un moteur LLM cloud est configure (sans exposer de secret).
+    Sans GEMINI ni OpenRouter, le chatbot utilise le mode local (regles + BDD).
+    """
+    gemini = bool(app_config.GEMINI_API_KEY)
+    openrouter = bool(app_config.OPENROUTER_API_KEY)
+    if gemini:
+        mode = "gemini"
+    elif openrouter:
+        mode = "openrouter"
+    else:
+        mode = "local"
+    hint = (
+        "Copilot LLM actif : le chatbot envoie le contexte RAG a Gemini ou OpenRouter."
+        if mode != "local"
+        else "Mode local : ajoutez GEMINI_API_KEY dans services/.env (voir .env.example), puis docker compose up -d sales-service."
+    )
+    return {
+        "gemini_configured": gemini,
+        "openrouter_configured": openrouter,
+        "chat_mode": mode,
+        "gateway_url": GATEWAY_URL.rstrip("/"),
+        "setup_hint": hint,
     }
 
 

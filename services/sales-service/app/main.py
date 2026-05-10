@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
-from app.routers import ai_router, sales_router, leads_scrape_router, mcp_router
+from app.routers import ai_router, sales_router, leads_scrape_router
 from app import config as app_config
 
 # ============================================================
@@ -38,6 +38,25 @@ for i in range(5):
 else:
     print("La base de donnees n'a pas pu etre contactee.")
 
+# Aide diagnostic : sans cle LLM le chatbot reste en mode reponses locales (regles + BDD)
+try:
+    from app import config as _cfg
+
+    if _cfg.GEMINI_API_KEY:
+        print(
+            f"[IA] GEMINI_API_KEY chargee ({len(_cfg.GEMINI_API_KEY)} caracteres) — chatbot RAG++ peut appeler Gemini."
+        )
+    elif _cfg.OPENROUTER_API_KEY:
+        print("[IA] OPENROUTER_API_KEY chargee — chatbot utilisera OpenRouter (fallback).")
+    else:
+        print(
+            "[IA] Aucune cle LLM (GEMINI_API_KEY / OPENROUTER_API_KEY). "
+            "Chatbot en mode local. Verifiez services/.env (sans guillemets, fin de ligne LF si possible), "
+            "puis : docker compose up -d --force-recreate sales-service"
+        )
+except Exception:
+    pass
+
 # generer les donnees de demonstration (si la base est vide)
 try:
     from app.seed import generer_donnees_demo
@@ -56,7 +75,6 @@ except Exception as e:
 # enregistrer les routers
 app.include_router(sales_router.router)
 app.include_router(ai_router.router)
-app.include_router(mcp_router.router)
 app.include_router(leads_scrape_router.router)
 
 
@@ -67,12 +85,12 @@ def root():
         "version": "2.0.0",
         "modules_ia": {
             "chatbot_rag": "/api/sales/ai/chat",
+            "llm_status": "/api/sales/ai/llm-status",
             "lead_scoring": "/api/sales/ai/lead-score",
             "segmentation": "/api/sales/ai/segmentation",
             "forecast": "/api/sales/ai/forecast",
             "kpis": "/api/sales/ai/kpis",
             "insights": "/api/sales/ai/insights",
-            "mcp_status": "/api/sales/ai/mcp/status",
         },
         "endpoints_ventes": {
             "produits": "/api/sales/produits",

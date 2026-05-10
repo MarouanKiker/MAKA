@@ -1,5 +1,6 @@
 package com.maka.stock.service;
 
+import com.maka.stock.core.JwtClaims;
 import com.maka.stock.dto.CreateMouvementDto;
 import com.maka.stock.model.Article;
 import com.maka.stock.model.MouvementStock;
@@ -43,7 +44,7 @@ public class MouvementStockService {
      */
     @Transactional
     public MouvementStock enregistrerMouvement(CreateMouvementDto dto, Jwt currentUser) {
-        Long userId = extractUserId(currentUser);
+        Long userId = JwtClaims.userId(currentUser);
 
         // 1. Vérifier que l'article existe
         Article article = articleRepo.findById(dto.getArticleId())
@@ -177,10 +178,4 @@ public class MouvementStockService {
         }
     }
 
-    private Long extractUserId(Jwt jwt) {
-        Object sub = jwt.getClaim("sub");
-        if (sub == null) return 0L;
-        try { return Long.parseLong(sub.toString()); }
-        catch (NumberFormatException e) { return 0L; }
-    }
 }
