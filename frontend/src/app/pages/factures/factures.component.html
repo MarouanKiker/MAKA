@@ -145,11 +145,16 @@
                 <td class="font-medium text-emerald-600 dark:text-emerald-400">{{ f.montantPaye | number:'1.2-2' }} MAD</td>
                 <td class="font-bold" [ngClass]="f.resteAPayer > 0 ? 'text-red-500' : 'text-emerald-500'">{{ f.resteAPayer | number:'1.2-2' }} MAD</td>
                 <td>
-                    <select class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold uppercase tracking-wider outline-none" [value]="f.statut" (change)="changeStatut(f, $any($event.target).value)"
-                        [style.color]="statutColors[f.statut]">
-                        <option *ngFor="let s of ['BROUILLON','VALIDEE','ENVOYEE','PARTIELLEMENT_PAYEE','PAYEE','ANNULEE']" [value]="s">
-                            {{ $any(statutLabels)[s] }}
-                        </option>
+                    <select
+                        class="facture-statut-select min-w-[10rem]"
+                        [ngModel]="f.statut"
+                        (ngModelChange)="changeStatut(f, $event)"
+                        [disabled]="statutSelectReadOnly(f)"
+                        [title]="statutSelectReadOnly(f) ? 'Statut final' : 'Brouillon → Validée → Envoyée → paiement'"
+                        [style.color]="statutColors[f.statut]"
+                        [style.borderColor]="statutColors[f.statut]"
+                    >
+                        <option *ngFor="let s of statutsSelectables(f)" [ngValue]="s">{{ statutLabels[s] }}</option>
                     </select>
                 </td>
                 <td>

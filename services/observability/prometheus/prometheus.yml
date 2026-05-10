@@ -1,0 +1,82 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - prometheus:9090
+
+  - job_name: cadvisor
+    static_configs:
+      - targets:
+          - cadvisor:8080
+
+  - job_name: docker-stats
+    scrape_timeout: 10s
+    static_configs:
+      - targets:
+          - docker-stats-exporter:9108
+
+  - job_name: service-availability
+    metrics_path: /probe
+    params:
+      module:
+        - http_reachable
+    static_configs:
+      - targets:
+          - http://gateway/health
+        labels:
+          service: gateway
+      - targets:
+          - http://gateway/api/auth/profile
+        labels:
+          service: auth-service
+      - targets:
+          - http://crm-service:5000/swagger/v1/swagger.json
+        labels:
+          service: crm-service
+      - targets:
+          - http://finance-service:6000/actuator/health
+        labels:
+          service: finance-service
+      - targets:
+          - http://stock-service:8083/actuator/health
+        labels:
+          service: stock-service
+      - targets:
+          - http://hr-service:8080/api/hr/employes
+        labels:
+          service: hr-service
+      - targets:
+          - http://sales-service:8004/api/sales/health
+        labels:
+          service: sales-service
+    relabel_configs:
+      - source_labels:
+          - __address__
+        target_label: __param_target
+      - source_labels:
+          - __param_target
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  - job_name: finance-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - finance-service:6000
+
+  - job_name: stock-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - stock-service:8083
+
+  - job_name: hr-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - hr-service:8080

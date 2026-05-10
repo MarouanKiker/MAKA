@@ -1,0 +1,50 @@
+﻿{
+    "took":  2,
+    "timed_out":  false,
+    "_shards":  {
+                    "total":  1,
+                    "successful":  1,
+                    "skipped":  0,
+                    "failed":  0
+                },
+    "hits":  {
+                 "total":  {
+                               "value":  2,
+                               "relation":  "eq"
+                           },
+                 "max_score":  null,
+                 "hits":  [
+                              {
+                                  "_index":  "maka-logs-2026.05.10",
+                                  "_id":  "yxyNEZ4BaB9s0iqFs6JE",
+                                  "_score":  null,
+                                  "_source":  {
+                                                  "@version":  "1",
+                                                  "version":  "1.1",
+                                                  "environment":  "dev",
+                                                  "level":  6,
+                                                  "source_host":  "172.18.0.1",
+                                                  "project":  "maka",
+                                                  "host":  "manual-test",
+                                                  "@timestamp":  "2026-05-10T11:02:36.937045296Z",
+                                                  "message":  "test maka log"
+                                              },
+                                  "sort":  [
+                                               1778410956937
+                                           ]
+                              },
+                              {
+                                  "_index":  "maka-logs-2026.05.10",
+                                  "_id":  "0ByREZ4BaB9s0iqFuKI8",
+                                  "_score":  null,
+                                  "_source":  {
+                                                  "name":  "foo",
+                                                  "title":  "bar"
+                                              },
+                                  "sort":  [
+                                               -9223372036854775808
+                                           ]
+                              }
+                          ]
+             }
+}

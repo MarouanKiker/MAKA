@@ -10,6 +10,7 @@ public record PaiementResponse(
         BigDecimal montant,
         String modePaiement,
         String compteBancaire,
+        Long compteBancaireId,
         String referenceTransaction,
         String type,
         StatutPaiement statut,

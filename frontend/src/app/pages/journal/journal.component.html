@@ -1,61 +1,105 @@
-<div class="page-header">
-    <div>
-        <h1><i class="fa-solid fa-book page-icon"></i> Journal comptable</h1>
-        <span class="page-subtitle">Historique des écritures financières de l'entreprise</span>
+<div class="jc-page">
+    <div class="jc-alert" *ngIf="loadError" role="alert">
+        Impossible de charger le journal depuis le serveur. Vérifiez que le service finance est démarré et que vous êtes connecté.
     </div>
-    <button class="btn-add" (click)="exportCSV()">
-        <i class="fa-solid fa-file-csv"></i> Exporter CSV
-    </button>
-</div>
 
-<!-- cartes de stats -->
-<div class="page-stats">
-    <div class="mini-stat">
-        <div class="mini-stat-icon" style="color: #10b981; background: #ecfdf5;">
-            <i class="fa-solid fa-arrow-turn-down"></i>
+    <header class="jc-toolbar">
+        <div>
+            <h1 class="jc-title">Journal Comptable</h1>
+            <p class="jc-subtitle">Uniquement les écritures enregistrées en base (factures et paiements validés).</p>
         </div>
-        <div class="mini-stat-value text-emerald-600">+ {{ stats?.totalCredit || 0 | number:'1.2-2' }}</div>
-        <div class="mini-stat-label">Total des Entrées (Crédit)</div>
-    </div>
-    <div class="mini-stat">
-        <div class="mini-stat-icon" style="color: #ef4444; background: #fef2f2;">
-            <i class="fa-solid fa-arrow-turn-up"></i>
-        </div>
-        <div class="mini-stat-value text-red-500">- {{ stats?.totalDebit || 0 | number:'1.2-2' }}</div>
-        <div class="mini-stat-label">Total des Sorties (Débit)</div>
-    </div>
-    <div class="mini-stat">
-        <div class="mini-stat-icon" [style.color]="(stats?.solde || 0) >= 0 ? '#10b981' : '#ef4444'" [style.background]="(stats?.solde || 0) >= 0 ? '#ecfdf5' : '#fef2f2'">
-            <i class="fa-solid fa-scale-balanced"></i>
-        </div>
-        <div class="mini-stat-value" [ngClass]="(stats?.solde || 0) >= 0 ? 'text-emerald-600' : 'text-red-500'">
-            {{ stats?.solde || 0 | number:'1.2-2' }}
-        </div>
-        <div class="mini-stat-label">Balance Nette (MAD)</div>
-    </div>
-</div>
+        <button type="button" class="jc-btn-export" (click)="exportCSV()" [disabled]="journal.length === 0">
+            <i class="fa-solid fa-file-csv"></i>
+            Exporter CSV
+        </button>
+    </header>
 
-<!-- tableau du journal -->
-<div class="table-container">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Debit</th>
-                <th>Credit</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let j of journal">
-                <td class="font-medium text-slate-500 dark:text-slate-400">{{ j.dateEcriture | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td class="font-bold text-slate-900 dark:text-white">{{ j.description }}</td>
-                <td class="font-bold text-red-500">{{ j.debit > 0 ? (j.debit | number:'1.2-2') + ' MAD' : '-' }}</td>
-                <td class="font-bold text-emerald-600">{{ j.credit > 0 ? (j.credit | number:'1.2-2') + ' MAD' : '-' }}</td>
-            </tr>
-            <tr *ngIf="journal.length === 0">
-                <td colspan="4" class="empty-row">Aucune ecriture</td>
-            </tr>
-        </tbody>
-    </table>
+    <section class="jc-cards" aria-label="Synthèse du journal">
+        <article class="jc-card jc-card--debit">
+            <p class="jc-card__value jc-card__value--debit">
+                <ng-container *ngIf="!isLoading">{{ totals.totalDebit | number : '1.0-0' }} MAD</ng-container>
+                <ng-container *ngIf="isLoading">—</ng-container>
+            </p>
+            <p class="jc-card__label">Total Débits</p>
+        </article>
+        <article class="jc-card jc-card--credit">
+            <p class="jc-card__value jc-card__value--credit">
+                <ng-container *ngIf="!isLoading">{{ totals.totalCredit | number : '1.0-0' }} MAD</ng-container>
+                <ng-container *ngIf="isLoading">—</ng-container>
+            </p>
+            <p class="jc-card__label">Total Crédits</p>
+        </article>
+        <article class="jc-card jc-card--solde">
+            <p
+                class="jc-card__value"
+                [class.jc-card__value--debit]="!isLoading && totals.solde < 0"
+                [class.jc-card__value--credit]="!isLoading && totals.solde >= 0"
+            >
+                <ng-container *ngIf="!isLoading">{{ totals.solde | number : '1.0-0' }} MAD</ng-container>
+                <ng-container *ngIf="isLoading">—</ng-container>
+            </p>
+            <p class="jc-card__label">Solde net</p>
+        </article>
+    </section>
+
+    <div class="jc-search">
+        <i class="fa-solid fa-magnifying-glass jc-search__icon" aria-hidden="true"></i>
+        <input
+            type="search"
+            class="jc-search__input"
+            [(ngModel)]="searchQuery"
+            placeholder="Rechercher par libellé ou date..."
+            autocomplete="off"
+        />
+    </div>
+
+    <div class="jc-table-shell">
+        <table class="jc-table">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Libellé</th>
+                    <th scope="col" class="jc-th-num">Débit (MAD)</th>
+                    <th scope="col" class="jc-th-num">Crédit (MAD)</th>
+                    <th scope="col" class="jc-th-num">Balance (MAD)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of displayRows">
+                    <td class="jc-td-date">{{ formatDateIso(row.transaction.dateEcriture) }}</td>
+                    <td class="jc-td-lib">{{ row.transaction.description }}</td>
+                    <td class="jc-td-num jc-amount-debit">
+                        <ng-container *ngIf="row.transaction.debit > 0; else dashDebit">
+                            {{ row.transaction.debit | number : '1.0-0' }}
+                        </ng-container>
+                        <ng-template #dashDebit>—</ng-template>
+                    </td>
+                    <td class="jc-td-num jc-amount-credit">
+                        <ng-container *ngIf="row.transaction.credit > 0; else dashCredit">
+                            {{ row.transaction.credit | number : '1.0-0' }}
+                        </ng-container>
+                        <ng-template #dashCredit>—</ng-template>
+                    </td>
+                    <td
+                        class="jc-td-num jc-balance"
+                        [class.jc-balance--neg]="row.balance < 0"
+                        [class.jc-balance--pos]="row.balance >= 0"
+                    >
+                        {{ row.balance | number : '1.0-0' }}
+                    </td>
+                </tr>
+                <tr *ngIf="!isLoading && displayRows.length === 0">
+                    <td colspan="5" class="jc-empty">
+                        <ng-container *ngIf="loadError">Écritures non disponibles (erreur réseau ou serveur).</ng-container>
+                        <ng-container *ngIf="!loadError">
+                            Aucune écriture en base{{ searchQuery.trim() ? ' pour cette recherche' : '' }}. Les lignes sont créées lors de la validation des factures et des paiements.
+                        </ng-container>
+                    </td>
+                </tr>
+                <tr *ngIf="isLoading">
+                    <td colspan="5" class="jc-empty jc-empty--muted">Chargement du journal…</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

@@ -54,6 +54,15 @@ export const routes: Routes = [
                     });
                 }
             },
+            // generateur / import prospects (B2B)
+            {
+                path: 'leads/generator',
+                loadComponent: function () {
+                    return import('./pages/lead-generator/lead-generator.component').then(function (m) {
+                        return m.LeadGeneratorComponent;
+                    });
+                }
+            },
             // gestion des opportunites
             {
                 path: 'opportunities',
@@ -148,6 +157,15 @@ export const routes: Routes = [
                 loadComponent: function () {
                     return import('./pages/paiements/paiements.component').then(function (m) {
                         return m.PaiementsComponent;
+                    });
+                }
+            },
+            // --- STOCK ---
+            {
+                path: 'stock',
+                loadComponent: function () {
+                    return import('./pages/stock/stock.component').then(function (m) {
+                        return m.StockComponent;
                     });
                 }
             },

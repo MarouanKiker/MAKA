@@ -3,6 +3,12 @@
 # All values are read from .env file (with fallback defaults)
 # =============================================================================
 
+x-centralized-logging: &centralized-logging
+  driver: gelf
+  options:
+    gelf-address: "udp://localhost:${PORT_LOGSTASH_GELF:-12201}"
+    tag: "{{.Name}}"
+
 services:
 
   # ---------------------------------------------------------------------------
@@ -11,6 +17,7 @@ services:
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: rabbitmq
+    logging: *centralized-logging
     ports:
       - "${PORT_RABBITMQ:-5672}:5672"
       - "${PORT_RABBITMQ_UI:-15672}:15672"
@@ -32,11 +39,14 @@ services:
       context: ../frontend
       dockerfile: Dockerfile
     container_name: frontend
+    logging: *centralized-logging
     ports:
       - "${PORT_FRONTEND:-4200}:4200"
     volumes:
       - ../frontend:/app
       - /app/node_modules
+    environment:
+      GATEWAY_URL: http://gateway:80
     depends_on:
       - gateway
     networks:
@@ -48,6 +58,7 @@ services:
   gateway:
     image: nginx:alpine
     container_name: gateway
+    logging: *centralized-logging
     ports:
       - "${PORT_NGINX:-8000}:80"
     volumes:
@@ -57,6 +68,7 @@ services:
       - crm-service
       - finance-service
       - sales-service
+      - stock-service
     networks:
       - hub-network
 
@@ -69,6 +81,7 @@ services:
       dockerfile: Dockerfile
       network: host
     container_name: auth-service
+    logging: *centralized-logging
     volumes:
       - ./auth-service:/var/www/html
       - vendor_data:/var/www/html/vendor
@@ -93,6 +106,7 @@ services:
       dockerfile: Dockerfile
       network: host
     container_name: crm-service
+    logging: *centralized-logging
     ports:
       - "5000:5000"
     volumes:
@@ -116,6 +130,7 @@ services:
       dockerfile: Dockerfile
       network: host
     container_name: hr-service
+    logging: *centralized-logging
     ports:
       - "8080:8080"
     volumes:
@@ -155,6 +170,7 @@ services:
       dockerfile: Dockerfile
       network: host
     container_name: finance-service
+    logging: *centralized-logging
     volumes:
       - jwt-keys:/app/keys:ro
     environment:
@@ -182,6 +198,33 @@ services:
     networks:
       - hub-network
       - finance-network
+
+  # ---------------------------------------------------------------------------
+  # STOCK SERVICE (Spoke Stock) - Spring Boot 3 + Java 17
+  # ---------------------------------------------------------------------------
+  stock-service:
+    build:
+      context: ./stock-service
+      dockerfile: Dockerfile
+      network: host
+    container_name: stock-service
+    logging: *centralized-logging
+    volumes:
+      - jwt-keys:/app/keys:ro
+    environment:
+      SERVER_PORT: 8083
+      STOCK_DB_HOST: stock-db
+      STOCK_DB_PORT: 5432
+      STOCK_DB_NAME: ${STOCK_DB_NAME:-stock_db}
+      STOCK_DB_USER: ${STOCK_DB_USER:-stock_user}
+      STOCK_DB_PASSWORD: ${STOCK_DB_PASSWORD:-stock_pass}
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+    depends_on:
+      - stock-db
+      - auth-service
+    networks:
+      - hub-network
+      - stock-network
 
   # ---------------------------------------------------------------------------
   # BASE DE DONNÉES AUTH - PostgreSQL 16
@@ -229,11 +272,27 @@ services:
       - finance-network
 
   # ---------------------------------------------------------------------------
+  # BASE DE DONNEES STOCK - PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  stock-db:
+    image: postgres:16-alpine
+    container_name: stock-db
+    environment:
+      POSTGRES_DB: ${STOCK_DB_NAME:-stock_db}
+      POSTGRES_USER: ${STOCK_DB_USER:-stock_user}
+      POSTGRES_PASSWORD: ${STOCK_DB_PASSWORD:-stock_pass}
+    volumes:
+      - stock-db-data:/var/lib/postgresql/data
+    networks:
+      - stock-network
+
+  # ---------------------------------------------------------------------------
   # REDIS - Cache
   # ---------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
     container_name: redis
+    logging: *centralized-logging
     networks:
       - hub-network
       - finance-network
@@ -246,6 +305,9 @@ services:
       context: ./sales-service
       dockerfile: Dockerfile
     container_name: sales-service
+    logging: *centralized-logging
+    env_file:
+      - .env
     volumes:
       - ./sales-service:/app
       - jwt-keys:/app/keys:ro
@@ -278,6 +340,157 @@ services:
     networks:
       - sales-network
 
+  # ---------------------------------------------------------------------------
+  # PROMETHEUS - Collecte des metriques applicatives et conteneurs
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    ports:
+      - "${PORT_PROMETHEUS:-9090}:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    depends_on:
+      - cadvisor
+      - blackbox-exporter
+      - docker-stats-exporter
+      - finance-service
+      - stock-service
+      - hr-service
+    networks:
+      - hub-network
+      - finance-network
+      - stock-network
+      - hr-network
+
+  # ---------------------------------------------------------------------------
+  # DOCKER STATS EXPORTER - CPU/Memoire avec noms de services Docker Compose
+  # ---------------------------------------------------------------------------
+  docker-stats-exporter:
+    build:
+      context: ./observability/docker-stats-exporter
+      dockerfile: Dockerfile
+    container_name: docker-stats-exporter
+    ports:
+      - "${PORT_DOCKER_STATS:-9108}:9108"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - hub-network
+
+  # ---------------------------------------------------------------------------
+  # BLACKBOX EXPORTER - Tests de disponibilite HTTP pour tous les services
+  # ---------------------------------------------------------------------------
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: blackbox-exporter
+    ports:
+      - "${PORT_BLACKBOX:-9115}:9115"
+    volumes:
+      - ./observability/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    command:
+      - "--config.file=/etc/blackbox_exporter/config.yml"
+    networks:
+      - hub-network
+
+  # ---------------------------------------------------------------------------
+  # GRAFANA - Visualisation des metriques Prometheus
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    ports:
+      - "${PORT_GRAFANA:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - hub-network
+
+  # ---------------------------------------------------------------------------
+  # CADVISOR - Metriques des conteneurs Docker pour Prometheus
+  # ---------------------------------------------------------------------------
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: cadvisor
+    privileged: true
+    command:
+      - "--store_container_labels=true"
+      - "--docker_only=true"
+    ports:
+      - "${PORT_CADVISOR:-8088}:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      - hub-network
+
+  # ---------------------------------------------------------------------------
+  # ELASTICSEARCH - Stockage et recherche des logs centralises
+  # ---------------------------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.2
+    container_name: elasticsearch
+    ports:
+      - "${PORT_ELASTICSEARCH:-9200}:9200"
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - hub-network
+
+  # ---------------------------------------------------------------------------
+  # LOGSTASH - Reception GELF Docker -> Elasticsearch
+  # ---------------------------------------------------------------------------
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.2
+    container_name: logstash
+    ports:
+      - "${PORT_LOGSTASH_GELF:-12201}:12201/udp"
+      - "${PORT_LOGSTASH_HTTP:-9600}:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xms256m -Xmx256m"
+    volumes:
+      - ./observability/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - hub-network
+
+  # ---------------------------------------------------------------------------
+  # KIBANA - Exploration et visualisation des logs
+  # ---------------------------------------------------------------------------
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.2
+    container_name: kibana
+    ports:
+      - "${PORT_KIBANA:-5601}:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - hub-network
+
 # =============================================================================
 # VOLUMES
 # =============================================================================
@@ -287,8 +500,12 @@ volumes:
   crm-db-data:
   hr-db-data:
   finance-db-data:
+  stock-db-data:
   sales-db-data:
   vendor_data:
+  prometheus-data:
+  grafana-data:
+  elasticsearch-data:
 
 # =============================================================================
 # RÉSEAUX
@@ -303,6 +520,8 @@ networks:
   hr-network:
     driver: bridge
   finance-network:
+    driver: bridge
+  stock-network:
     driver: bridge
   sales-network:
     driver: bridge

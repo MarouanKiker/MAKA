@@ -5,142 +5,140 @@
                 <i class="fa-solid fa-bullhorn page-icon"></i>
                 Campagnes Marketing
             </h1>
-            <p class="page-subtitle">Gerez vos campagnes et budgets</p>
+            <p class="page-subtitle">Vue dynamique depuis l’API — pilotage budgets et diffusion</p>
         </div>
-        <button class="btn-add" (click)="openForm()">+ Nouvelle campagne</button>
+        <button class="btn-add" type="button" (click)="openForm()">+ Nouvelle campagne</button>
     </div>
 
-    <div class="page-stats">
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--accent-soft); color: var(--accent)">
-                <i class="fa-solid fa-bullhorn"></i>
-            </div>
-            <div>
-                <span class="mini-stat-value">{{ campaigns.length }}</span>
-                <span class="mini-stat-label">Campagnes</span>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--warning-soft); color: var(--warning)">
-                <i class="fa-solid fa-coins"></i>
-            </div>
-            <div>
-                <span class="mini-stat-value">{{ totalBudget | number }} MAD</span>
-                <span class="mini-stat-label">Budget investi</span>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: var(--success-soft); color: var(--success)">
-                <i class="fa-solid fa-users"></i>
-            </div>
-            <div>
-                <span class="mini-stat-value">{{ totalLeads }}</span>
-                <span class="mini-stat-label">Leads générés</span>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: #e0e7ff; color: #4f46e5;">
-                <i class="fa-solid fa-arrow-trend-up"></i>
-            </div>
-            <div>
-                <span class="mini-stat-value">{{ totalRevenue | number }} MAD</span>
-                <span class="mini-stat-label">Revenus (ROI)</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="card-grid">
-        <div class="item-card" *ngFor="let c of campaigns">
-            <div class="card-top" style="align-items: flex-start;">
+    @if (summary$ | async; as stats) {
+        <div class="page-stats">
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background: rgba(99,102,241,0.15); color: #6366f1;">
+                    <i class="fa-solid fa-bullhorn"></i>
+                </div>
                 <div>
-                    <span class="card-title" style="display:block;">{{ c.nom }}</span>
-                    <span style="font-size: 0.75rem; color: var(--text-2); background: var(--bg-1); padding: 2px 6px; border-radius: 4px;">{{ c.type || 'Générale' }}</span>
-                </div>
-                <span class="badge" 
-                      [ngClass]="{'success': c.uiStatus === 'EN_COURS', 'warning': c.uiStatus === 'PLANIFIEE', 'danger': c.uiStatus === 'TERMINEE'}"
-                      style="font-size: 0.7rem;">
-                    {{ c.uiStatus }}
-                </span>
-            </div>
-
-            <div class="card-meta">
-                <span class="card-meta-item">
-                    <i class="fa-regular fa-calendar meta-icon"></i>
-                    {{ c.dateDebut | date:'shortDate' }} → {{ c.dateFin | date:'shortDate' }}
-                </span>
-            </div>
-            
-            <!-- Statistiques de la campagne -->
-            <div style="background: var(--bg-1); padding: 10px; border-radius: 8px; margin-bottom: 12px; margin-top: 8px;">
-                <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
-                    <div style="text-align: center; flex: 1;">
-                        <div style="font-size: 1.1rem; font-weight: bold; color: var(--text-1);">{{ c.uiLeadsCount }}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-2);">Leads</div>
-                    </div>
-                    <div style="text-align: center; flex: 1; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">
-                        <div style="font-size: 1.1rem; font-weight: bold; color: var(--success);">{{ c.uiRevenue | number }}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-2);">Revenus</div>
-                    </div>
-                    <div style="text-align: center; flex: 1;">
-                        <div style="font-size: 1.1rem; font-weight: bold; color: var(--warning);">{{ c.uiCpl | number:'1.0-0' }}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-2);">CPL (MAD)</div>
-                    </div>
+                    <span class="mini-stat-value">{{ stats.count }}</span>
+                    <span class="mini-stat-label">Campagnes</span>
                 </div>
             </div>
-
-            <div
-                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:.2rem; margin-top:.4rem;">
-                <span style="font-size:.72rem; color:var(--text-2);">Budget</span>
-                <span style="font-size:.92rem; font-weight:800; color:var(--accent);">{{ c.budget | number }} MAD</span>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background: rgba(245,158,11,0.15); color: #f59e0b;">
+                    <i class="fa-solid fa-coins"></i>
+                </div>
+                <div>
+                    <span class="mini-stat-value">{{ stats.totalBudget | number:'1.0-0' }} MAD</span>
+                    <span class="mini-stat-label">Budget agrégé</span>
+                </div>
             </div>
-            <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="getBudgetPercent(c.budget)"></div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background: rgba(16,185,129,0.15); color: #10b981;">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </div>
+                <div>
+                    <span class="mini-stat-value">{{ stats.totalSent | number }}</span>
+                    <span class="mini-stat-label">Leads / envoyés agrégés</span>
+                </div>
             </div>
-
-            <div class="card-actions">
-                <button class="btn-sm danger" (click)="delete(c.id)">Supprimer</button>
+            <div class="mini-stat">
+                <div class="mini-stat-icon" style="background: rgba(14,165,233,0.15); color: #0ea5e9;">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <div>
+                    <span class="mini-stat-value">
+                        @if (stats.avgOpenRatePct !== null) {
+                            {{ stats.avgOpenRatePct | number:'1.1-1' }} %
+                        } @else {
+                            —
+                        }
+                    </span>
+                    <span class="mini-stat-label">Taux d’ouverture (moy.)</span>
+                </div>
             </div>
         </div>
+    }
+
+    <div class="campaign-grid-wrapper">
+        @for (campaign of (campaigns$ | async) ?? []; track campaign.id) {
+                <article class="campaign-card">
+                    <header class="campaign-card__top">
+                        <div class="campaign-card__icon-wrap" aria-hidden="true">
+                            <i [class]="iconFaClass(campaign.iconType)"></i>
+                        </div>
+                        <span class="campaign-card__badge" [ngClass]="badgeClass(campaign.status)">
+                            {{ statusLabel(campaign.status) }}
+                        </span>
+                    </header>
+                    <div class="campaign-card__body">
+                        <h3 class="campaign-card__title">{{ campaign.title }}</h3>
+                        <p class="campaign-card__meta">
+                            <i class="fa-regular fa-calendar"></i>
+                            Début&nbsp;: {{ campaign.startDate | date: 'mediumDate' }}
+                        </p>
+                        <footer class="campaign-card__metrics">
+                            <div class="campaign-metric">
+                                <span class="campaign-metric__value">{{ campaign.budget | number:'1.0-0' }} MAD</span>
+                                <span class="campaign-metric__label">Budget</span>
+                            </div>
+                            <div class="campaign-metric">
+                                <span class="campaign-metric__value">{{ campaign.sentCount | number }}</span>
+                                <span class="campaign-metric__label">Envoyés</span>
+                            </div>
+                            <div class="campaign-metric">
+                                <span class="campaign-metric__value">{{ formatOpenRate(campaign.openRate) }}</span>
+                                <span class="campaign-metric__label">Ouverture</span>
+                            </div>
+                        </footer>
+                    </div>
+                    <div class="campaign-card__actions">
+                        <button type="button" class="btn-sm danger" (click)="delete(campaign.id)">Supprimer</button>
+                    </div>
+                </article>
+        } @empty {
+                <div class="campaign-empty" role="status">
+                    <i class="fa-solid fa-folder-open campaign-empty__icon" aria-hidden="true"></i>
+                    <span class="campaign-empty__title">Aucune campagne</span>
+                    <span class="campaign-empty__hint">Créez une campagne ou attendez une synchronisation API.</span>
+                </div>
+        }
     </div>
 
-    <div class="empty" *ngIf="campaigns.length === 0">
-        <i class="fa-solid fa-bullhorn" style="font-size:2rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
-        Aucune campagne.
-    </div>
-
-    <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
-        <div class="modal" (click)="$event.stopPropagation()">
-            <h2>Nouvelle campagne</h2>
-            <div class="champ">
-                <label>Nom de la campagne</label>
-                <input type="text" [(ngModel)]="nom" placeholder="Ex: Promo Hiver 2026" />
-            </div>
-            <div class="row">
+    @if (showForm) {
+        <div class="modal-overlay" (click)="showForm = false">
+            <div class="modal" (click)="$event.stopPropagation()">
+                <h2>Nouvelle campagne</h2>
                 <div class="champ">
-                    <label>Type / Canal</label>
-                    <select [(ngModel)]="type">
-                        <option *ngFor="let t of campaignTypes" [value]="t.id">{{ t.label }}</option>
-                    </select>
+                    <label>Nom de la campagne</label>
+                    <input type="text" [(ngModel)]="nom" placeholder="Ex: Promo Hiver 2026" />
                 </div>
-                <div class="champ">
-                    <label>Budget alloué (MAD)</label>
-                    <input type="number" [(ngModel)]="budget" />
+                <div class="row">
+                    <div class="champ">
+                        <label>Type / Canal</label>
+                        <select [(ngModel)]="formType">
+                            @for (t of campaignTypes; track t.id) {
+                                <option [value]="t.id">{{ t.label }}</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="champ">
+                        <label>Budget alloué (MAD)</label>
+                        <input type="number" [(ngModel)]="budget" />
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="champ">
-                    <label>Date debut</label>
-                    <input type="date" [(ngModel)]="dateDebut" />
+                <div class="row">
+                    <div class="champ">
+                        <label>Date debut</label>
+                        <input type="date" [(ngModel)]="dateDebut" />
+                    </div>
+                    <div class="champ">
+                        <label>Date fin</label>
+                        <input type="date" [(ngModel)]="dateFin" />
+                    </div>
                 </div>
-                <div class="champ">
-                    <label>Date fin</label>
-                    <input type="date" [(ngModel)]="dateFin" />
+                <div class="modal-actions">
+                    <button class="btn-cancel" type="button" (click)="showForm = false">Annuler</button>
+                    <button class="btn-save" type="button" (click)="save()">Enregistrer</button>
                 </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" (click)="showForm = false">Annuler</button>
-                <button class="btn-save" (click)="save()">Enregistrer</button>
             </div>
         </div>
-    </div>
+    }
 </div>

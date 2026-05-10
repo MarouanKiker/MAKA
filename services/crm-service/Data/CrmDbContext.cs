@@ -26,6 +26,10 @@ public class CrmDbContext : DbContext
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Source).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Entreprise).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.NomContact).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Telephone).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Statut).IsRequired();
             entity.Property(e => e.Score).IsRequired();
             entity.Property(e => e.DateCreation).HasDefaultValueSql("NOW()");
@@ -91,7 +95,7 @@ public class CrmDbContext : DbContext
 
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(1000);
-            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).HasColumnName("Statut").IsRequired().HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()");
 
             // Relation Ticket → Lead

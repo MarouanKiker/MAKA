@@ -28,8 +28,25 @@
                     (dragstart)="onDragStart(l)" (dragend)="onDragEnd()" [class.dragging]="draggedLead === l">
 
                     <div class="card-top">
-                        <span class="card-title">{{ l.source }}</span>
+                        <span class="card-title">{{ companyDisplayName(l) }}</span>
                         <span class="score-pill">{{ l.score }}</span>
+                    </div>
+
+                    <div class="card-contact">
+                        <div class="card-contact-line">
+                            <i class="fa-regular fa-envelope card-contact-icon" aria-hidden="true"></i>
+                            <span class="card-contact-text" *ngIf="l.email?.trim(); else noEmail">
+                                <a [href]="'mailto:' + l.email!.trim()">{{ l.email!.trim() }}</a>
+                            </span>
+                            <ng-template #noEmail><span class="card-contact-empty">—</span></ng-template>
+                        </div>
+                        <div class="card-contact-line">
+                            <i class="fa-solid fa-phone card-contact-icon" aria-hidden="true"></i>
+                            <ng-container *ngIf="l.telephone?.trim(); else noPhone">
+                                <a class="card-contact-text" [href]="'tel:' + l.telephone!.trim()">{{ l.telephone!.trim() }}</a>
+                            </ng-container>
+                            <ng-template #noPhone><span class="card-contact-empty">—</span></ng-template>
+                        </div>
                     </div>
 
                     <div class="progress-bar">
@@ -37,6 +54,10 @@
                     </div>
 
                     <div class="card-meta">
+                        <span class="card-meta-item" *ngIf="l.source && l.source !== companyDisplayName(l)">
+                            <i class="fa-solid fa-tag meta-icon"></i>
+                            {{ l.source }}
+                        </span>
                         <span class="card-meta-item">
                             <i class="fa-regular fa-calendar meta-icon"></i>
                             {{ l.dateCreation | date:'shortDate' }}

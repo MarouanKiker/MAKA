@@ -1,280 +1,266 @@
-<div class="p-4 md:p-8 space-y-6">
+<div class="intel">
 
-    <!-- En-tete -->
-    <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-inner">
-                <i class="fa-solid fa-brain text-white text-xl"></i>
+    <!-- Copilot — héros visuel en tête de page -->
+    <header class="intel-hero" aria-label="MAKA Copilot">
+        <div class="intel-hero__glow" aria-hidden="true"></div>
+        <div class="intel-hero__grid" aria-hidden="true"></div>
+        <div class="intel-hero__inner">
+            <div class="intel-hero__eyebrow">
+                <span class="intel-hero__dot"></span>
+                Assistant conversationnel
             </div>
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">MAKA Intelligence</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Centre de commandement IA — Vision 360° de l'entreprise</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <!-- Tabs -->
-            <div class="hidden md:flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 gap-1">
-                <button (click)="activeTab='overview'" [class]="activeTab==='overview' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all">Vue globale</button>
-                <button (click)="activeTab='forecast'" [class]="activeTab==='forecast' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all">Prévisions</button>
-                <button (click)="activeTab='segmentation'" [class]="activeTab==='segmentation' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all">Segmentation</button>
-            </div>
-            <button (click)="toggleCopilot()" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-indigo-500/25 transition-all flex items-center gap-2">
-                <i class="fa-solid fa-robot"></i> Copilot
-            </button>
-        </div>
-    </div>
+            <h1 class="intel-hero__title">MAKA Copilot</h1>
+            <p class="intel-hero__subtitle">
+                Interrogez vos modules en langage naturel : chiffres, tendances et synthèses croisées
+                (ventes, CRM, finance, RH).
+            </p>
 
-    <!-- Spinner -->
-    <div *ngIf="loadingData" class="flex flex-col items-center justify-center py-20">
-        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-500 mb-4"></i>
-        <p class="text-slate-500 font-medium">L'IA analyse vos données cross-modules...</p>
-    </div>
-
-    <!-- ============ TAB: VUE GLOBALE ============ -->
-    <div *ngIf="!loadingData && activeTab==='overview'" class="space-y-6">
-
-        <!-- Row 1: Score Sante + KPIs Cross -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-
-            <!-- Score de Sante -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center justify-center" *ngIf="crossData">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Santé Entreprise</p>
-                <div class="relative w-32 h-32">
-                    <svg class="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="54" fill="none" stroke-width="8" class="stroke-slate-200 dark:stroke-slate-800"/>
-                        <circle cx="60" cy="60" r="54" fill="none" stroke-width="8" stroke-linecap="round" [attr.stroke]="crossData.couleur_sante" [attr.stroke-dasharray]="2 * 3.14159 * 54" [attr.stroke-dashoffset]="getScoreOffset()" class="transition-all duration-1000"/>
-                    </svg>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-3xl font-black text-slate-900 dark:text-white">{{ healthAnimated }}</span>
-                        <span class="text-[10px] font-bold text-slate-400">/100</span>
-                    </div>
+            <div class="intel-cmd intel-cmd--hero">
+                <div class="intel-cmd__shell">
+                    <span class="intel-cmd__icon" aria-hidden="true">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </span>
+                    <input
+                        type="text"
+                        class="intel-cmd__input"
+                        [(ngModel)]="commandQuery"
+                        (keydown)="onCommandKeydown($event)"
+                        placeholder="Ex. Quel est l’état de mes devis ? Combien de leads ce mois-ci ?"
+                        [disabled]="commandBusy()"
+                        autocomplete="off"
+                        aria-label="Votre question à MAKA Copilot"
+                    />
+                    <button
+                        type="button"
+                        class="intel-cmd__send"
+                        (click)="submitCommand()"
+                        [disabled]="commandBusy() || !commandQuery.trim()"
+                        aria-label="Envoyer la question"
+                    >
+                        @if (commandBusy()) {
+                            <span class="intel-cmd__mini-spin" aria-hidden="true"></span>
+                        } @else {
+                            <span class="intel-cmd__send-label">Envoyer</span>
+                            <i class="fa-solid fa-arrow-right intel-cmd__send-ico" aria-hidden="true"></i>
+                        }
+                    </button>
                 </div>
-                <span class="mt-2 text-sm font-bold" [style.color]="crossData.couleur_sante">{{ crossData.niveau_sante }}</span>
-            </div>
-
-            <!-- KPIs Cross-Modules -->
-            <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4" *ngIf="crossData">
-                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2 text-sm"><i class="fa-solid fa-coins"></i></div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ formatMontant(crossData.kpis.ca_mensuel) }} <span class="text-xs font-normal text-slate-400">MAD</span></p>
-                    <p class="text-[11px] font-medium text-slate-500 mt-1">CA Mensuel</p>
-                </div>
-                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2 text-sm"><i class="fa-solid fa-users"></i></div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ crossData.kpis.total_leads }}</p>
-                    <p class="text-[11px] font-medium text-slate-500 mt-1">Leads CRM <span class="text-emerald-500">(+{{ crossData.kpis.leads_nouveaux }})</span></p>
-                </div>
-                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-2 text-sm"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ crossData.kpis.factures_impayees }}</p>
-                    <p class="text-[11px] font-medium text-slate-500 mt-1">Factures impayées</p>
-                </div>
-                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="w-9 h-9 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2 text-sm"><i class="fa-solid fa-people-group"></i></div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ crossData.kpis.total_employes }}</p>
-                    <p class="text-[11px] font-medium text-slate-500 mt-1">Employés <span class="text-amber-500" *ngIf="crossData.kpis.conges_en_cours">({{ crossData.kpis.conges_en_cours }} en congé)</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Row 2: KPIs detailles -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4" *ngIf="crossData">
-            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                <p class="text-lg font-bold text-slate-900 dark:text-white">{{ formatMontant(crossData.kpis.pipeline_crm) }}</p>
-                <p class="text-[10px] text-slate-500">Pipeline CRM (MAD)</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                <p class="text-lg font-bold text-slate-900 dark:text-white">{{ crossData.kpis.taux_conversion }}%</p>
-                <p class="text-[10px] text-slate-500">Conv. Devis→Cmd</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                <p class="text-lg font-bold text-slate-900 dark:text-white">{{ crossData.kpis.tickets_ouverts }}</p>
-                <p class="text-[10px] text-slate-500">Tickets ouverts</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                <p class="text-lg font-bold text-slate-900 dark:text-white">{{ crossData.kpis.total_commandes }}</p>
-                <p class="text-[10px] text-slate-500">Commandes</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                <p class="text-lg font-bold" [class]="crossData.kpis.croissance_ca >= 0 ? 'text-emerald-600' : 'text-red-500'">
-                    {{ crossData.kpis.croissance_ca > 0 ? '+' : '' }}{{ crossData.kpis.croissance_ca }}%
-                </p>
-                <p class="text-[10px] text-slate-500">Croissance CA</p>
-            </div>
-        </div>
-
-        <!-- Row 3: Alertes + Insights -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            <!-- Alertes Cross-Modules -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden" *ngIf="crossData">
-                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
-                    <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-bell text-amber-500"></i> Alertes Intelligentes
-                        <span class="ml-auto text-[10px] font-bold px-2 py-0.5 bg-amber-100 dark:bg-amber-500/20 text-amber-600 rounded-full">{{ crossData.alertes.length }}</span>
-                    </h2>
-                </div>
-                <div class="p-4 space-y-3 max-h-80 overflow-y-auto">
-                    <div *ngFor="let alerte of crossData.alertes" class="p-3 rounded-xl border-l-4 transition-colors" [ngClass]="getAlerteBorderClass(alerte.type) + ' ' + getAlerteBgClass(alerte.type)">
-                        <div class="flex items-start gap-3">
-                            <i class="fa-solid mt-0.5" [ngClass]="alerte.icone + ' ' + getAlerteIconClass(alerte.type)"></i>
-                            <div class="flex-1">
-                                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ alerte.titre }}</p>
-                                <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{{ alerte.texte }}</p>
-                                <span class="text-[10px] font-bold text-slate-400 mt-1 inline-block">{{ alerte.module }}</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="intel-cmd__foot">
+                    <span><kbd class="intel-kbd">Entrée</kbd> pour envoyer</span>
+                    <span class="intel-cmd__sep">·</span>
+                    <span>Réponses dans le fil Pulse ci-dessous</span>
                 </div>
             </div>
 
-            <!-- Insights Ventes -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
-                    <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-lightbulb text-indigo-500"></i> Insights ML
-                    </h2>
-                </div>
-                <div class="p-4 space-y-3">
-                    <div *ngFor="let ins of insights" class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                        <i class="fa-solid mt-0.5" [ngClass]="ins.icone" [class]="ins.type === 'success' ? 'text-emerald-500' : ins.type === 'warning' ? 'text-amber-500' : 'text-blue-500'"></i>
-                        <p class="text-sm text-slate-700 dark:text-slate-300">{{ ins.texte }}</p>
-                    </div>
-                    <div *ngIf="!insights.length" class="text-center text-sm text-slate-500 py-4">Aucun insight disponible</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============ TAB: PREVISIONS ============ -->
-    <div *ngIf="!loadingData && activeTab==='forecast'" class="space-y-6">
-
-        <!-- KPIs Ventes -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" *ngIf="kpis">
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-3"><i class="fa-solid fa-coins"></i></div>
-                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ formatMontant(kpis.ca_actuel) }} DH</p>
-                <p class="text-xs font-medium text-slate-500 mt-1">CA Réel</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 flex items-center justify-center mb-3"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ formatMontant(kpis.ca_prevu) }} DH</p>
-                <p class="text-xs font-medium text-slate-500 mt-1">Prédiction IA</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 flex items-center justify-center mb-3"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                <p class="text-2xl font-bold text-slate-900 dark:text-white">+{{ kpis.croissance }}%</p>
-                <p class="text-xs font-medium text-slate-500 mt-1">Tendance</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 flex items-center justify-center mb-3"><i class="fa-solid fa-bullseye"></i></div>
-                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ kpis.taux_conversion }}%</p>
-                <p class="text-xs font-medium text-slate-500 mt-1">Conv. Historique</p>
-            </div>
-        </div>
-
-        <!-- Graphique Forecast -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden" *ngIf="forecastData">
-            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
-                <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-indigo-500"></i> Prévision des ventes (Gradient Boosting)
-                </h2>
-                <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded tracking-wider">R² : {{ forecastData.precision_modele }}%</span>
-            </div>
-            <div class="p-6 h-64 flex flex-col">
-                <div class="flex-1 flex items-end gap-3 border-b border-slate-200 dark:border-slate-800 pb-2">
-                    <div *ngFor="let point of forecastData.donnees" class="flex-1 flex flex-col items-center justify-end h-full gap-2 group cursor-pointer">
-                        <div class="w-full max-w-[40px] rounded-t-sm transition-all duration-300" [ngClass]="point.type === 'reel' ? 'bg-slate-300 dark:bg-slate-700' : 'bg-indigo-500'" [style.height.%]="getBarHeight(point.valeur)">
-                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none whitespace-nowrap">{{ formatMontant(point.valeur) }}</span>
-                        </div>
-                        <span class="text-[9px] text-slate-500 font-medium">{{ point.mois }}</span>
-                    </div>
-                </div>
-                <div class="flex items-center justify-center gap-6 mt-4 text-xs font-medium text-slate-600">
-                    <span class="flex items-center gap-2"><div class="w-3 h-3 bg-slate-300 dark:bg-slate-700 rounded-sm"></div> Données BDD</span>
-                    <span class="flex items-center gap-2"><div class="w-3 h-3 bg-indigo-500 rounded-sm"></div> Prédiction IA</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============ TAB: SEGMENTATION ============ -->
-    <div *ngIf="!loadingData && activeTab==='segmentation'" class="space-y-6">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
-                <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-users-viewfinder text-purple-500"></i> Segmentation Client (K-Means)
-                </h2>
-            </div>
-            <div class="p-6" *ngIf="segmentationData && segmentationData.segments?.length">
-                <p class="text-xs text-slate-500 mb-4">L'IA a identifié {{ segmentationData.n_clusters }} clusters parmi {{ segmentationData.n_clients }} clients :</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div *ngFor="let seg of segmentationData.segments" class="p-4 border border-slate-100 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-lg">{{ seg.icone }}</span>
-                                <h3 class="font-bold text-sm" [style.color]="seg.couleur">{{ seg.nom }}</h3>
-                            </div>
-                            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">{{ seg.nb_clients }} clients</span>
-                        </div>
-                        <div class="flex justify-between text-xs text-slate-500">
-                            <span>CA Moyen: {{ formatMontant(seg.ca_moyen) }} DH</span>
-                            <span>Total: {{ formatMontant(seg.ca_total) }} DH</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6 text-center text-slate-500 text-sm" *ngIf="!segmentationData || !segmentationData.segments?.length">
-                Pas assez de clients pour effectuer le clustering (minimum 4).
-            </div>
-        </div>
-    </div>
-
-    <!-- ============ COPILOT SIDEBAR ============ -->
-    <div *ngIf="showCopilot" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white dark:bg-slate-900 shadow-[-10px_0_30px_rgba(0,0,0,0.15)] z-50 flex flex-col border-l border-slate-200 dark:border-slate-800 animate-[slideInRight_0.3s_ease-out]">
-        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-robot text-xl"></i>
-                <div>
-                    <h2 class="font-bold text-lg">MAKA Copilot</h2>
-                    <p class="text-[10px] text-indigo-200">RAG++ • Tous les modules</p>
-                </div>
-            </div>
-            <button (click)="toggleCopilot()" class="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <div class="flex-1 overflow-y-auto p-4 space-y-4" #chatContainer>
-            <div *ngFor="let msg of messages" class="flex gap-3" [ngClass]="{'flex-row-reverse': msg.auteur === 'user'}">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" [ngClass]="msg.auteur === 'user' ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'">
-                    <i class="fa-solid" [ngClass]="msg.auteur === 'user' ? 'fa-user' : 'fa-robot'"></i>
-                </div>
-                <div class="max-w-[80%] rounded-2xl px-4 py-3 shadow-sm text-sm" [ngClass]="msg.auteur === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-tl-none'">
-                    {{ msg.texte }}
-                    <div class="text-[10px] mt-1 text-right opacity-70">{{ msg.heure }}</div>
-                </div>
-            </div>
-
-            <div *ngIf="chatLoading" class="flex gap-3">
-                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 flex items-center justify-center">
-                    <i class="fa-solid fa-robot"></i>
-                </div>
-                <div class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-none px-4 py-3 flex gap-1 items-center">
-                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce"></span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style="animation-delay: 0.1s"></span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style="animation-delay: 0.2s"></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <div class="relative">
-                <input type="text" [(ngModel)]="messageInput" (keydown)="onKeyDown($event)" placeholder="Posez une question sur votre entreprise..." class="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors text-slate-900 dark:text-white">
-                <button (click)="envoyerMessage()" [disabled]="chatLoading || !messageInput.trim()" class="absolute right-2 top-2 w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50 transition-colors">
-                    <i class="fa-solid fa-paper-plane text-xs"></i>
+            <div class="intel-hero__chips" role="group" aria-label="Exemples de questions">
+                <button type="button" class="intel-hero__chip" (click)="useExamplePrompt('Quel est mon chiffre d’affaires et ma tendance ?')">
+                    CA & tendance
+                </button>
+                <button type="button" class="intel-hero__chip" (click)="useExamplePrompt('Résume l’état de mes leads et opportunités CRM.')">
+                    Pipeline CRM
+                </button>
+                <button type="button" class="intel-hero__chip" (click)="useExamplePrompt('Y a-t-il des factures ou impayés à surveiller ?')">
+                    Factures & trésorerie
+                </button>
+                <button type="button" class="intel-hero__chip" (click)="useExamplePrompt('Combien d’employés et de congés en cours ?')">
+                    Effectif & congés
                 </button>
             </div>
         </div>
-    </div>
+    </header>
+
+    <!-- Bento Control Center -->
+    <section class="intel-bento" aria-label="Centre de contrôle Bento">
+
+        <!-- Tuile principale : Pulse AI (span 2) -->
+        <article class="intel-tile intel-tile--pulse">
+            <div class="intel-tile__head">
+                <span class="intel-tile__badge">
+                    <span class="intel-tile__dot"></span>
+                    Live
+                </span>
+                <h2 class="intel-tile__title">Pulse AI</h2>
+                <p class="intel-tile__desc">Flux des actions IA et automatisations récentes sur votre tenant.</p>
+            </div>
+            <ul class="intel-pulse">
+                @for (ev of pulseEvents(); track ev.id) {
+                    <li [class]="pulseRowClass(ev)">
+                        <span class="intel-pulse__ico" aria-hidden="true"><i [class]="ev.icon"></i></span>
+                        <div class="intel-pulse__body">
+                            <div class="intel-pulse__top">
+                                <span class="intel-pulse__label">{{ ev.label }}</span>
+                                <time class="intel-pulse__time">{{ ev.timeLabel }}</time>
+                            </div>
+                            <p class="intel-pulse__detail">{{ ev.detail }}</p>
+                        </div>
+                    </li>
+                } @empty {
+                    <li class="intel-pulse__empty">Aucun événement pour le moment.</li>
+                }
+            </ul>
+        </article>
+
+        <!-- Tuile latérale : santé + KPI -->
+        <article class="intel-tile intel-tile--compact">
+            <h2 class="intel-tile__title intel-tile__title--sm">Synthèse</h2>
+            <div class="intel-health">
+                <div class="intel-health__ring" [attr.data-score]="healthScore()">
+                    <svg viewBox="0 0 100 100" aria-hidden="true">
+                        <circle class="intel-health__track" cx="50" cy="50" r="42" />
+                        <circle
+                            class="intel-health__fill"
+                            cx="50"
+                            cy="50"
+                            r="42"
+                            [style.strokeDashoffset]="264 - (264 * healthScore()) / 100"
+                        />
+                    </svg>
+                    <div class="intel-health__num">
+                        <span class="intel-health__value">{{ healthScore() }}</span>
+                        <span class="intel-health__unit">/100</span>
+                    </div>
+                </div>
+                <p class="intel-health__caption">{{ healthLabel() }}</p>
+            </div>
+            <div class="intel-metrics">
+                @for (m of quickMetrics(); track m.label) {
+                    <div class="intel-metric">
+                        <span class="intel-metric__label">{{ m.label }}</span>
+                        <span class="intel-metric__value">{{ m.value }}</span>
+                        @if (m.delta) {
+                            <span
+                                class="intel-metric__delta"
+                                [class.intel-metric__delta--up]="m.positive === true"
+                                [class.intel-metric__delta--down]="m.positive === false"
+                            >
+                                {{ m.delta }}
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+        </article>
+
+        <!-- Prévision + alertes -->
+        <article class="intel-tile intel-tile--wide">
+            <div class="intel-wide__split">
+                <div class="intel-wide__col">
+                    <h2 class="intel-tile__title intel-tile__title--sm">Prévision vs réel</h2>
+                    <p class="intel-tile__desc">Aperçu mensuel depuis la base Sales</p>
+                    <div class="intel-mini-chart">
+                        @for (row of forecastPreview(); track row.month) {
+                            <div class="intel-mini-chart__cell">
+                                <div class="intel-mini-chart__bars">
+                                    @if (row.actual > 0) {
+                                        <div
+                                            class="intel-mini-chart__bar intel-mini-chart__bar--real"
+                                            [style.height.%]="barHeight(row.actual)"
+                                            title="Réel {{ row.actual }}"
+                                        ></div>
+                                    }
+                                    <div
+                                        class="intel-mini-chart__bar intel-mini-chart__bar--pred"
+                                        [style.height.%]="barHeight(row.predicted)"
+                                        title="Prévu {{ row.predicted }}"
+                                    ></div>
+                                </div>
+                                <span class="intel-mini-chart__mo">{{ row.month }}</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="intel-mini-chart__legend">
+                        <span><i class="intel-legend-dot intel-legend-dot--real"></i> Réel</span>
+                        <span><i class="intel-legend-dot intel-legend-dot--pred"></i> Prévu IA</span>
+                    </div>
+                </div>
+                <div class="intel-wide__col intel-wide__col--alerts">
+                    <h2 class="intel-tile__title intel-tile__title--sm">Alertes prioritaires</h2>
+                    <ul class="intel-alerts">
+                        @for (a of spotlightAlerts(); track a.title) {
+                            <li class="intel-alerts__item" [attr.data-sev]="a.severity">
+                                <span class="intel-alerts__mod">{{ a.module }}</span>
+                                <span class="intel-alerts__txt">{{ a.title }}</span>
+                            </li>
+                        } @empty {
+                            <li class="intel-alerts__empty">Aucune alerte.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </article>
+
+        <!-- Segmentation / Marketing Intelligence -->
+        <article class="intel-tile intel-tile--wide">
+            <div class="intel-marketing__head">
+                <div>
+                    <span class="intel-tile__badge">
+                        <span class="intel-tile__dot"></span>
+                        K-Means + RFM
+                    </span>
+                    <h2 class="intel-tile__title intel-tile__title--sm">Customer Segmentation & Marketing Intelligence</h2>
+                    <p class="intel-tile__desc">Segmentation des clients, prospects et devis depuis les données MAKA ERP.</p>
+                </div>
+                <div class="intel-marketing__summary">
+                    <div class="intel-marketing__chip">
+                        <span>Clients</span>
+                        <strong>{{ marketingSummary().totalCustomers }}</strong>
+                    </div>
+                    <div class="intel-marketing__chip">
+                        <span>CA</span>
+                        <strong>{{ marketingSummary().totalRevenue }}</strong>
+                    </div>
+                    <div class="intel-marketing__chip">
+                        <span>Conversion</span>
+                        <strong>{{ marketingSummary().conversionRate }}</strong>
+                    </div>
+                    <div class="intel-marketing__chip">
+                        <span>CRM</span>
+                        <strong>{{ marketingSummary().crmStatus }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="intel-segments">
+                @for (segment of marketingSegments(); track segment.key) {
+                    <section class="intel-segment" [style.border-left-color]="segment.color">
+                        <div class="intel-segment__top">
+                            <span class="intel-segment__name">{{ segment.name }}</span>
+                            <span class="intel-segment__count">{{ segment.customers }} profils</span>
+                        </div>
+                        <p class="intel-segment__desc">{{ segment.description }}</p>
+                        <div class="intel-segment__metrics">
+                            <span>{{ segment.revenue }}</span>
+                            <span>{{ segment.revenueShare }} du CA</span>
+                            <span>{{ segment.conversionRate }} conv.</span>
+                        </div>
+                        <p class="intel-segment__rec">{{ segment.recommendation }}</p>
+                    </section>
+                } @empty {
+                    <div class="intel-marketing__empty">Aucun segment marketing disponible pour le moment.</div>
+                }
+            </div>
+
+            <div class="intel-customers">
+                <div class="intel-customers__head">
+                    <span>Clients et prospects prioritaires</span>
+                    <span>Score IA</span>
+                </div>
+                @for (customer of marketingCustomers(); track customer.name) {
+                    <div class="intel-customers__row" [style.border-left-color]="customer.color">
+                        <div class="intel-customers__main">
+                            <strong>{{ customer.name }}</strong>
+                            <span>{{ customer.segment }} · {{ customer.source }} · {{ customer.revenue }}</span>
+                        </div>
+                        <div class="intel-customers__meta">
+                            <span>{{ customer.orders }} cmd</span>
+                            <span>{{ customer.quotes }} devis</span>
+                            <strong>{{ customer.score }}/100</strong>
+                        </div>
+                    </div>
+                } @empty {
+                    <div class="intel-marketing__empty">Aucun client prioritaire à afficher.</div>
+                }
+            </div>
+        </article>
+    </section>
 </div>

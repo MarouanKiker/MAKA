@@ -1,0 +1,131 @@
+<section class="gs-panel" aria-labelledby="gs-heading">
+    <div class="gs-panel__head">
+        <div class="gs-panel__icon" aria-hidden="true">
+            <i class="fa-brands fa-duckduckgo"></i>
+        </div>
+        <div>
+            <h2 id="gs-heading" class="gs-panel__title">{{ ui.title }}</h2>
+            <p class="gs-panel__subtitle">{{ ui.subtitle }}</p>
+        </div>
+    </div>
+
+    <div class="gs-toolbar">
+        <label class="gs-field gs-field--grow">
+            <span class="sr-only">Requête</span>
+            <input
+                type="text"
+                [(ngModel)]="query"
+                (keyup.enter)="launchScrape()"
+                [placeholder]="ui.reqPlaceholder"
+                class="gs-input"
+                [disabled]="isLoading"
+            />
+        </label>
+        <label class="gs-field gs-field--narrow">
+            <span class="gs-label">{{ ui.resultsLabel }}</span>
+            <input
+                type="number"
+                [(ngModel)]="numResults"
+                min="1"
+                max="10"
+                class="gs-input gs-input--num"
+                [disabled]="isLoading"
+            />
+        </label>
+        <button
+            type="button"
+            class="gs-btn"
+            (click)="launchScrape()"
+            [disabled]="isLoading || !query.trim()"
+        >
+            @if (isLoading) {
+                <span class="gs-spinner" aria-hidden="true"></span>
+                {{ ui.searching }}
+            } @else {
+                <i class="fa-solid fa-magnifying-glass"></i>
+                {{ ui.btnSearch }}
+            }
+        </button>
+    </div>
+
+    @if (errorMessage) {
+        <div class="gs-alert" role="alert">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ errorMessage }}
+        </div>
+    }
+
+    @if (!isLoading && !errorMessage && hasQueried) {
+        <div class="gs-table-wrap">
+            <table class="gs-table">
+                <thead>
+                    <tr>
+                        <th>{{ ui.colCompany }}</th>
+                        <th>{{ ui.colWeb }}</th>
+                        <th>{{ ui.colPhone }}</th>
+                        <th>{{ ui.colEmail }}</th>
+                        <th>{{ ui.colSource }}</th>
+                        <th>{{ ui.colAction }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (row of results; track row.website) {
+                        <tr>
+                            <td class="gs-cell-strong">{{ row.companyName }}</td>
+                            <td>
+                                <a [href]="row.website" target="_blank" rel="noopener noreferrer" class="gs-link">
+                                    {{ row.website }}
+                                    <i class="fa-solid fa-arrow-up-right-from-square gs-link-icon"></i>
+                                </a>
+                            </td>
+                            <td>
+                                @if (row.phone) {
+                                    <a [href]="'tel:' + row.phone" class="gs-contact">{{ row.phone }}</a>
+                                } @else {
+                                    <span class="gs-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                <a [href]="'mailto:' + row.email" class="gs-contact">{{ row.email }}</a>
+                            </td>
+                            <td><span class="gs-pill">{{ row.source }}</span></td>
+                            <td>
+                                <button
+                                    type="button"
+                                    class="gs-row-btn"
+                                    [class.gs-row-btn--saved]="leadStatus[row.website] === 'saved'"
+                                    [class.gs-row-btn--error]="leadStatus[row.website] === 'error'"
+                                    [disabled]="leadStatus[row.website] === 'saving' || leadStatus[row.website] === 'saved'"
+                                    (click)="addToLead(row)"
+                                >
+                                    @if (leadStatus[row.website] === 'saving') {
+                                        <span class="gs-spinner gs-spinner--small" aria-hidden="true"></span>
+                                    } @else if (leadStatus[row.website] === 'saved') {
+                                        <i class="fa-solid fa-check"></i>
+                                    } @else {
+                                        <i class="fa-solid fa-user-plus"></i>
+                                    }
+                                    {{ getLeadButtonLabel(row) }}
+                                </button>
+                            </td>
+                        </tr>
+                    } @empty {
+                        <tr>
+                            <td colspan="6" class="gs-empty gs-empty--detail">
+                                <i class="fa-regular fa-folder-open gs-empty__icon" aria-hidden="true"></i>
+                                <span class="gs-empty__title">{{ ui.emptyTitle }}</span>
+                                <span class="gs-empty__hint">{{ ui.emptyHint }}</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    @if (!isLoading && !errorMessage && !hasQueried) {
+        <p class="gs-hint">
+            <i class="fa-solid fa-circle-info text-slate-400 mr-2"></i>
+            {{ ui.hintBefore }}
+        </p>
+    }
+</section>

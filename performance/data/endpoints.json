@@ -1,0 +1,69 @@
+{
+  "publicEndpoints": [
+    {
+      "name": "gateway_health",
+      "method": "GET",
+      "path": "/health",
+      "expectedStatus": 200
+    },
+    {
+      "name": "auth_forgot_password",
+      "method": "POST",
+      "path": "/api/auth/forgot-password",
+      "body": {
+        "email": "performance-test@example.com"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "crm_swagger",
+      "method": "GET",
+      "url": "http://crm-service:5000/swagger/v1/swagger.json",
+      "expectedStatus": 200
+    },
+    {
+      "name": "finance_health",
+      "method": "GET",
+      "url": "http://finance-service:6000/actuator/health",
+      "expectedStatus": 200
+    },
+    {
+      "name": "stock_health",
+      "method": "GET",
+      "url": "http://stock-service:8083/actuator/health",
+      "expectedStatus": 200
+    },
+    {
+      "name": "hr_employes",
+      "method": "GET",
+      "path": "/api/hr/employes",
+      "expectedStatus": 200
+    },
+    {
+      "name": "sales_health",
+      "method": "GET",
+      "path": "/api/sales/health",
+      "expectedStatus": 200
+    }
+  ],
+  "authenticatedEndpoints": [
+    {
+      "name": "crm_leads",
+      "method": "GET",
+      "path": "/api/crm/leads",
+      "expectedStatus": 200
+    },
+    {
+      "name": "finance_factures",
+      "method": "GET",
+      "path": "/api/finance/factures",
+      "expectedStatus": 200
+    },
+    {
+      "name": "stock_articles",
+      "method": "GET",
+      "path": "/api/stock/articles",
+      "expectedStatus": 200
+    }
+  ]
+}

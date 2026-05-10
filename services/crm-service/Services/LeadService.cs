@@ -62,6 +62,18 @@ public class LeadService : ILeadService
         if (dto.Source != null)
             lead.Source = dto.Source;
 
+        if (dto.Entreprise != null)
+            lead.Entreprise = dto.Entreprise;
+
+        if (dto.NomContact != null)
+            lead.NomContact = dto.NomContact;
+
+        if (dto.Email != null)
+            lead.Email = dto.Email;
+
+        if (dto.Telephone != null)
+            lead.Telephone = dto.Telephone;
+
         if (dto.Statut != null)
         {
             if (Enum.TryParse<LeadStatut>(dto.Statut, ignoreCase: true, out var parsed))

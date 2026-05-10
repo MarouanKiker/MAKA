@@ -37,6 +37,7 @@ public class PaiementMapper {
                 paiement.getMontant(),
                 paiement.getModePaiement() != null ? paiement.getModePaiement().getLibelle() : "N/A",
                 paiement.getCompteBancaire() != null ? paiement.getCompteBancaire().getNomBanque() : "N/A",
+                paiement.getCompteBancaire() != null ? paiement.getCompteBancaire().getId() : null,
                 paiement.getReferenceTransaction(),
                 paiement.getType(),
                 paiement.getStatut(),

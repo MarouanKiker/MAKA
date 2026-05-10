@@ -3,8 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { CrmService } from '../../core/services/crm.service';
-import { ConfirmService } from '../../core/services/confirm.service';
-import { Lead, Campaign } from '../../core/models/crm.model';
+import { Lead, CrmCampaign } from '../../core/models/crm.model';
 
 @Component({
     selector: 'app-leads',
@@ -21,7 +20,7 @@ export class LeadsComponent implements OnInit {
     campagneId: number | null = null;
 
     leads: Lead[] = [];
-    campaigns: Campaign[] = [];
+    campaigns: CrmCampaign[] = [];
 
     columns = [
         { key: 'NOUVEAU', label: 'Nouveau', color: '#4a9eff' },
@@ -33,10 +32,7 @@ export class LeadsComponent implements OnInit {
 
     draggedLead: Lead | null = null;
 
-    constructor(
-        private crm: CrmService,
-        private confirmService: ConfirmService
-    ) { }
+    constructor(private crm: CrmService) { }
 
     ngOnInit(): void {
         this.loadData();
@@ -79,6 +75,15 @@ export class LeadsComponent implements OnInit {
 
     getByStatut(statut: string): Lead[] {
         return this.leads.filter(l => l.statut === statut);
+    }
+
+    /** Titre de carte : entreprise, sinon contact, sinon source. */
+    companyDisplayName(l: Lead): string {
+        const e = l.entreprise?.trim();
+        if (e) return e;
+        const n = l.nomContact?.trim();
+        if (n) return n;
+        return l.source?.trim() || 'Lead';
     }
 
     openForm(): void {
@@ -148,18 +153,10 @@ export class LeadsComponent implements OnInit {
     }
 
     delete(id: number): void {
-        this.confirmService.ask({
-            title: 'Supprimer le lead',
-            message: 'Êtes-vous sûr de vouloir supprimer ce lead ? Cette action est irréversible.',
-            confirmText: 'Oui, supprimer',
-            cancelText: 'Annuler',
-            type: 'danger',
-            onConfirm: () => {
-                this.crm.deleteLead(id).subscribe({
-                    next: () => this.loadLeads(),
-                    error: (err) => console.error('Erreur suppression lead', err)
-                });
-            }
+        if (!confirm('Supprimer ce lead ?')) return;
+        this.crm.deleteLead(id).subscribe({
+            next: () => this.loadLeads(),
+            error: (err) => console.error('Erreur suppression lead', err)
         });
     }
 

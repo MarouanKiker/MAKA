@@ -98,7 +98,7 @@ class PaiementServiceTest {
         paiement.setType("CLIENT");
 
         PaiementResponse response = new PaiementResponse(
-                5L, 2L, new BigDecimal("80.00"), "Virement", "N/A",
+                5L, 2L, new BigDecimal("80.00"), "Virement", "N/A", null,
                 "TX-2", "CLIENT", StatutPaiement.EN_ATTENTE, null, null
         );
 
@@ -140,7 +140,7 @@ class PaiementServiceTest {
         paiement.setType("CLIENT");
 
         PaiementResponse response = new PaiementResponse(
-                7L, 3L, new BigDecimal("100.00"), "Virement", "Bank",
+                7L, 3L, new BigDecimal("100.00"), "Virement", "Bank", null,
                 "TX-3", "CLIENT", StatutPaiement.VALIDE, null, null
         );
 

@@ -1,0 +1,15 @@
+.lg-badge {
+    @apply text-[0.65rem] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/25;
+}
+
+.generator-placeholder {
+    min-height: 280px;
+}
+
+.lg-page-btn {
+    @apply inline-flex h-8 min-w-8 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800;
+}
+
+.lg-page-btn--active {
+    @apply border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-600 dark:border-indigo-500 dark:bg-indigo-500 dark:text-white;
+}

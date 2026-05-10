@@ -1,0 +1,118 @@
+:host {
+    display: block;
+}
+
+.cb-page__toolbar {
+    align-items: flex-start;
+}
+
+/* --- Bandeau total (lavande / gris-bleu clair) --- */
+.cb-hero {
+    @apply rounded-2xl px-8 py-7 mb-8 border border-slate-200/80 dark:border-slate-700/80;
+    background: linear-gradient(135deg, #eef2ff 0%, #e8ecf4 50%, #f1f0fb 100%);
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+}
+
+.cb-hero__label {
+    @apply text-sm font-medium text-slate-600 dark:text-slate-400 m-0 mb-1;
+}
+
+.cb-hero__amount {
+    @apply text-4xl md:text-5xl font-bold m-0 mb-2 tracking-tight;
+    color: #06b6d4;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.cb-hero__meta {
+    @apply text-sm text-slate-500 dark:text-slate-400 m-0;
+}
+
+/* --- Grille cartes --- */
+.cb-grid {
+    @apply grid gap-5 sm:grid-cols-2;
+}
+
+.cb-card {
+    @apply relative rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 shadow-sm;
+    box-shadow: 0 2px 16px rgba(15, 23, 42, 0.06);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.cb-card:hover {
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.1);
+}
+
+.cb-card__top {
+    @apply flex items-start gap-3 mb-5;
+}
+
+.cb-card__icon {
+    @apply w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-lg;
+    background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+    color: #475569;
+}
+
+.cb-card__titles {
+    @apply flex-1 min-w-0 pr-2;
+}
+
+.cb-card__name {
+    @apply text-base font-bold text-slate-900 dark:text-white m-0 leading-tight;
+}
+
+.cb-card__bank {
+    @apply text-sm text-slate-500 dark:text-slate-400 m-0 mt-1;
+}
+
+.cb-badge {
+    @apply shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full;
+}
+
+.cb-badge--courant {
+    @apply bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300;
+}
+
+.cb-badge--epargne {
+    @apply bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300;
+}
+
+.cb-badge--devises {
+    @apply bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200;
+}
+
+.cb-card__balance-block {
+    @apply mb-4;
+}
+
+.cb-card__balance {
+    @apply text-2xl md:text-3xl font-bold m-0 mb-1;
+    color: #06b6d4;
+}
+
+.cb-card__trend {
+    @apply text-sm font-semibold m-0 inline-flex items-center gap-1;
+}
+
+.cb-card__trend--up {
+    @apply text-emerald-600 dark:text-emerald-400;
+}
+
+.cb-card__trend--down {
+    @apply text-red-500 dark:text-red-400;
+}
+
+.cb-card__iban {
+    @apply text-xs font-mono text-slate-400 dark:text-slate-500 m-0 tracking-wide;
+}
+
+.cb-card__delete {
+    @apply absolute top-4 right-4 w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors;
+}
+
+.cb-empty {
+    @apply flex flex-col items-center justify-center text-center py-16 px-6 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-slate-500;
+}
+
+.cb-empty i {
+    @apply text-5xl mb-4 text-slate-300 dark:text-slate-600;
+}

@@ -45,6 +45,11 @@ export class AiService {
         return this.http.get(this.baseUrl + '/segmentation');
     }
 
+    /** Customer Segmentation & Marketing Intelligence */
+    getMarketingIntelligence(): Observable<any> {
+        return this.http.get(this.baseUrl + '/marketing-intelligence');
+    }
+
     /** Scoring ML d'un lead */
     scoreLead(leadData: any): Observable<any> {
         return this.http.post(this.baseUrl + '/lead-score', leadData);

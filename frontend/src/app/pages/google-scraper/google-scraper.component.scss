@@ -1,0 +1,167 @@
+:host {
+    display: block;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.gs-panel {
+    @apply rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 overflow-hidden shadow-sm;
+}
+
+.gs-panel__head {
+    @apply flex items-start gap-4 px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/50;
+}
+
+.gs-panel__icon {
+    @apply w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700;
+}
+
+.gs-panel__title {
+    @apply text-sm font-bold text-slate-900 dark:text-white tracking-tight;
+}
+
+.gs-panel__subtitle {
+    @apply text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium leading-relaxed max-w-2xl;
+}
+
+.gs-toolbar {
+    @apply flex flex-col sm:flex-row gap-3 p-5 items-stretch sm:items-end;
+}
+
+.gs-field {
+    @apply flex flex-col gap-1;
+}
+
+.gs-field--grow {
+    @apply flex-1 min-w-0;
+}
+
+.gs-field--narrow {
+    @apply w-full sm:w-28 shrink-0;
+}
+
+.gs-label {
+    @apply text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400;
+}
+
+.gs-input {
+    @apply w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 disabled:opacity-50;
+}
+
+.gs-input--num {
+    @apply font-mono tabular-nums;
+}
+
+.gs-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors disabled:opacity-50 disabled:pointer-events-none shrink-0;
+}
+
+.gs-spinner {
+    @apply inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin;
+}
+
+.gs-spinner--small {
+    @apply w-3.5 h-3.5;
+}
+
+.gs-alert {
+    @apply mx-5 mb-5 flex items-center gap-2 rounded-xl border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-800 dark:text-red-200;
+}
+
+.gs-table-wrap {
+    @apply px-5 pb-5 overflow-x-auto;
+}
+
+.gs-table {
+    @apply w-full text-sm border-collapse;
+}
+
+.gs-table thead {
+    @apply bg-slate-100 dark:bg-slate-800/80 text-left;
+}
+
+.gs-table th {
+    @apply px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 first:rounded-tl-lg last:rounded-tr-lg;
+}
+
+.gs-table tbody tr {
+    @apply border-b border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors;
+}
+
+.gs-table td {
+    @apply px-4 py-3 align-middle text-slate-700 dark:text-slate-200;
+}
+
+.gs-cell-strong {
+    @apply font-semibold text-slate-900 dark:text-white;
+}
+
+.gs-link {
+    @apply text-indigo-600 dark:text-indigo-400 hover:underline break-all inline-flex items-center gap-1.5 font-medium;
+}
+
+.gs-link-icon {
+    @apply text-[0.65rem] opacity-70 shrink-0;
+}
+
+.gs-contact {
+    @apply text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium break-all;
+}
+
+.gs-muted {
+    @apply text-xs text-slate-400 dark:text-slate-500;
+}
+
+.gs-pill {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600;
+}
+
+.gs-row-btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors disabled:opacity-70 disabled:pointer-events-none whitespace-nowrap;
+}
+
+.gs-row-btn--saved {
+    @apply bg-emerald-600 hover:bg-emerald-600;
+}
+
+.gs-row-btn--error {
+    @apply bg-red-600 hover:bg-red-700;
+}
+
+.gs-empty {
+    @apply text-center py-16 text-slate-500 dark:text-slate-400;
+}
+
+.gs-empty--detail {
+    @apply flex flex-col items-center gap-2 text-left max-w-2xl mx-auto py-12;
+}
+
+.gs-empty__title {
+    @apply block text-base font-semibold text-slate-700 dark:text-slate-200;
+}
+
+.gs-empty__hint {
+    @apply block text-xs text-slate-500 dark:text-slate-400 leading-relaxed;
+}
+
+.gs-empty__hint code {
+    @apply text-[0.7rem] px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300;
+}
+
+.gs-empty__icon {
+    @apply block text-3xl mb-2 mx-auto opacity-40;
+}
+
+.gs-hint {
+    @apply px-5 pb-6 text-sm text-slate-500 dark:text-slate-400 flex items-center;
+}

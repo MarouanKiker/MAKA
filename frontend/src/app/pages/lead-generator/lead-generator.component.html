@@ -1,0 +1,323 @@
+<div>
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fa-solid fa-file-import page-icon"></i>
+                Générateur de prospects
+            </h1>
+            <p class="page-subtitle">
+                Import ou enrichissement de leads B2B — recherche Google, scraping ou fichier Excel
+            </p>
+        </div>
+        <span class="lg-badge">Beta</span>
+    </div>
+
+    <div class="mb-10">
+        <app-google-scraper />
+    </div>
+
+    <section
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden animate-slide-up"
+    >
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+            <div
+                class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0"
+            >
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+                <h2 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Zone de saisie</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                    Import fichier — glissez-déposez un .xlsx / .csv ou parcourez vos fichiers
+                </p>
+            </div>
+        </div>
+
+        <div class="generator-placeholder px-6 py-16 md:py-24">
+            @if (!selectedFile) {
+                <div
+                    class="max-w-xl mx-auto flex flex-col items-center justify-center text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-950/60 px-6 py-12"
+                    (dragover)="onDragOver($event)"
+                    (drop)="onDrop($event)"
+                    role="button"
+                    tabindex="0"
+                    aria-label="Zone de dépôt fichier Excel ou CSV"
+                >
+                    <span
+                        class="w-14 h-14 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center text-xl mb-4 pointer-events-none"
+                        aria-hidden="true"
+                    >
+                        <i class="fa-regular fa-folder-open"></i>
+                    </span>
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1 pointer-events-none">
+                        Déposez votre fichier ici
+                    </p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mb-5 pointer-events-none">
+                        Colonnes détectées automatiquement : entreprise, téléphone, site web, e-mail (facultatif). Sans
+                        en-têtes, l’ordre
+                        <span class="font-semibold text-slate-600 dark:text-slate-300">A · B · C · D</span> est supposé.
+                    </p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mb-5 pointer-events-none">
+                        Formats acceptés : <span class="font-semibold text-slate-600 dark:text-slate-300">.xlsx</span>,
+                        <span class="font-semibold text-slate-600 dark:text-slate-300">.csv</span>
+                    </p>
+                    <input
+                        #fileInput
+                        type="file"
+                        class="sr-only"
+                        accept=".xlsx,.csv"
+                        (change)="onFileSelected($event)"
+                    />
+                    <button
+                        type="button"
+                        class="btn-add"
+                        (click)="fileInput.click()"
+                        (dragover)="onDragOver($event)"
+                        (drop)="onDrop($event)"
+                    >
+                        <i class="fa-solid fa-folder-open"></i>
+                        Parcourir les fichiers
+                    </button>
+                </div>
+            } @else {
+                <div class="max-w-5xl mx-auto space-y-8">
+                    <div
+                        class="rounded-2xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-500/5 px-6 py-8 shadow-sm"
+                    >
+                        <div class="flex items-start gap-4 mb-6">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 text-lg"
+                            >
+                                @if (isParsing) {
+                                    <span
+                                        class="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"
+                                        aria-hidden="true"
+                                    ></span>
+                                } @else {
+                                    <i class="fa-solid fa-file-circle-check"></i>
+                                }
+                            </div>
+                            <div class="min-w-0 flex-1 text-left">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-1">
+                                    @if (isParsing) {
+                                        Lecture du fichier…
+                                    } @else {
+                                        Fichier prêt
+                                    }
+                                </p>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white truncate" [title]="selectedFile.name">
+                                    {{ selectedFile.name }}
+                                </p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                                    {{ formatFileSize(selectedFile.size) }}
+                                    @if (!isParsing && parsedRows.length) {
+                                        — {{ parsedRows.length }} ligne(s) affichée(s)
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        @if (parseError) {
+                            <div
+                                class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                                role="alert"
+                            >
+                                <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                                {{ parseError }}
+                            </div>
+                        }
+                        <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                            <button
+                                type="button"
+                                class="btn-add"
+                                [disabled]="bulkImporting || !countValidPending() || isParsing"
+                                (click)="addAllPending()"
+                            >
+                                @if (bulkImporting) {
+                                    <span
+                                        class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                                        aria-hidden="true"
+                                    ></span>
+                                    Import en cours…
+                                } @else {
+                                    <i class="fa-solid fa-users-line"></i>
+                                    Tout ajouter au CRM ({{ countValidPending() }})
+                                }
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-sm danger flex items-center justify-center gap-2"
+                                (click)="removeFile()"
+                                [disabled]="bulkImporting"
+                                aria-label="Retirer le fichier"
+                            >
+                                <i class="fa-solid fa-trash-can"></i>
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+
+                    @if (!isParsing && parsedRows.length) {
+                        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <table class="min-w-full text-sm text-left">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800">
+                                        <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">
+                                            Nom
+                                        </th>
+                                        <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">E-mail</th>
+                                        <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">
+                                            Téléphone
+                                        </th>
+                                        <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">Site web</th>
+                                        <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">Statut</th>
+                                        <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300 text-right">
+                                            Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (row of paginatedRows; track row.rowIndex) {
+                                        <tr
+                                            class="border-b border-slate-100 dark:border-slate-800 last:border-0 bg-white dark:bg-slate-900/40"
+                                            [class.opacity-60]="!row.valid"
+                                        >
+                                            <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">
+                                                {{ row.entreprise || '—' }}
+                                            </td>
+                                            <td class="px-4 py-3 text-slate-600 dark:text-slate-400 break-all">
+                                                @if (row.email) {
+                                                    <a [href]="'mailto:' + row.email" class="hover:underline">{{ row.email }}</a>
+                                                } @else {
+                                                    <span class="text-slate-400">â€”</span>
+                                                }
+                                            </td>
+                                            <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                                                @if (row.telephone) {
+                                                    <a [href]="'tel:' + row.telephone" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{
+                                                        row.telephone
+                                                    }}</a>
+                                                } @else {
+                                                    <span class="text-slate-400">—</span>
+                                                }
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                @if (row.website) {
+                                                    <a
+                                                        [href]="
+                                                            row.website.startsWith('http') ? row.website : 'https://' + row.website
+                                                        "
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="text-indigo-600 dark:text-indigo-400 hover:underline break-all"
+                                                    >
+                                                        {{ row.website }}
+                                                    </a>
+                                                } @else {
+                                                    <span class="text-slate-400">—</span>
+                                                }
+                                            </td>
+                                            <td class="hidden">
+                                                @if (row.email) {
+                                                    <a [href]="'mailto:' + row.email" class="hover:underline">{{ row.email }}</a>
+                                                } @else {
+                                                    <span class="text-slate-400">—</span>
+                                                }
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                @if (!row.valid) {
+                                                    <span
+                                                        class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"
+                                                        [title]="row.skipReason ?? ''"
+                                                    >
+                                                        Ignorée
+                                                    </span>
+                                                } @else if (leadStatus[row.rowIndex] === 'saved') {
+                                                    <span
+                                                        class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300"
+                                                    >
+                                                        Dans le CRM
+                                                    </span>
+                                                } @else if (leadStatus[row.rowIndex] === 'error') {
+                                                    <span
+                                                        class="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-500/15 dark:text-red-300"
+                                                    >
+                                                        Erreur
+                                                    </span>
+                                                } @else {
+                                                    <span class="text-slate-400 text-xs">Prêt</span>
+                                                }
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                                <button
+                                                    type="button"
+                                                    class="btn-add !py-1.5 !px-3 !text-xs disabled:opacity-50 disabled:pointer-events-none"
+                                                    [disabled]="
+                                                        !row.valid ||
+                                                        leadStatus[row.rowIndex] === 'saving' ||
+                                                        leadStatus[row.rowIndex] === 'saved'
+                                                    "
+                                                    (click)="addRow(row.rowIndex)"
+                                                >
+                                                    @if (leadStatus[row.rowIndex] === 'saving') {
+                                                        <span
+                                                            class="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"
+                                                            aria-hidden="true"
+                                                        ></span>
+                                                    } @else if (leadStatus[row.rowIndex] === 'saved') {
+                                                        <i class="fa-solid fa-check"></i>
+                                                    } @else {
+                                                        <i class="fa-solid fa-user-plus"></i>
+                                                    }
+                                                    {{ getLeadButtonLabel(row.rowIndex) }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (parsedRows.length > pageSize) {
+                            <div
+                                class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3"
+                            >
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                    Affichage {{ pageStart }}-{{ pageEnd }} sur {{ parsedRows.length }}
+                                </p>
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        class="lg-page-btn"
+                                        [disabled]="currentPage === 1"
+                                        (click)="previousPage()"
+                                        aria-label="Page precedente"
+                                    >
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                    @for (page of [].constructor(totalPages); track $index) {
+                                        <button
+                                            type="button"
+                                            class="lg-page-btn"
+                                            [class.lg-page-btn--active]="currentPage === $index + 1"
+                                            (click)="goToPage($index + 1)"
+                                        >
+                                            {{ $index + 1 }}
+                                        </button>
+                                    }
+                                    <button
+                                        type="button"
+                                        class="lg-page-btn"
+                                        [disabled]="currentPage === totalPages"
+                                        (click)="nextPage()"
+                                        aria-label="Page suivante"
+                                    >
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </section>
+</div>

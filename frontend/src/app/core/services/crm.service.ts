@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
-    Lead, Opportunity, Campaign,
+    Lead, Opportunity, CrmCampaign,
     Task, CreateTaskDto,
     Ticket, CreateTicketDto,
     Interaction, CreateInteractionDto
@@ -38,10 +38,10 @@ export class CrmService {
         return this.http.post<Opportunity>(`${this.apiUrl}/leads/${id}/convert`, { titre, valeur });
     }
 
-    getCampaigns(): Observable<Campaign[]> { return this.http.get<Campaign[]>(`${this.apiUrl}/campagnes`); }
-    getCampaign(id: number): Observable<Campaign> { return this.http.get<Campaign>(`${this.apiUrl}/campagnes/${id}`); }
-    createCampaign(campaign: Partial<Campaign>): Observable<Campaign> { return this.http.post<Campaign>(`${this.apiUrl}/campagnes`, campaign); }
-    updateCampaign(id: number, campaign: Partial<Campaign>): Observable<any> { return this.http.put(`${this.apiUrl}/campagnes/${id}`, campaign); }
+    getCampaigns(): Observable<CrmCampaign[]> { return this.http.get<CrmCampaign[]>(`${this.apiUrl}/campagnes`); }
+    getCampaign(id: number): Observable<CrmCampaign> { return this.http.get<CrmCampaign>(`${this.apiUrl}/campagnes/${id}`); }
+    createCampaign(campaign: Partial<CrmCampaign>): Observable<CrmCampaign> { return this.http.post<CrmCampaign>(`${this.apiUrl}/campagnes`, campaign); }
+    updateCampaign(id: number, campaign: Partial<CrmCampaign>): Observable<any> { return this.http.put(`${this.apiUrl}/campagnes/${id}`, campaign); }
     deleteCampaign(id: number): Observable<any> { return this.http.delete(`${this.apiUrl}/campagnes/${id}`); }
 
     getOpportunities(): Observable<Opportunity[]> { 

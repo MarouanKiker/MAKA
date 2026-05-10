@@ -1,6 +1,9 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.database import engine, Base
-from app.routers import ai_router, sales_router
+from app.routers import ai_router, sales_router, leads_scrape_router
+from app import config as app_config
 
 # ============================================================
 # Point d'entree principal — Sales & AI Service
@@ -12,8 +15,15 @@ app = FastAPI(
     version="2.0.0",
 )
 
-# NOTE: Le middleware CORS est retire d'ici car la Gateway Nginx 
-# s'en occupe deja (pour eviter l'erreur : The 'Access-Control-Allow-Origin' header contains multiple values)
+# CORS : la gateway Nginx gère en production. Pour appeler uvicorn directement (port 8004), ENABLE_CORS=1.
+if app_config.ENABLE_CORS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=app_config.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # creer les tables au demarrage avec tentatives (car la DB met du temps a demarrer)
 import time
@@ -27,6 +37,25 @@ for i in range(5):
         time.sleep(3)
 else:
     print("La base de donnees n'a pas pu etre contactee.")
+
+# Aide diagnostic : sans cle LLM le chatbot reste en mode reponses locales (regles + BDD)
+try:
+    from app import config as _cfg
+
+    if _cfg.GEMINI_API_KEY:
+        print(
+            f"[IA] GEMINI_API_KEY chargee ({len(_cfg.GEMINI_API_KEY)} caracteres) — chatbot RAG++ peut appeler Gemini."
+        )
+    elif _cfg.OPENROUTER_API_KEY:
+        print("[IA] OPENROUTER_API_KEY chargee — chatbot utilisera OpenRouter (fallback).")
+    else:
+        print(
+            "[IA] Aucune cle LLM (GEMINI_API_KEY / OPENROUTER_API_KEY). "
+            "Chatbot en mode local. Verifiez services/.env (sans guillemets, fin de ligne LF si possible), "
+            "puis : docker compose up -d --force-recreate sales-service"
+        )
+except Exception:
+    pass
 
 # generer les donnees de demonstration (si la base est vide)
 try:
@@ -46,6 +75,7 @@ except Exception as e:
 # enregistrer les routers
 app.include_router(sales_router.router)
 app.include_router(ai_router.router)
+app.include_router(leads_scrape_router.router)
 
 
 @app.get("/")
@@ -55,6 +85,7 @@ def root():
         "version": "2.0.0",
         "modules_ia": {
             "chatbot_rag": "/api/sales/ai/chat",
+            "llm_status": "/api/sales/ai/llm-status",
             "lead_scoring": "/api/sales/ai/lead-score",
             "segmentation": "/api/sales/ai/segmentation",
             "forecast": "/api/sales/ai/forecast",
@@ -67,5 +98,6 @@ def root():
             "commandes_vente": "/api/sales/commandes-vente",
             "commandes_achat": "/api/sales/commandes-achat",
             "documentation": "/docs",
-        }
+        },
+        "scraping_leads": {"google_scrape": "/api/leads/scrape"},
     }

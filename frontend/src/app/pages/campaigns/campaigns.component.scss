@@ -1,0 +1,161 @@
+/* =============================================================
+   Campagnes — grille cartes modernes + badges dynamiques (ngClass)
+   ============================================================= */
+
+.campaign-grid-wrapper {
+    @apply mt-8;
+}
+
+@media (min-width: 768px) {
+    .campaign-grid-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.35rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .campaign-grid-wrapper {
+        @apply flex flex-col gap-4;
+    }
+}
+
+.campaign-card {
+    @apply flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:shadow-md transition-shadow;
+}
+
+.campaign-card__top {
+    @apply flex items-start justify-between gap-3 px-5 pt-5 pb-4;
+}
+
+.campaign-card__icon-wrap {
+    @apply w-12 h-12 rounded-2xl flex items-center justify-center text-xl text-indigo-600 bg-indigo-50 dark:bg-indigo-500/15 dark:text-indigo-400 shrink-0;
+}
+
+.campaign-card__badge {
+    @apply shrink-0 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full border;
+}
+
+/* Badges dynamiques ([ngClass] depuis `.ts`) */
+.campaign-badge-active {
+    color: rgb(22 163 74);
+    background-color: rgb(220 252 231);
+    border-color: rgb(167 243 208);
+}
+
+:host-context(.dark) .campaign-badge-active {
+    color: rgb(134 239 172);
+    background-color: rgb(21 128 61 / 0.25);
+    border-color: rgb(74 222 128 / 0.35);
+}
+
+.campaign-badge-done {
+    color: rgb(37 99 235);
+    background-color: rgb(219 234 254);
+    border-color: rgb(147 197 253);
+}
+
+:host-context(.dark) .campaign-badge-done {
+    color: rgb(147 197 253);
+    background-color: rgb(37 99 235 / 0.2);
+    border-color: rgb(96 165 250 / 0.4);
+}
+
+.campaign-badge-planned {
+    color: rgb(217 119 6);
+    background-color: rgb(254 243 199);
+    border-color: rgb(253 224 171);
+}
+
+:host-context(.dark) .campaign-badge-planned {
+    color: rgb(251 191 36);
+    background-color: rgb(217 119 6 / 0.2);
+    border-color: rgb(245 158 11 / 0.35);
+}
+
+.campaign-badge-draft {
+    color: rgb(75 85 99);
+    background-color: rgb(243 244 246);
+    border-color: rgb(229 231 235);
+}
+
+:host-context(.dark) .campaign-badge-draft {
+    color: rgb(209 213 219);
+    background-color: rgb(55 65 81 / 0.55);
+    border-color: rgb(75 85 99 / 0.6);
+}
+
+.campaign-card__body {
+    @apply px-5 pb-4 flex flex-col flex-1;
+}
+
+.campaign-card__title {
+    @apply text-lg font-bold text-slate-900 dark:text-white leading-snug mb-2;
+}
+
+.campaign-card__meta {
+    @apply flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 font-medium mb-6;
+}
+
+.campaign-card__metrics {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border-top: 1px solid rgb(226 232 240);
+    padding-top: 1rem;
+    margin-top: auto;
+}
+
+:host-context(.dark) .campaign-card__metrics {
+    border-top-color: rgb(51 65 85 / 0.8);
+}
+
+.campaign-metric {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+    padding: 0 0.5rem;
+
+    &:not(:last-child) {
+        border-right: 1px solid rgb(241 245 249);
+    }
+}
+
+:host-context(.dark) .campaign-metric:not(:last-child) {
+    border-right-color: rgb(51 65 85 / 0.6);
+}
+
+.campaign-metric__value {
+    @apply font-bold text-slate-900 dark:text-white text-sm tabular-nums;
+}
+
+.campaign-metric__label {
+    @apply text-[0.68rem] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400;
+}
+
+.campaign-card__actions {
+    @apply px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end;
+}
+
+.campaign-empty {
+    grid-column: 1 / -1;
+    @apply flex flex-col items-center justify-center text-center min-h-[340px] py-16 px-6 rounded-3xl bg-slate-50 dark:bg-slate-900/50 border border-dashed border-slate-200 dark:border-slate-700;
+}
+
+.campaign-empty__icon {
+    font-size: 2.75rem;
+    opacity: 0.35;
+    margin-bottom: 1rem;
+    color: inherit;
+}
+
+.campaign-empty__title {
+    @apply text-lg font-bold text-slate-600 dark:text-slate-300;
+}
+
+.campaign-empty__hint {
+    @apply text-sm text-slate-500 dark:text-slate-500 mt-1 max-w-sm;
+}

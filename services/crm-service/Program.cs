@@ -151,6 +151,12 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<CrmDbContext>();
     dbContext.Database.Migrate();
+    dbContext.Database.ExecuteSqlRaw("""
+        ALTER TABLE leads ADD COLUMN IF NOT EXISTS "Email" character varying(200) NOT NULL DEFAULT '';
+        ALTER TABLE leads ADD COLUMN IF NOT EXISTS "Entreprise" character varying(200) NOT NULL DEFAULT '';
+        ALTER TABLE leads ADD COLUMN IF NOT EXISTS "NomContact" character varying(200) NOT NULL DEFAULT '';
+        ALTER TABLE leads ADD COLUMN IF NOT EXISTS "Telephone" character varying(50) NOT NULL DEFAULT '';
+        """);
 }
 
 // --- Pipeline HTTP ---
