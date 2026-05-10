@@ -1,0 +1,63 @@
+﻿{
+    "status":  "success",
+    "data":  {
+                 "resultType":  "vector",
+                 "result":  [
+                                {
+                                    "metric":  {
+                                                   "__name__":  "up",
+                                                   "instance":  "prometheus:9090",
+                                                   "job":  "prometheus"
+                                               },
+                                    "value":  [
+                                                  1778418189.203,
+                                                  "1"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "up",
+                                                   "instance":  "stock-service:8083",
+                                                   "job":  "stock-service"
+                                               },
+                                    "value":  [
+                                                  1778418189.203,
+                                                  "1"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "up",
+                                                   "instance":  "cadvisor:8080",
+                                                   "job":  "cadvisor"
+                                               },
+                                    "value":  [
+                                                  1778418189.203,
+                                                  "1"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "up",
+                                                   "instance":  "finance-service:6000",
+                                                   "job":  "finance-service"
+                                               },
+                                    "value":  [
+                                                  1778418189.203,
+                                                  "1"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "up",
+                                                   "instance":  "hr-service:8080",
+                                                   "job":  "hr-service"
+                                               },
+                                    "value":  [
+                                                  1778418189.203,
+                                                  "1"
+                                              ]
+                                }
+                            ]
+             }
+}

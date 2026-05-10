@@ -83,6 +83,33 @@
             </div>
         </div>
 
+        <!-- Stock Hub -->
+        <div *ngIf="auth.hasRole('ROLE_STOCK') || auth.hasRole('ROLE_FINANCIER') || auth.isAdmin()"
+             (click)="goTo('/stock')"
+             class="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 cursor-pointer hover:border-sky-400 dark:hover:border-sky-500/50 hover:shadow-md hover:shadow-sky-500/5 transition-all duration-200">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                    <i class="fa-solid fa-boxes-stacked text-lg"></i>
+                </div>
+                <span class="text-slate-400 group-hover:text-sky-500 transition-colors">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </span>
+            </div>
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white mb-1">Stock & Inventaire</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 flex-1 mb-4 leading-relaxed">
+                Valeur: <span class="font-bold text-sky-600">{{ getStockValeurAchat() | number:'1.0-0' }} MAD</span>
+                <br>Quantite totale: <span class="font-bold text-slate-700 dark:text-slate-300">{{ getStockTotalQuantite() | number:'1.0-0' }}</span>
+            </p>
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                <div class="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-box text-sky-500"></i> {{ stockArticles.length }} Articles
+                </div>
+                <div class="flex items-center gap-2 text-xs font-medium" [ngClass]="stockAlertes.length > 0 ? 'text-amber-600' : 'text-slate-600 dark:text-slate-300'">
+                    <i class="fa-solid fa-triangle-exclamation"></i> {{ stockAlertes.length }} Alertes
+                </div>
+            </div>
+        </div>
+
         <!-- HR Hub -->
         <div *ngIf="auth.hasRole('ROLE_RH') || auth.isAdmin()" 
              (click)="goTo('/hr-employes')" 

@@ -1,18 +1,64 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AiService } from '../../core/services/ai.service';
 
-// ============================================================
-// MAKA Intelligence — Centre de Commandement IA Cross-Modules
-// Dashboard premium avec Score Sante, Alertes, KPIs, Forecast,
-// Segmentation et Copilot RAG++
-// ============================================================
+export interface PulseAiEvent {
+    id: string;
+    label: string;
+    detail: string;
+    timeLabel: string;
+    tone: 'success' | 'info' | 'warning' | 'neutral';
+    icon: string;
+}
 
-interface ChatMessage {
-    texte: string;
-    auteur: 'user' | 'ai';
-    heure: string;
+export interface QuickMetric {
+    label: string;
+    value: string;
+    delta?: string;
+    positive?: boolean;
+}
+
+export interface McpConnectorView {
+    label: string;
+    provider: string;
+    route: string;
+    configured: boolean;
+    statusLabel: string;
+    icon: string;
+}
+
+export interface MarketingSummaryView {
+    totalCustomers: string;
+    totalRevenue: string;
+    conversionRate: string;
+    segmentsCount: string;
+    crmStatus: string;
+}
+
+export interface MarketingSegmentView {
+    key: string;
+    name: string;
+    description: string;
+    color: string;
+    customers: number;
+    revenue: string;
+    revenueShare: string;
+    conversionRate: string;
+    recommendation: string;
+    action: string;
+}
+
+export interface MarketingCustomerView {
+    name: string;
+    source: string;
+    segment: string;
+    color: string;
+    score: number;
+    revenue: string;
+    orders: number;
+    quotes: number;
+    action: string;
 }
 
 @Component({
@@ -23,208 +69,362 @@ interface ChatMessage {
     styleUrl: './intelligence.component.scss'
 })
 export class IntelligenceComponent implements OnInit {
+    commandQuery = '';
 
-    // --- Cross-Analytics (nouveau) ---
-    crossData: any = null;
-    healthScore = 0;
-    healthAnimated = 0;
+    readonly pulseEvents = signal<PulseAiEvent[]>([
+        {
+            id: 'boot',
+            label: 'MAKA Intelligence',
+            detail: 'Service IA pret. Les donnees reelles sont chargees depuis le backend Sales.',
+            timeLabel: 'Maintenant',
+            tone: 'info',
+            icon: 'fa-solid fa-brain'
+        }
+    ]);
 
-    // --- Copilot RAG++ ---
-    messages: ChatMessage[] = [];
-    messageInput = '';
-    chatLoading = false;
-    showCopilot = false;
+    readonly healthScore = signal(50);
+    readonly healthLabel = signal('Chargement');
 
-    // --- Data from Backend ---
-    segmentationData: any = null;
-    forecastData: any = null;
-    kpis: any = null;
-    insights: any[] = [];
-    loadingData = true;
+    readonly quickMetrics = signal<QuickMetric[]>([
+        { label: 'CA mensuel', value: '0 MAD', delta: '0 %', positive: true },
+        { label: 'Leads nouveaux', value: '0', delta: 'CRM', positive: undefined },
+        { label: 'Tickets ouverts', value: '0', delta: 'Support', positive: true }
+    ]);
 
-    // --- UI ---
-    activeTab: 'overview' | 'forecast' | 'segmentation' = 'overview';
+    readonly marketingSummary = signal<MarketingSummaryView>({
+        totalCustomers: '0',
+        totalRevenue: '0 MAD',
+        conversionRate: '0 %',
+        segmentsCount: '0',
+        crmStatus: 'Chargement'
+    });
 
-    @ViewChild('chatContainer') chatContainer!: ElementRef;
+    readonly marketingSegments = signal<MarketingSegmentView[]>([]);
+    readonly marketingCustomers = signal<MarketingCustomerView[]>([]);
 
-    constructor(private ai: AiService) {}
+    readonly mcpConnectors = signal<McpConnectorView[]>([
+        {
+            label: 'Email',
+            provider: 'local-draft',
+            route: '/api/sales/ai/mcp/email/draft',
+            configured: false,
+            statusLabel: 'Mode local',
+            icon: 'fa-solid fa-envelope'
+        },
+        {
+            label: 'Agenda',
+            provider: 'local-proposal',
+            route: '/api/sales/ai/mcp/calendar/event',
+            configured: false,
+            statusLabel: 'Mode local',
+            icon: 'fa-solid fa-calendar-days'
+        }
+    ]);
+
+    readonly spotlightAlerts = signal<{ title: string; module: string; severity: 'low' | 'med' | 'high' }[]>([
+        { title: 'Chargement des alertes IA', module: 'IA', severity: 'low' }
+    ]);
+
+    readonly forecastPreview = signal<{ month: string; actual: number; predicted: number }[]>([
+        { month: 'N/A', actual: 0, predicted: 1 }
+    ]);
+
+    readonly maxForecastBar = computed(() => {
+        const vals = this.forecastPreview()
+            .flatMap((row) => [row.actual, row.predicted])
+            .filter((value) => value > 0);
+        return Math.max(...vals, 1);
+    });
+
+    readonly commandBusy = signal(false);
+    readonly emailBusy = signal(false);
+
+    constructor(private readonly ai: AiService) {}
 
     ngOnInit(): void {
-        this.messages.push({
-            texte: "Bonjour ! Je suis MAKA Copilot, le cerveau IA de votre entreprise. Je suis connecté à tous vos modules : Ventes, CRM, Finance et RH. Posez-moi n'importe quelle question !",
-            auteur: 'ai',
-            heure: this.getHeure()
-        });
-
-        this.chargerDonneesReelles();
+        this.loadIntelligenceData();
+        this.loadMarketingIntelligence();
+        this.loadMcpStatus();
     }
 
-    chargerDonneesReelles(): void {
-        this.loadingData = true;
-
-        // Charger Cross-Analytics (nouveau endpoint central)
+    loadIntelligenceData(): void {
         this.ai.getCrossAnalytics().subscribe({
             next: (data) => {
-                this.crossData = data;
-                this.healthScore = data.score_sante || 0;
-                this.animateHealthScore();
-            },
-            error: (err) => {
-                console.error('Erreur Cross-Analytics', err);
-                // Fallback : on continue sans les donnees cross
-                this.crossData = null;
-            }
-        });
+                const score = Number(data?.score_sante ?? 50);
+                this.healthScore.set(Math.max(0, Math.min(100, score)));
+                this.healthLabel.set(data?.niveau_sante || 'Mode local');
 
-        // Charger KPI ventes
-        this.ai.getKpis().subscribe({
-            next: (data) => { this.kpis = data; },
-            error: (err) => { console.error('Erreur KPI', err); }
-        });
+                const kpis = data?.kpis || {};
+                this.quickMetrics.set([
+                    {
+                        label: 'CA mensuel',
+                        value: `${Number(kpis.ca_mensuel || kpis.ca_total || 0).toLocaleString('fr-FR')} MAD`,
+                        delta: `${Number(kpis.croissance_ca || 0)} %`,
+                        positive: Number(kpis.croissance_ca || 0) >= 0
+                    },
+                    {
+                        label: 'Leads nouveaux',
+                        value: String(kpis.leads_nouveaux ?? kpis.total_leads ?? 0),
+                        delta: 'CRM',
+                        positive: undefined
+                    },
+                    {
+                        label: 'Tickets ouverts',
+                        value: String(kpis.tickets_ouverts ?? 0),
+                        delta: 'Support',
+                        positive: Number(kpis.tickets_ouverts ?? 0) === 0
+                    }
+                ]);
 
-        // Charger Forecast
-        this.ai.getForecast().subscribe({
-            next: (data) => { this.forecastData = data; },
-            error: (err) => { console.error('Erreur Forecast', err); }
-        });
+                const alertes = Array.isArray(data?.alertes) ? data.alertes : [];
+                this.spotlightAlerts.set(alertes.slice(0, 5).map((alerte: any) => ({
+                    title: alerte.titre || alerte.texte || 'Alerte IA',
+                    module: alerte.module || 'IA',
+                    severity: this.alertSeverity(alerte.type)
+                })));
 
-        // Charger Segmentation (K-Means)
-        this.ai.getSegmentation().subscribe({
-            next: (data) => {
-                this.segmentationData = data;
-                this.loadingData = false;
-            },
-            error: (err) => {
-                console.error('Erreur Segmentation', err);
-                this.loadingData = false;
-            }
-        });
-
-        // Charger Insights
-        this.ai.getInsights().subscribe({
-            next: (data) => { this.insights = data; },
-            error: (err) => { console.error('Erreur Insights', err); }
-        });
-    }
-
-    /** Animation progressive du score de sante (0 -> valeur reelle) */
-    animateHealthScore(): void {
-        this.healthAnimated = 0;
-        const target = this.healthScore;
-        const step = Math.max(1, Math.floor(target / 40));
-        const interval = setInterval(() => {
-            this.healthAnimated += step;
-            if (this.healthAnimated >= target) {
-                this.healthAnimated = target;
-                clearInterval(interval);
-            }
-        }, 30);
-    }
-
-    // --- Copilot Chat Logic ---
-    toggleCopilot(): void {
-        this.showCopilot = !this.showCopilot;
-        if (this.showCopilot) this.scrollChat();
-    }
-
-    envoyerMessage(): void {
-        let texte = this.messageInput.trim();
-        if (!texte || this.chatLoading) return;
-
-        this.messages.push({ texte: texte, auteur: 'user', heure: this.getHeure() });
-        this.messageInput = '';
-        this.chatLoading = true;
-        this.scrollChat();
-
-        this.ai.chat(texte).subscribe({
-            next: (response) => {
-                this.messages.push({
-                    texte: response.reponse,
-                    auteur: 'ai',
-                    heure: this.getHeure()
-                });
-                this.chatLoading = false;
-                this.scrollChat();
+                const modulesStatus = data?.modules_status || {};
+                const unavailable = Object.entries(modulesStatus)
+                    .filter(([, status]) => status !== 'ok')
+                    .map(([module]) => module);
+                if (unavailable.length) {
+                    this.pushPulse(
+                        'Sources IA',
+                        `Certaines sources demandent une session valide ou sont indisponibles : ${unavailable.join(', ')}.`,
+                        'warning'
+                    );
+                }
             },
             error: () => {
-                this.messages.push({
-                    texte: "Désolé, je n'arrive pas à contacter le moteur IA. Le service est-il démarré ?",
-                    auteur: 'ai',
-                    heure: this.getHeure()
-                });
-                this.chatLoading = false;
-                this.scrollChat();
+                this.pushPulse('Service IA', 'Impossible de charger le tableau de bord IA. Mode local conserve.', 'warning');
+            }
+        });
+
+        this.ai.getForecast().subscribe({
+            next: (data) => {
+                const rows = Array.isArray(data?.donnees) ? data.donnees : [];
+                if (!rows.length) return;
+                this.forecastPreview.set(rows.slice(-6).map((row: any) => ({
+                    month: String(row.mois || ''),
+                    actual: row.type === 'reel' ? Number(row.valeur || 0) : 0,
+                    predicted: Number(row.valeur || 0)
+                })));
+            },
+            error: () => {
+                this.pushPulse('Forecast IA', 'La prevision des ventes est temporairement indisponible.', 'warning');
             }
         });
     }
 
-    onKeyDown(event: KeyboardEvent): void {
+    loadMarketingIntelligence(): void {
+        this.ai.getMarketingIntelligence().subscribe({
+            next: (data) => {
+                const summary = data?.summary || {};
+                const segments = Array.isArray(data?.segments) ? data.segments : [];
+                const customers = Array.isArray(data?.customers) ? data.customers : [];
+
+                this.marketingSummary.set({
+                    totalCustomers: String(summary.total_customers ?? 0),
+                    totalRevenue: this.formatMoney(summary.total_revenue),
+                    conversionRate: `${Number(summary.conversion_rate || 0).toLocaleString('fr-FR')} %`,
+                    segmentsCount: String(summary.segments_count ?? segments.length),
+                    crmStatus: this.marketingCrmLabel(summary.crm_status)
+                });
+
+                this.marketingSegments.set(segments.slice(0, 5).map((segment: any) => ({
+                    key: String(segment.key || segment.name || 'segment'),
+                    name: String(segment.name || 'Segment'),
+                    description: String(segment.description || ''),
+                    color: String(segment.color || '#2563eb'),
+                    customers: Number(segment.nb_clients || 0),
+                    revenue: this.formatMoney(segment.revenue_total),
+                    revenueShare: `${Number(segment.revenue_share || 0).toLocaleString('fr-FR')} %`,
+                    conversionRate: `${Number(segment.conversion_rate || 0).toLocaleString('fr-FR')} %`,
+                    recommendation: String(segment.recommendation || ''),
+                    action: String(segment.action || '')
+                })));
+
+                this.marketingCustomers.set(customers.slice(0, 8).map((customer: any) => ({
+                    name: String(customer.name || 'Client'),
+                    source: String(customer.source || 'Sales'),
+                    segment: String(customer.segment || 'Segment'),
+                    color: String(customer.color || '#2563eb'),
+                    score: Number(customer.score || 0),
+                    revenue: this.formatMoney(customer.ca_total),
+                    orders: Number(customer.nb_commandes || 0),
+                    quotes: Number(customer.nb_devis || 0),
+                    action: String(customer.action || '')
+                })));
+
+                if (customers.length || segments.length) {
+                    this.pushPulse(
+                        'Marketing Intelligence',
+                        `${customers.length} profils analyses, ${segments.length} segments detectes depuis Sales${summary.crm_status === 'ok' ? ' et CRM' : ''}.`,
+                        'success'
+                    );
+                }
+            },
+            error: () => {
+                this.pushPulse('Marketing Intelligence', 'La segmentation marketing est temporairement indisponible.', 'warning');
+            }
+        });
+    }
+
+    loadMcpStatus(): void {
+        this.ai.getMcpStatus().subscribe({
+            next: (data) => {
+                const connectors = data?.connectors || {};
+                const email = connectors.email || {};
+                const calendar = connectors.calendar || {};
+
+                const nextConnectors: McpConnectorView[] = [
+                    {
+                        label: email.name || 'Email',
+                        provider: email.provider || 'local-draft',
+                        route: email.route || '/api/sales/ai/mcp/email/draft',
+                        configured: Boolean(email.configured),
+                        statusLabel: email.configured ? 'Connecte' : 'Brouillon local',
+                        icon: 'fa-solid fa-envelope'
+                    },
+                    {
+                        label: calendar.name || 'Agenda',
+                        provider: calendar.provider || 'local-proposal',
+                        route: calendar.route || '/api/sales/ai/mcp/calendar/event',
+                        configured: Boolean(calendar.configured),
+                        statusLabel: calendar.configured ? 'Connecte' : 'Proposition locale',
+                        icon: 'fa-solid fa-calendar-days'
+                    }
+                ];
+
+                this.mcpConnectors.set(nextConnectors);
+                const active = nextConnectors.filter((connector) => connector.configured);
+                this.pushPulse(
+                    'Connecteurs MCP',
+                    active.length
+                        ? `${active.map((connector) => connector.label).join(', ')} connecte(s) au bridge MCP.`
+                        : 'Email et Agenda sont prets en mode local. Configurez les URLs MCP pour activer la connexion externe.',
+                    active.length ? 'success' : 'info'
+                );
+            },
+            error: () => {
+                this.pushPulse('Connecteurs MCP', 'Etat MCP indisponible pour le moment.', 'warning');
+            }
+        });
+    }
+
+    submitCommand(): void {
+        const q = this.commandQuery.trim();
+        if (!q || this.commandBusy()) return;
+
+        this.commandBusy.set(true);
+        this.ai.chat(q).subscribe({
+            next: (res) => {
+                const answer = res?.reponse || res?.response || 'Copilot a repondu sans contenu.';
+                this.pushPulse('MAKA Copilot', answer, 'info');
+            },
+            error: () => {
+                this.pushPulse('MAKA Copilot', 'Le service IA est indisponible. Reessayez apres le rebuild du backend.', 'warning');
+            },
+            complete: () => {
+                this.commandBusy.set(false);
+                this.commandQuery = '';
+            }
+        });
+    }
+
+    prepareEmailDraft(): void {
+        if (this.emailBusy()) return;
+
+        const metrics = this.quickMetrics();
+        const alert = this.spotlightAlerts()[0];
+        const subject = alert?.title ? `[MAKA Intelligence] ${alert.title}` : '[MAKA Intelligence] Synthese automatique';
+        const body = [
+            'Bonjour,',
+            '',
+            'Voici une synthese generee par MAKA Intelligence :',
+            `- Sante entreprise : ${this.healthLabel()} (${this.healthScore()}/100)`,
+            ...metrics.map((metric) => `- ${metric.label} : ${metric.value}${metric.delta ? ` (${metric.delta})` : ''}`),
+            alert?.title ? `- Alerte prioritaire ${alert.module} : ${alert.title}` : '',
+            '',
+            'Cordialement,',
+            'MAKA Intelligence'
+        ].filter(Boolean).join('\n');
+
+        this.emailBusy.set(true);
+        this.ai.createEmailDraft({
+            to: [],
+            subject,
+            body,
+            context: 'MAKA Intelligence'
+        }).subscribe({
+            next: (res) => {
+                const draftSubject = res?.draft?.subject || subject;
+                const provider = res?.provider || 'local-draft';
+                this.pushPulse(
+                    'Email MCP',
+                    `Brouillon prepare avec ${provider} : ${draftSubject}`,
+                    res?.connected ? 'success' : 'info'
+                );
+            },
+            error: () => {
+                this.pushPulse('Email MCP', 'Impossible de preparer le brouillon email.', 'warning');
+            },
+            complete: () => {
+                this.emailBusy.set(false);
+            }
+        });
+    }
+
+    onCommandKeydown(event: KeyboardEvent): void {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-            this.envoyerMessage();
+            this.submitCommand();
         }
     }
 
-    scrollChat(): void {
-        setTimeout(() => {
-            if (this.chatContainer) {
-                this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
-            }
-        }, 100);
+    barHeight(value: number): number {
+        if (!value) return 0;
+        return Math.round((value / this.maxForecastBar()) * 100);
     }
 
-    getHeure(): string {
-        let now = new Date();
-        return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    pulseRowClass(ev: PulseAiEvent): string {
+        return `intel-pulse__row intel-pulse__row--${ev.tone}`;
     }
 
-    // --- Utilitaires affichage ---
-    formatMontant(val: number): string {
-        if (!val) return '0';
-        if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
-        if (val >= 1000) return Math.round(val / 1000) + 'K';
-        return val.toString();
+    mcpStatusClass(connector: McpConnectorView): string {
+        return connector.configured ? 'intel-mcp__badge intel-mcp__badge--on' : 'intel-mcp__badge';
     }
 
-    getBarHeight(valeur: number): number {
-        if (!this.forecastData || !this.forecastData.donnees) return 0;
-        let max = Math.max(...this.forecastData.donnees.map((d: any) => d.valeur), 1);
-        return (valeur / max) * 100;
+    private formatMoney(value: unknown): string {
+        return `${Number(value || 0).toLocaleString('fr-FR')} MAD`;
     }
 
-    /** Calcul du circumference pour la jauge SVG circulaire */
-    getScoreOffset(): number {
-        const circumference = 2 * Math.PI * 54; // rayon = 54
-        return circumference - (this.healthAnimated / 100) * circumference;
+    private marketingCrmLabel(status: unknown): string {
+        const normalized = String(status || '').toLowerCase();
+        if (normalized === 'ok') return 'CRM connecte';
+        if (normalized === 'auth_required') return 'CRM avec session requise';
+        if (normalized === 'unavailable') return 'CRM indisponible';
+        return 'Mode Sales';
     }
 
-    getAlerteBorderClass(type: string): string {
-        switch (type) {
-            case 'success': return 'border-l-emerald-500';
-            case 'warning': return 'border-l-amber-500';
-            case 'danger': return 'border-l-red-500';
-            case 'info': return 'border-l-blue-500';
-            default: return 'border-l-slate-500';
-        }
+    private pushPulse(label: string, detail: string, tone: PulseAiEvent['tone']): void {
+        this.pulseEvents.update((list) => [
+            {
+                id: `ai-${Date.now()}`,
+                label,
+                detail: detail.length > 220 ? detail.slice(0, 220) + '...' : detail,
+                timeLabel: 'Maintenant',
+                tone,
+                icon: tone === 'warning' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-brain'
+            },
+            ...list
+        ]);
     }
 
-    getAlerteIconClass(type: string): string {
-        switch (type) {
-            case 'success': return 'text-emerald-500';
-            case 'warning': return 'text-amber-500';
-            case 'danger': return 'text-red-500';
-            case 'info': return 'text-blue-500';
-            default: return 'text-slate-500';
-        }
-    }
-
-    getAlerteBgClass(type: string): string {
-        switch (type) {
-            case 'success': return 'bg-emerald-50 dark:bg-emerald-500/10';
-            case 'warning': return 'bg-amber-50 dark:bg-amber-500/10';
-            case 'danger': return 'bg-red-50 dark:bg-red-500/10';
-            case 'info': return 'bg-blue-50 dark:bg-blue-500/10';
-            default: return 'bg-slate-50 dark:bg-slate-500/10';
-        }
+    private alertSeverity(type: string | undefined): 'low' | 'med' | 'high' {
+        const normalized = String(type || '').toLowerCase();
+        if (normalized === 'danger' || normalized === 'error' || normalized === 'critical') return 'high';
+        if (normalized === 'warning') return 'med';
+        return 'low';
     }
 }

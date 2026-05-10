@@ -1,8 +1,13 @@
+import asyncio
+import logging
+
 import google.generativeai as genai
 import httpx
 from sqlalchemy.orm import Session
-from app.config import GEMINI_API_KEY, OPENROUTER_API_KEY
+from app.config import GEMINI_API_KEY, OPENROUTER_API_KEY, GATEWAY_URL
 from app.models import Produit, Devis, CommandeVente, VenteMensuelle
+
+logger = logging.getLogger(__name__)
 
 # ============================================================
 # Chatbot IA avec RAG++ (Retrieval Augmented Generation)
@@ -13,10 +18,13 @@ from app.models import Produit, Devis, CommandeVente, VenteMensuelle
 # Etape 3: Le LLM repond avec les vrais chiffres de l'entreprise
 # ============================================================
 
-# URLs internes des microservices (reseau Docker hub-network)
-CRM_BASE = "http://crm-service:5000/api/crm"
-FINANCE_BASE = "http://finance-service:6000/api/v1"
-HR_BASE = "http://hr-service:8080/api/hr"
+# Routes internes via la Gateway Docker.
+# On passe par les memes prefixes que le frontend afin que le RAG lise
+# les memes donnees fonctionnelles : /api/crm, /api/finance, /api/hr.
+GATEWAY_BASE = GATEWAY_URL.rstrip("/")
+CRM_BASE = f"{GATEWAY_BASE}/api/crm"
+FINANCE_BASE = f"{GATEWAY_BASE}/api/finance"
+HR_BASE = f"{GATEWAY_BASE}/api/hr"
 
 # Prompt systeme enrichi pour le mode "cerveau d'entreprise"
 SYSTEM_PROMPT = """Tu es MAKA Copilot, l'assistant IA intelligent de MAKA ERP.
@@ -75,7 +83,7 @@ async def recuperer_contexte_bdd(db: Session, token: str = None):
     ventes = db.query(VenteMensuelle).order_by(
         VenteMensuelle.annee.desc(), VenteMensuelle.mois.desc()
     ).limit(3).all()
-    if len(ventes) >= 2:
+    if len(ventes) >= 2 and ventes[1].chiffre_affaires:
         croissance = ((ventes[0].chiffre_affaires - ventes[1].chiffre_affaires) / ventes[1].chiffre_affaires) * 100
         contexte.append(f"TENDANCE: CA mensuel {'en hausse' if croissance > 0 else 'en baisse'} de {round(abs(croissance), 1)}%.")
 
@@ -202,6 +210,16 @@ def trouver_reponse_demo(message: str, db: Session):
     return "Je suis en mode Copilot Local. Pour des réponses IA avancées, une clé API (Gemini/OpenRouter) est nécessaire. En attendant, je peux vous renseigner sur le CA, les devis, les clients, la santé de l'entreprise !"
 
 
+def _reponse_demo_securisee(message: str, db: Session | None):
+    if not db:
+        return "Je suis en mode Copilot Local. La base de donnees n'est pas disponible pour cette question."
+    try:
+        return trouver_reponse_demo(message, db)
+    except Exception as exc:
+        logger.exception("Erreur reponse demo IA: %s", exc)
+        return "Je suis en mode Copilot Local. Je peux repondre, mais les chiffres de la base sont temporairement indisponibles."
+
+
 async def chat(message: str, db: Session = None, token: str = None):
     """
     Chatbot IA avec RAG++ :
@@ -212,7 +230,11 @@ async def chat(message: str, db: Session = None, token: str = None):
     # etape 1 : recuperer le contexte cross-modules (le "R" de RAG)
     contexte_bdd = ""
     if db:
-        contexte_bdd = await recuperer_contexte_bdd(db, token=token)
+        try:
+            contexte_bdd = await recuperer_contexte_bdd(db, token=token)
+        except Exception as exc:
+            logger.exception("Contexte RAG indisponible: %s", exc)
+            contexte_bdd = ""
 
     # Construire le prompt enrichi
     full_prompt = SYSTEM_PROMPT
@@ -227,14 +249,14 @@ async def chat(message: str, db: Session = None, token: str = None):
             model = genai.GenerativeModel("gemini-2.0-flash")
 
             print(f"[RAG++] Gemini avec contexte cross-modules ({len(contexte_bdd)} chars)")
-            response = model.generate_content(full_prompt)
+            response = await asyncio.to_thread(model.generate_content, full_prompt)
             return {
-                "reponse": response.text,
+                "reponse": getattr(response, "text", "") or _reponse_demo_securisee(message, db),
                 "source": "gemini_rag_plus",
                 "contexte_utilise": bool(contexte_bdd),
             }
         except Exception as e:
-            print(f"Exception Gemini: {str(e)}")
+            logger.warning("Exception Gemini: %s", e)
 
     # Etape 3 : Fallback OpenRouter
     if OPENROUTER_API_KEY:
@@ -254,7 +276,7 @@ async def chat(message: str, db: Session = None, token: str = None):
                             {"role": "user", "content": full_prompt}
                         ]
                     },
-                    timeout=30.0
+                    timeout=20.0
                 )
 
                 if response.status_code == 200:
@@ -265,13 +287,13 @@ async def chat(message: str, db: Session = None, token: str = None):
                         "contexte_utilise": bool(contexte_bdd),
                     }
                 else:
-                    print(f"Erreur OpenRouter: {response.text}")
+                    logger.warning("Erreur OpenRouter: %s", response.text)
         except Exception as e:
-            print(f"Exception OpenRouter: {str(e)}")
+            logger.warning("Exception OpenRouter: %s", e)
 
     # Mode demo si aucune cle API
     return {
-        "reponse": trouver_reponse_demo(message, db) if db else "Je ne peux pas accéder à la BDD.",
+        "reponse": _reponse_demo_securisee(message, db),
         "source": "demo_rag",
         "contexte_utilise": bool(contexte_bdd),
     }

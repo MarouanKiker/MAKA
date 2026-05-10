@@ -3,13 +3,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { forkJoin, Subscription, interval } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { forkJoin, Subscription, interval, of } from 'rxjs';
 import { AuthService } from '../core/services/auth.service';
 import { ThemeService } from '../core/services/theme.service';
 import { CrmService } from '../core/services/crm.service';
 import { FinanceService } from '../core/services/finance.service';
 import { HrService } from '../core/services/hr.service';
+import { StockService } from '../core/services/stock.service';
 import { User } from '../core/models/auth.model';
+import { Ticket } from '../core/models/crm.model';
+import { Facture } from '../core/models/finance.model';
+import { DemandeConge } from '../core/models/hr.model';
+import { ArticleStock } from '../core/models/stock.model';
 
 export interface LiveNotification {
     icon: string;
@@ -54,8 +60,19 @@ export class LayoutComponent implements OnInit, OnDestroy {
             icon: 'fa-solid fa-house', roles: ['ROLE_EMPLOYE', 'ROLE_USER']
         },
         {
-            path: '/leads', label: 'Leads', color: '#fbbf24',
-            icon: 'fa-solid fa-bullseye', roles: ['ROLE_COMMERCIAL']
+            path: '/leads',
+            label: 'Leads',
+            color: '#fbbf24',
+            icon: 'fa-solid fa-bullseye',
+            roles: ['ROLE_COMMERCIAL'],
+            routerLinkExact: true
+        },
+        {
+            path: '/leads/generator',
+            label: 'Générateur Leads',
+            color: '#a78bfa',
+            icon: 'fa-solid fa-magnet',
+            roles: ['ROLE_COMMERCIAL']
         },
         {
             path: '/opportunities', label: 'Opportunites', color: '#34d399',
@@ -76,6 +93,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
         {
             path: '/intelligence', label: 'MAKA Intelligence', color: '#22d3ee',
             icon: 'fa-solid fa-brain', roles: ['ROLE_EMPLOYE', 'ROLE_USER'] // visible par tous
+        },
+        // --- STOCK ---
+        {
+            path: '/stock', label: 'Stock', color: '#38bdf8',
+            icon: 'fa-solid fa-boxes-stacked', roles: ['ROLE_STOCK', 'ROLE_ADMIN', 'ROLE_FINANCIER']
         },
         // --- FINANCES ---
         {
@@ -151,7 +173,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
         private router: Router,
         private crmService: CrmService,
         private financeService: FinanceService,
-        private hrService: HrService
+        private hrService: HrService,
+        private stockService: StockService
     ) {
         this.user = this.auth.getUser();
 
@@ -169,6 +192,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
                 this.currentModule = 'IA';
             } else if (url.includes('/factures') || url.includes('/paiements') || url.includes('/comptes-bancaires') || url.includes('/journal')) {
                 this.currentModule = 'FINANCE';
+            } else if (url.includes('/stock')) {
+                this.currentModule = 'STOCK';
             } else if (url.includes('/espace-employe') || url.includes('/hr-employes') || url.includes('/hr-contrats') || url.includes('/hr-conges') || url.includes('/hr-paie') || url.includes('/hr-reclamations')) {
                 this.currentModule = 'HR';
             } else if (url.includes('/admin')) {
@@ -202,9 +227,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
         // Fetch tickets, factures, congés in parallel
         forkJoin({
-            tickets: this.crmService.getTickets(),
-            factures: this.financeService.getFactures(),
-            conges: this.hrService.getDemandesConge()
+            tickets: this.crmService.getTickets().pipe(catchError(() => of([] as Ticket[]))),
+            factures: this.financeService.getFactures().pipe(catchError(() => of([] as Facture[]))),
+            conges: this.hrService.getDemandesConge().pipe(catchError(() => of([] as DemandeConge[]))),
+            stockAlertes: this.stockService.getAlertes().pipe(catchError(() => of([] as ArticleStock[])))
         }).subscribe({
             next: (data) => {
                 // Tickets ouverts
@@ -247,6 +273,17 @@ export class LayoutComponent implements OnInit, OnDestroy {
                     });
                 }
 
+                // Alertes stock
+                const stockAlertes = data.stockAlertes || [];
+                if (stockAlertes.length > 0) {
+                    notifs.push({
+                        icon: 'fa-solid fa-boxes-stacked', color: 'text-sky-500',
+                        title: `${stockAlertes.length} article${stockAlertes.length > 1 ? 's' : ''} en alerte stock`,
+                        text: stockAlertes[0]?.designation ? `Priorite : ${stockAlertes[0].designation}` : 'Stock sous le seuil minimum',
+                        time: 'Stock', route: '/stock', read: false
+                    });
+                }
+
                 // Factures payées récemment (bonne nouvelle)
                 const payees = (data.factures || []).filter((f: any) => f.statut === 'PAYEE');
                 if (payees.length > 0) {
@@ -280,11 +317,13 @@ export class LayoutComponent implements OnInit, OnDestroy {
         this.allSearchableItems = [
             { icon: 'fa-solid fa-house', color: 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600', label: 'Hub Principal', detail: 'Dashboard principal', route: '/dashboard' },
             { icon: 'fa-solid fa-bullseye', color: 'bg-amber-100 dark:bg-amber-500/20 text-amber-600', label: 'Leads', detail: 'Gestion des leads CRM', route: '/leads' },
+            { icon: 'fa-solid fa-magnet', color: 'bg-violet-100 dark:bg-violet-500/20 text-violet-600', label: 'Générateur Leads', detail: 'Import & scraping prospects B2B', route: '/leads/generator' },
             { icon: 'fa-solid fa-arrow-trend-up', color: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600', label: 'Opportunités', detail: 'Pipeline des opportunités', route: '/opportunities' },
             { icon: 'fa-solid fa-list-check', color: 'bg-orange-100 dark:bg-orange-500/20 text-orange-600', label: 'Tâches', detail: 'Gestion des tâches', route: '/tasks' },
             { icon: 'fa-solid fa-ticket', color: 'bg-rose-100 dark:bg-rose-500/20 text-rose-600', label: 'Tickets', detail: 'Support client', route: '/tickets' },
             { icon: 'fa-solid fa-bullhorn', color: 'bg-pink-100 dark:bg-pink-500/20 text-pink-600', label: 'Campagnes', detail: 'Campagnes marketing', route: '/campaigns' },
             { icon: 'fa-solid fa-brain', color: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600', label: 'Intelligence IA', detail: 'MAKA Intelligence — Chatbot & Analytics', route: '/intelligence' },
+            { icon: 'fa-solid fa-boxes-stacked', color: 'bg-sky-100 dark:bg-sky-500/20 text-sky-600', label: 'Stock', detail: 'Articles, depots et mouvements', route: '/stock' },
             { icon: 'fa-solid fa-file-invoice-dollar', color: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600', label: 'Factures', detail: 'Gestion des factures', route: '/factures' },
             { icon: 'fa-solid fa-money-bill-transfer', color: 'bg-teal-100 dark:bg-teal-500/20 text-teal-600', label: 'Paiements', detail: 'Suivi des paiements', route: '/paiements' },
             { icon: 'fa-solid fa-book-journal-whills', color: 'bg-green-100 dark:bg-green-500/20 text-green-600', label: 'Journal Comptable', detail: 'Écritures comptables', route: '/journal' },
@@ -319,13 +358,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
             if (item.path === '/dashboard') return true;
 
             // filtrer par module actif (ex: pas la compta dans le CRM)
-            if (this.currentModule === 'CRM' && !['/leads', '/opportunities', '/campaigns', '/tasks'].includes(item.path)) return false;
+            if (this.currentModule === 'CRM' && !['/leads', '/leads/generator', '/opportunities', '/campaigns', '/tasks'].includes(item.path)) return false;
             
             if (this.currentModule === 'SUPPORT' && !['/tickets'].includes(item.path)) return false;
             
             if (this.currentModule === 'IA' && !['/intelligence'].includes(item.path)) return false;
             
             if (this.currentModule === 'FINANCE' && !['/factures', '/paiements', '/comptes-bancaires', '/journal'].includes(item.path)) return false;
+
+            if (this.currentModule === 'STOCK' && !['/stock'].includes(item.path)) return false;
 
             if (this.currentModule === 'HR' && !['/espace-employe', '/hr-employes', '/hr-contrats', '/hr-conges', '/hr-paie', '/hr-reclamations'].includes(item.path)) return false;
 

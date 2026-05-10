@@ -62,7 +62,7 @@ public class FactureController {
 	}
 
 	@PatchMapping("/{id}/statut")
-	@Operation(summary = "Changer le statut d'une facture")
+	@Operation(summary = "Changer le statut d'une facture", description = "Transitions validées côté serveur (montants, workflow).")
 	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<FactureResponse> changeStatus(
 			@PathVariable Long id,

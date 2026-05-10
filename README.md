@@ -98,6 +98,25 @@ Lorsque le *Auth Service* connecte un utilisateur, il produit un jeton JWT conte
 
 ---
 
+## Observabilité, Logs & Performance
+
+Le projet contient une stack de supervision complète pour suivre les microservices en conditions de test :
+
+- **Prometheus + Blackbox Exporter** : disponibilité et temps de réponse des services.
+- **Grafana** : dashboard `MAKA - Supervision` avec CPU, mémoire, disponibilité et requêtes HTTP.
+- **Elasticsearch + Logstash + Kibana** : centralisation et exploration des logs.
+- **k6** : tests de charge et scénarios de performance.
+
+Documentation technique SRE pour le rapport : [`docs/OBSERVABILITE_SRE.md`](docs/OBSERVABILITE_SRE.md)
+
+Rapport académique du projet : [`docs/RAPPORT_ACADEMIQUE_MAKA.md`](docs/RAPPORT_ACADEMIQUE_MAKA.md)
+
+Integration MCP Email/Agenda : [`docs/MCP_EMAIL_AGENDA.md`](docs/MCP_EMAIL_AGENDA.md)
+
+Guide des tests de performance et exports : [`performance/README.md`](performance/README.md)
+
+---
+
 ## 🏁 Démarrage Rapide (Lancement)
 
 **Prérequis** : Docker Desktop et Node.js installés.
@@ -129,6 +148,10 @@ npm start
 ### 4. Accéder à l'application
 - **Application Globale :** `http://localhost:4200`
 - API Gateway (Routage central Backend) : `http://localhost:8000`
+- Prometheus (métriques) : `http://localhost:9090`
+- Grafana (dashboards, admin/admin par défaut) : `http://localhost:3000`
+- Kibana (logs centralisés) : `http://localhost:5601`
+- Elasticsearch : `http://localhost:9200`
 - *Le compte administrateur racine (marouankiker@gmail.com / admin123) est disponible d'office pour gérer initialement la flotte grâce aux scripts de seed.*
 
 ---

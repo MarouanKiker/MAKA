@@ -1,0 +1,233 @@
+﻿{
+    "status":  "success",
+    "data":  {
+                 "resultType":  "vector",
+                 "result":  [
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/27d645ed7239afed63ce009e08671f8e68734ac4e9033293456123fa22bbc436"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "16031744"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/6a65717fc46b3f886e0adc21d9e9f97b3b0cfa633ddf62a279c3e18fdcbab27d"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "27889664"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/7412f91aef7c3aecf7553cbfac80a59e115c4e57afe50ef764cce0b654b6c878"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "14098432"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/81aea9a29ce00476ff9eecd3dec51a67d748c0d209d834c5d38a8b97458adfb2"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "72364032"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/9baa6c765da180740b9a09c2bc0397037250b2fc43f1cebf23337ba31e9df800"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "86331392"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/a1e763d77e9ec5fce92693c1af0fa419e53ce3f688a98174eb26dd92d8ba32e6"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "28438528"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/a61bb46332706a8a5afe6964970378ae77a41304aabfdcb7145870079e8e15f7"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "547782656"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/abb278f16667d8e595dfb418cd29a0220ecf65a0d5db0ea4d344b0d93bfbfc7a"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "137269248"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/buildkit"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "25776128"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/buildx"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "0"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/c29e6ff6f27faff20a8914f74f1c080dd5be352ffdc877867558773ea88982bf"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "12386304"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/cafe62710690daa29c7a41b59023f38457aebd67b3a5503842eacfa3662ba77c"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "847888384"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/d0b7e84f609f781ff3cf400b5706d73ac1ec77977801afffdc8e99cd5e040a17"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "606416896"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/d58d624c4b1b25ce10e94429859653115a098d215bfeea754fa0f6e2b93f8d65"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "12365824"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/1ba234846936039750c40a1cae48cfc109312b3f67617360eabfc3927a875843"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "52961280"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/2831d6b5bbcbbad3d4e9bf1aa6d98b601da3dae8dc832fbc27a9d21dff57e7d2"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "6348800"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/79edb607da457a18fcf90b4db00b4d8b7d737c3390569bb93360036d13b33cd9"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "4448256"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/458e370255f04a9d07822a6471ea5322e6f6943ab21401ffff18deea626a86b3"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "280272896"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/9e00948a63f03995aaf91e6a9e39b3284d520ed89df2bb41d1ba598522445baa"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "68075520"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/5ca9b8c6b048f6e3bca2e4851f4fa4a6ff5aa8c5fcd2453b5e1c586aacb9c9ba"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "249458688"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/829db8204486e791b6ace9f6b6cf5f707ae80fbefdc53f75f23756363a4e465d"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "284553216"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/9883e512fca413b6412c5215ea656a5ea1004c1757308e6306f8fdcac49511ae"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "187211776"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/94338e0e0f74b551d4d8386d47c77e9335f8b60aeefac0b65ef6426ec2fc847b"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "48955392"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/adc58a8bccc91d230d680992d7eed7b4dcd227f5389e91607ee836bd11bf803d"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "456511488"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "id":  "/docker/9696b0ebf1faf1c02d7ebc8a327553bde0894ff13b71d363a45c19a732573139"
+                                               },
+                                    "value":  [
+                                                  1778419812.209,
+                                                  "12701696"
+                                              ]
+                                }
+                            ]
+             }
+}

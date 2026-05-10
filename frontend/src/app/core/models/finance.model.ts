@@ -53,6 +53,8 @@ export interface Paiement {
     montant: number;
     modePaiement: string; // Libellé
     compteBancaire: string; // Nom banque
+    /** Présent quand le paiement est lié à un compte (agrégation trésorerie). */
+    compteBancaireId?: number | null;
     referenceTransaction: string;
     type: 'CLIENT' | 'FOURNISSEUR';
     statut: StatutPaiement;

@@ -1,40 +1,245 @@
-/* styles du journal comptable */
+/* Journal Comptable — maquette « vue consolidée » */
 
-.stats-row {
+:host {
+    display: block;
+}
+
+.jc-alert {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
+
+.jc-empty--muted {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+$jc-red: #f87171;
+$jc-teal: #2dd4bf;
+$jc-bg: #f8fafc;
+$jc-muted: #64748b;
+
+.jc-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 2rem;
+}
+
+.jc-toolbar {
     display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
     flex-wrap: wrap;
 }
 
-.stat-card {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: 1rem 1.25rem;
-    border-radius: 12px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    flex: 1;
-    min-width: 180px;
+.jc-title {
+    margin: 0;
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-1, #0f172a);
 }
 
-.stat-card i {
-    font-size: 1.3rem;
-    width: 40px;
-    height: 40px;
-    display: flex;
+.jc-subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+    color: $jc-muted;
+}
+
+.jc-btn-export {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
     border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid var(--border, #e2e8f0);
+    background: var(--card, #fff);
+    color: var(--text-1, #334155);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+
+    &:hover:not(:disabled) {
+        background: var(--bg-hover, #f1f5f9);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
 }
 
-.stat-card.credit i { background: rgba(52,211,153,.12); color: #34d399; }
-.stat-card.debit i { background: rgba(248,113,113,.12); color: #f87171; }
-.stat-card.solde i { background: rgba(96,165,250,.12); color: #60a5fa; }
+.jc-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 
-.stat-label { display: block; font-size: .75rem; color: var(--text-2); }
-.stat-value { display: block; font-size: 1.1rem; font-weight: 700; color: var(--text-1); }
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
 
-.debit-cell { color: #f87171; font-weight: 600; }
-.credit-cell { color: #34d399; font-weight: 600; }
+.jc-card {
+    background: var(--card, #fff);
+    border-radius: 14px;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid var(--border, #e8eef4);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.jc-card__value {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+}
+
+.jc-card__value--debit {
+    color: $jc-red;
+}
+
+.jc-card__value--credit {
+    color: $jc-teal;
+}
+
+.jc-card__label {
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: $jc-muted;
+}
+
+.jc-search {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    max-width: 420px;
+    margin-bottom: 1.25rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid var(--border, #e2e8f0);
+    background: var(--card, #fff);
+
+    &:focus-within {
+        border-color: #94a3b8;
+        box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
+    }
+}
+
+.jc-search__icon {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.jc-search__input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    color: var(--text-1, #0f172a);
+    outline: none;
+
+    &::placeholder {
+        color: #94a3b8;
+    }
+}
+
+.jc-table-shell {
+    background: var(--card, #fff);
+    border-radius: 14px;
+    border: 1px solid var(--border, #e8eef4);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.jc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+
+    thead {
+        background: #fafbfc;
+    }
+
+    th {
+        text-align: left;
+        padding: 0.85rem 1rem;
+        font-weight: 600;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: $jc-muted;
+        border-bottom: 1px solid var(--border, #eef2f7);
+    }
+
+    .jc-th-num {
+        text-align: right;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    td {
+        padding: 0.9rem 1rem;
+        vertical-align: middle;
+    }
+}
+
+.jc-td-date {
+    color: $jc-muted;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.jc-td-lib {
+    color: var(--text-1, #0f172a);
+    font-weight: 600;
+}
+
+.jc-td-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.jc-amount-debit {
+    color: $jc-red;
+}
+
+.jc-amount-credit {
+    color: $jc-teal;
+}
+
+.jc-balance {
+    font-weight: 700;
+}
+
+.jc-balance--pos {
+    color: $jc-teal;
+}
+
+.jc-balance--neg {
+    color: $jc-red;
+}
+
+.jc-empty {
+    text-align: center;
+    padding: 2.5rem 1rem !important;
+    color: $jc-muted;
+    font-size: 0.95rem;
+}

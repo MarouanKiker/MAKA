@@ -1,0 +1,48 @@
+﻿{
+    "status":  "success",
+    "data":  {
+                 "resultType":  "vector",
+                 "result":  [
+                                {
+                                    "metric":  {
+                                                   "job":  "stock-service",
+                                                   "status":  "200"
+                                               },
+                                    "value":  [
+                                                  1778419812.253,
+                                                  "0.13337872890071356"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "job":  "hr-service",
+                                                   "status":  "200"
+                                               },
+                                    "value":  [
+                                                  1778419812.253,
+                                                  "0.13337826074747985"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "job":  "finance-service",
+                                                   "status":  "200"
+                                               },
+                                    "value":  [
+                                                  1778419812.253,
+                                                  "0.13338294242770996"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "job":  "stock-service",
+                                                   "status":  "401"
+                                               },
+                                    "value":  [
+                                                  1778419812.253,
+                                                  "0"
+                                              ]
+                                }
+                            ]
+             }
+}

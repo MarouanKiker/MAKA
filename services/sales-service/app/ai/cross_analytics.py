@@ -2,6 +2,7 @@ import httpx
 from sqlalchemy.orm import Session
 from app.models import CommandeVente, Devis, VenteMensuelle, Produit
 from datetime import datetime
+from app.config import GATEWAY_URL
 
 # ============================================================
 # Cross-Analytics — Cerveau IA central de MAKA ERP
@@ -9,10 +10,13 @@ from datetime import datetime
 # via appels HTTP internes aux microservices.
 # ============================================================
 
-# URLs internes des microservices (reseau Docker hub-network)
-CRM_BASE = "http://crm-service:5000/api/crm"
-FINANCE_BASE = "http://finance-service:6000/api/v1"
-HR_BASE = "http://hr-service:8080/api/hr"
+# Routes internes via la Gateway Docker.
+# Important : on garde les memes routes fonctionnelles que le frontend
+# (/api/crm, /api/finance, /api/hr) pour eviter les ecarts de donnees.
+GATEWAY_BASE = GATEWAY_URL.rstrip("/")
+CRM_BASE = f"{GATEWAY_BASE}/api/crm"
+FINANCE_BASE = f"{GATEWAY_BASE}/api/finance"
+HR_BASE = f"{GATEWAY_BASE}/api/hr"
 
 
 async def _fetch(client: httpx.AsyncClient, url: str, headers: dict) -> list | dict | None:
@@ -21,6 +25,7 @@ async def _fetch(client: httpx.AsyncClient, url: str, headers: dict) -> list | d
         resp = await client.get(url, headers=headers, timeout=5.0)
         if resp.status_code == 200:
             return resp.json()
+        print(f"[CrossAnalytics] Appel {url} -> HTTP {resp.status_code}")
     except Exception as e:
         print(f"[CrossAnalytics] Erreur appel {url}: {e}")
     return None
@@ -69,18 +74,29 @@ async def generer_cross_analytics(db: Session, token: str = None) -> dict:
 
     async with httpx.AsyncClient() as client:
         # CRM
-        leads = await _fetch(client, f"{CRM_BASE}/leads", headers) or []
-        opportunites = await _fetch(client, f"{CRM_BASE}/opportunites", headers) or []
-        tasks = await _fetch(client, f"{CRM_BASE}/tasks", headers) or []
-        tickets = await _fetch(client, f"{CRM_BASE}/tickets", headers) or []
+        leads_data = await _fetch(client, f"{CRM_BASE}/leads", headers)
+        opportunites_data = await _fetch(client, f"{CRM_BASE}/opportunites", headers)
+        tasks_data = await _fetch(client, f"{CRM_BASE}/tasks", headers)
+        tickets_data = await _fetch(client, f"{CRM_BASE}/tickets", headers)
+        crm_ok = any(item is not None for item in [leads_data, opportunites_data, tasks_data, tickets_data])
+        leads = leads_data or []
+        opportunites = opportunites_data or []
+        tasks = tasks_data or []
+        tickets = tickets_data or []
 
         # Finance
-        factures = await _fetch(client, f"{FINANCE_BASE}/factures", headers) or []
-        paiements = await _fetch(client, f"{FINANCE_BASE}/paiements", headers) or []
+        factures_data = await _fetch(client, f"{FINANCE_BASE}/factures", headers)
+        paiements_data = await _fetch(client, f"{FINANCE_BASE}/paiements", headers)
+        finance_ok = any(item is not None for item in [factures_data, paiements_data])
+        factures = factures_data or []
+        paiements = paiements_data or []
 
         # HR
-        employes = await _fetch(client, f"{HR_BASE}/employes", headers) or []
-        conges = await _fetch(client, f"{HR_BASE}/conges", headers) or []
+        employes_data = await _fetch(client, f"{HR_BASE}/employes", headers)
+        conges_data = await _fetch(client, f"{HR_BASE}/conges", headers)
+        rh_ok = any(item is not None for item in [employes_data, conges_data])
+        employes = employes_data or []
+        conges = conges_data or []
 
     # --- 3. Calculer les metriques cross-modules ---
 
@@ -285,9 +301,9 @@ async def generer_cross_analytics(db: Session, token: str = None) -> dict:
         },
         "modules_status": {
             "ventes": "ok",
-            "crm": "ok" if leads is not None else "indisponible",
-            "finance": "ok" if factures is not None else "indisponible",
-            "rh": "ok" if employes is not None else "indisponible",
+            "crm": "ok" if crm_ok else "auth_required_or_down",
+            "finance": "ok" if finance_ok else "auth_required_or_down",
+            "rh": "ok" if rh_ok else "auth_required_or_down",
         },
         "timestamp": datetime.utcnow().isoformat(),
     }

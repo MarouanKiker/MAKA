@@ -3,10 +3,13 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { CrmService } from '../../core/services/crm.service';
 import { FinanceService } from '../../core/services/finance.service';
+import { StockService } from '../../core/services/stock.service';
 import { Lead, Opportunity } from '../../core/models/crm.model';
 import { Facture, Paiement, CompteBancaire } from '../../core/models/finance.model';
+import { ArticleStock, DepotStock } from '../../core/models/stock.model';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
     selector: 'app-dashboard',
@@ -32,7 +35,18 @@ export class DashboardComponent implements OnInit {
     finPaiements: Paiement[] = [];
     finComptes: CompteBancaire[] = [];
 
-    constructor(public auth: AuthService, public crm: CrmService, private financeSvc: FinanceService, private router: Router) {
+    // Stock data
+    stockArticles: ArticleStock[] = [];
+    stockAlertes: ArticleStock[] = [];
+    stockDepots: DepotStock[] = [];
+
+    constructor(
+        public auth: AuthService,
+        public crm: CrmService,
+        private financeSvc: FinanceService,
+        private stockSvc: StockService,
+        private router: Router
+    ) {
         let user = this.auth.getUser();
         if (user) {
             this.userName = user.prenom;
@@ -47,8 +61,8 @@ export class DashboardComponent implements OnInit {
 
     ngOnInit(): void {
         forkJoin({
-            leads: this.crm.getLeads(),
-            opps: this.crm.getOpportunities()
+            leads: this.crm.getLeads().pipe(catchError(() => of([] as Lead[]))),
+            opps: this.crm.getOpportunities().pipe(catchError(() => of([] as Opportunity[])))
         }).subscribe({
             next: (data) => {
                 this.leads = data.leads;
@@ -57,7 +71,7 @@ export class DashboardComponent implements OnInit {
                 this.buildStats();
                 this.buildPipeline();
             },
-            error: (err) => console.error('Erreur forcJoin dashboard', err)
+            error: () => { /* forkJoin ne devrait plus échouer : branche CRM isolée */ }
         });
 
         // Load finance data
@@ -71,6 +85,20 @@ export class DashboardComponent implements OnInit {
         });
         this.financeSvc.getComptesBancaires().subscribe({
             next: (data) => this.finComptes = data,
+            error: () => {}
+        });
+
+        // Load stock data
+        this.stockSvc.getArticles('', 1, 50).subscribe({
+            next: (page) => this.stockArticles = page.data || [],
+            error: () => {}
+        });
+        this.stockSvc.getAlertes().subscribe({
+            next: (data) => this.stockAlertes = data,
+            error: () => {}
+        });
+        this.stockSvc.getDepots().subscribe({
+            next: (data) => this.stockDepots = data,
             error: () => {}
         });
     }
@@ -153,5 +181,14 @@ export class DashboardComponent implements OnInit {
     }
     getFinanceSoldeBancaire(): number {
         return this.finComptes.reduce((s, c) => s + (c.soldeActuel || 0), 0);
+    }
+
+    // --- Stock Stats ---
+    getStockTotalQuantite(): number {
+        return this.stockArticles.reduce((s, a) => s + (a.stockTotal || 0), 0);
+    }
+
+    getStockValeurAchat(): number {
+        return this.stockArticles.reduce((s, a) => s + ((a.stockTotal || 0) * (a.prixAchat || 0)), 0);
     }
 }

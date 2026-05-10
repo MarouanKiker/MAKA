@@ -1,0 +1,92 @@
+﻿{
+    "status":  "success",
+    "data":  {
+                 "resultType":  "vector",
+                 "result":  [
+                                {
+                                    "metric":  {
+                                                   "__name__":  "probe_duration_seconds",
+                                                   "instance":  "http://crm-service:5000/swagger/v1/swagger.json",
+                                                   "job":  "service-availability",
+                                                   "service":  "crm-service"
+                                               },
+                                    "value":  [
+                                                  1778419812.230,
+                                                  "0.015011556"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "probe_duration_seconds",
+                                                   "instance":  "http://gateway/health",
+                                                   "job":  "service-availability",
+                                                   "service":  "gateway"
+                                               },
+                                    "value":  [
+                                                  1778419812.230,
+                                                  "0.002836921"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "probe_duration_seconds",
+                                                   "instance":  "http://gateway/api/auth/profile",
+                                                   "job":  "service-availability",
+                                                   "service":  "auth-service"
+                                               },
+                                    "value":  [
+                                                  1778419812.230,
+                                                  "0.299539086"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "probe_duration_seconds",
+                                                   "instance":  "http://hr-service:8080/api/hr/employes",
+                                                   "job":  "service-availability",
+                                                   "service":  "hr-service"
+                                               },
+                                    "value":  [
+                                                  1778419812.230,
+                                                  "0.006015141"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "probe_duration_seconds",
+                                                   "instance":  "http://finance-service:6000/actuator/health",
+                                                   "job":  "service-availability",
+                                                   "service":  "finance-service"
+                                               },
+                                    "value":  [
+                                                  1778419812.230,
+                                                  "0.006582432"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "probe_duration_seconds",
+                                                   "instance":  "http://sales-service:8004/api/sales/health",
+                                                   "job":  "service-availability",
+                                                   "service":  "sales-service"
+                                               },
+                                    "value":  [
+                                                  1778419812.230,
+                                                  "0.003323779"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "__name__":  "probe_duration_seconds",
+                                                   "instance":  "http://stock-service:8083/actuator/health",
+                                                   "job":  "service-availability",
+                                                   "service":  "stock-service"
+                                               },
+                                    "value":  [
+                                                  1778419812.230,
+                                                  "0.00601314"
+                                              ]
+                                }
+                            ]
+             }
+}

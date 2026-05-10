@@ -1,27 +1,34 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component } from '@angular/core';
+import { CommonModule, NgClass, DecimalPipe, DatePipe, AsyncPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CrmService } from '../../core/services/crm.service';
-import { Campaign, Lead, Opportunity } from '../../core/models/crm.model';
-import { forkJoin } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
+import { switchMap, startWith, map, catchError, shareReplay } from 'rxjs/operators';
+import { CampaignService } from '../../core/services/campaign.service';
+import { Campaign, CampaignIconType, CampaignStatusKey } from '../../core/models/campaign.model';
+
+interface CampaignSummary {
+    count: number;
+    totalBudget: number;
+    totalSent: number;
+    avgOpenRatePct: number | null;
+}
 
 @Component({
     selector: 'app-campaigns',
     standalone: true,
-    imports: [CommonModule, FormsModule, DatePipe],
+    imports: [CommonModule, NgClass, FormsModule, DecimalPipe, DatePipe, AsyncPipe],
     templateUrl: './campaigns.component.html',
-    styleUrls: ['../shared/crm-page.scss']
+    styleUrls: ['../shared/crm-page.scss', './campaigns.component.scss']
 })
-export class CampaignsComponent implements OnInit {
+export class CampaignsComponent {
 
     showForm = false;
     nom = '';
-    type = 'SOCIAL';
     budget = 0;
     dateDebut = '';
     dateFin = '';
 
-    campaignTypes = [
+    readonly campaignTypes = [
         { id: 'SOCIAL', label: 'Réseaux Sociaux' },
         { id: 'EMAIL', label: 'Emailing' },
         { id: 'EVENT', label: 'Événement' },
@@ -29,70 +36,70 @@ export class CampaignsComponent implements OnInit {
         { id: 'OTHER', label: 'Autre' }
     ];
 
-    campaigns: Campaign[] = [];
+    /** Types de canal (UI formulaire uniquement ; non persistés par l’API CRM actuelle). */
+    formType = 'SOCIAL';
 
-    constructor(private crm: CrmService) { }
+    private readonly reload$ = new Subject<void>();
 
-    ngOnInit(): void {
-        this.loadCampaigns();
+    readonly campaigns$: Observable<Campaign[]> = this.reload$.pipe(
+        startWith(void 0),
+        switchMap(() =>
+            this.campaignService.getCampaigns().pipe(catchError(() => of<Campaign[]>([])))
+        ),
+        shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    readonly summary$: Observable<CampaignSummary> = this.campaigns$.pipe(
+        map(list => ({
+            count: list.length,
+            totalBudget: list.reduce((s, c) => s + c.budget, 0),
+            totalSent: list.reduce((s, c) => s + c.sentCount, 0),
+            avgOpenRatePct: this.avgOpenRate(list)
+        }))
+    );
+
+    constructor(private readonly campaignService: CampaignService) { }
+
+    badgeClass(status: CampaignStatusKey): Record<string, boolean> {
+        return {
+            'campaign-badge-active': status === 'ACTIVE',
+            'campaign-badge-done': status === 'TERMINEE',
+            'campaign-badge-planned': status === 'PLANIFIEE',
+            'campaign-badge-draft': status === 'BROUILLON'
+        };
     }
 
-    loadCampaigns(): void {
-        forkJoin({
-            campaigns: this.crm.getCampaigns(),
-            leads: this.crm.getLeads(),
-            opps: this.crm.getOpportunities()
-        }).subscribe({
-            next: (data) => {
-                const now = new Date().getTime();
-                
-                this.campaigns = data.campaigns.map(c => {
-                    const campLeads = data.leads.filter(l => l.campagneId === c.id);
-                    const leadIds = campLeads.map(l => l.id);
-                    const wonOpps = data.opps.filter(o => leadIds.includes(o.leadId) && o.statut === 'GAGNEE');
-                    
-                    const revenue = wonOpps.reduce((sum, o) => sum + o.valeur, 0);
-                    
-                    const start = new Date(c.dateDebut).getTime();
-                    const end = new Date(c.dateFin).getTime();
-                    let status = 'EN_COURS';
-                    if (now < start) status = 'PLANIFIEE';
-                    else if (now > end) status = 'TERMINEE';
-
-                    return {
-                        ...c,
-                        uiStatus: status,
-                        uiLeadsCount: campLeads.length,
-                        uiRevenue: revenue,
-                        uiCpl: campLeads.length > 0 ? c.budget / campLeads.length : 0
-                    };
-                });
-            },
-            error: (err) => console.error('Erreur chargement données', err)
-        });
+    statusLabel(status: CampaignStatusKey): string {
+        switch (status) {
+            case 'ACTIVE': return 'Active';
+            case 'TERMINEE': return 'Terminée';
+            case 'PLANIFIEE': return 'Planifiée';
+            case 'BROUILLON': return 'Brouillon';
+            default: return status;
+        }
     }
 
-    get totalBudget(): number {
-        return this.campaigns.reduce((sum, c) => sum + c.budget, 0);
+    iconFaClass(kind: CampaignIconType): string {
+        switch (kind) {
+            case 'email': return 'fa-solid fa-envelope-open-text';
+            case 'social': return 'fa-solid fa-share-nodes';
+            case 'event': return 'fa-solid fa-champagne-glasses';
+            case 'seo': return 'fa-solid fa-magnifying-glass-chart';
+            default: return 'fa-solid fa-bullhorn';
+        }
     }
 
-    get totalRevenue(): number {
-        return this.campaigns.reduce((sum, c) => sum + (c.uiRevenue || 0), 0);
+    formatOpenRate(rate: number | null): string {
+        return rate !== null ? `${rate.toFixed(1)} %` : 'N/D';
     }
 
-    get totalLeads(): number {
-        return this.campaigns.reduce((sum, c) => sum + (c.uiLeadsCount || 0), 0);
-    }
-
-    getBudgetPercent(budget: number): number {
-        if (this.campaigns.length === 0) return 0;
-        const max = Math.max(...this.campaigns.map(c => c.budget), 1);
-        return (budget / max) * 100;
+    refreshList(): void {
+        this.reload$.next();
     }
 
     openForm(): void {
         this.nom = '';
-        this.type = 'SOCIAL';
+        this.formType = 'SOCIAL';
         this.budget = 0;
         this.dateDebut = '';
         this.dateFin = '';
@@ -103,31 +110,33 @@ export class CampaignsComponent implements OnInit {
         const nom = (this.nom || '').trim();
         if (!nom) return;
 
-        const newCampaign: Partial<Campaign> = {
-            nom,
-            type: this.type,
-            budget: this.budget,
-            dateDebut: this.dateDebut ? new Date(this.dateDebut).toISOString() : new Date().toISOString(),
-            dateFin: this.dateFin ? new Date(this.dateFin).toISOString() : new Date(Date.now() + 86400000).toISOString()
-        };
-
-        this.crm.createCampaign(newCampaign).subscribe({
-            next: () => {
-                this.showForm = false;
-                this.loadCampaigns();
-            },
-            error: (err) => console.error('Erreur creation campagne', err)
-        });
+        this.campaignService
+            .createCampaign({
+                nom,
+                budget: this.budget,
+                dateDebut: this.dateDebut ? new Date(this.dateDebut).toISOString() : new Date().toISOString(),
+                dateFin: this.dateFin ? new Date(this.dateFin).toISOString() : new Date(Date.now() + 86400000).toISOString()
+            })
+            .subscribe({
+                next: () => {
+                    this.showForm = false;
+                    this.refreshList();
+                },
+                error: (err) => console.error('Erreur creation campagne', err)
+            });
     }
 
     delete(id: number): void {
-        if (confirm('Etes-vous sur de supprimer cette campagne ?')) {
-            this.crm.deleteCampaign(id).subscribe({
-                next: () => {
-                    this.campaigns = this.campaigns.filter(c => c.id !== id);
-                },
-                error: (err) => console.error('Erreur suppression campagne', err)
-            });
-        }
+        if (!confirm('Etes-vous sur de supprimer cette campagne ?')) return;
+        this.campaignService.deleteCampaign(id).subscribe({
+            next: () => this.refreshList(),
+            error: (err) => console.error('Erreur suppression campagne', err)
+        });
+    }
+
+    private avgOpenRate(list: Campaign[]): number | null {
+        const present = list.map(c => c.openRate).filter((r): r is number => r !== null);
+        if (present.length === 0) return null;
+        return present.reduce((a, b) => a + b, 0) / present.length;
     }
 }

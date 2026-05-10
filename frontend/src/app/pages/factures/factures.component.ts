@@ -42,7 +42,37 @@ export class FacturesComponent implements OnInit {
         ANNULEE: '#e84c3d'
     };
 
+    /** Ordre d’affichage des statuts dans la liste (workflow métier). */
+    allStatuts: StatutFacture[] = [
+        'BROUILLON', 'VALIDEE', 'ENVOYEE', 'PARTIELLEMENT_PAYEE', 'PAYEE', 'ANNULEE'
+    ];
+
+    /**
+     * Même graphe que `FactureService.TRANSITIONS` côté finance-service.
+     * Partiellement payée / payée ne sont possibles qu’après « Envoyée ».
+     */
+    private readonly statutTransitions: Record<StatutFacture, StatutFacture[]> = {
+        BROUILLON: ['VALIDEE', 'ANNULEE'],
+        VALIDEE: ['ENVOYEE', 'ANNULEE'],
+        ENVOYEE: ['PARTIELLEMENT_PAYEE', 'PAYEE'],
+        PARTIELLEMENT_PAYEE: ['PAYEE'],
+        PAYEE: [],
+        ANNULEE: []
+    };
+
     constructor(private financeSvc: FinanceService) {}
+
+    /** Statuts affichés dans le select : actuel + transitions autorisées uniquement. */
+    statutsSelectables(f: Facture): StatutFacture[] {
+        const next = this.statutTransitions[f.statut] ?? [];
+        const allowed = new Set<StatutFacture>([f.statut, ...next]);
+        return this.allStatuts.filter(s => allowed.has(s));
+    }
+
+    /** Plus aucune transition (Payée / Annulée) : liste figée. */
+    statutSelectReadOnly(f: Facture): boolean {
+        return (this.statutTransitions[f.statut] ?? []).length === 0;
+    }
 
     ngOnInit(): void {
         this.loadFactures();
@@ -158,15 +188,15 @@ export class FacturesComponent implements OnInit {
         });
     }
 
-    changeStatut(facture: Facture, statut: StatutFacture): void {
-        this.financeSvc.changeStatutFacture(facture.id, statut).subscribe({
+    changeStatut(f: Facture, newStatut: StatutFacture): void {
+        if (f.statut === newStatut) return;
+        this.financeSvc.changeStatutFacture(f.id, newStatut).subscribe({
             next: (updated) => {
-                facture.statut = updated.statut;
-                this.showMessage(`Statut mis à jour : ${this.statutLabels[statut]}`);
+                const i = this.factures.findIndex(x => x.id === f.id);
+                if (i >= 0) this.factures[i] = { ...this.factures[i], ...updated };
+                this.showMessage('Statut mis à jour');
             },
-            error: () => {
-                this.showMessage('Erreur lors du changement de statut');
-            }
+            error: (err) => this.showMessage(this.readError(err))
         });
     }
 

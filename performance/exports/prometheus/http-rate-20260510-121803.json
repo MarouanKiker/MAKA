@@ -1,0 +1,38 @@
+﻿{
+    "status":  "success",
+    "data":  {
+                 "resultType":  "vector",
+                 "result":  [
+                                {
+                                    "metric":  {
+                                                   "job":  "stock-service",
+                                                   "status":  "200"
+                                               },
+                                    "value":  [
+                                                  1778411883.456,
+                                                  "0.074643576920206"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "job":  "hr-service",
+                                                   "status":  "200"
+                                               },
+                                    "value":  [
+                                                  1778411883.456,
+                                                  "0.08149212073057686"
+                                              ]
+                                },
+                                {
+                                    "metric":  {
+                                                   "job":  "finance-service",
+                                                   "status":  "200"
+                                               },
+                                    "value":  [
+                                                  1778411883.456,
+                                                  "0.08175277959450623"
+                                              ]
+                                }
+                            ]
+             }
+}

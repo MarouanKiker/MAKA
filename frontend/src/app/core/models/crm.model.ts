@@ -3,6 +3,10 @@
 export interface Lead {
     id: number;
     source: string;
+    entreprise?: string;
+    nomContact?: string;
+    email?: string;
+    telephone?: string;
     statut: string; // 'NOUVEAU', 'QUALIFIE', 'EN_COURS', 'CONVERTI', 'PERDU'
     score: number;
     dateCreation: string;
@@ -21,20 +25,14 @@ export interface Opportunity {
     leadSource?: string;
 }
 
-export interface Campaign {
+/** DTO liste / CRUD tel que renvoyé par `/api/crm/campagnes` */
+export interface CrmCampaign {
     id: number;
     nom: string;
-    type?: string;
     budget: number;
     dateDebut: string;
     dateFin: string;
-    leads?: Lead[];
-    
-    // Propriétés calculées pour l'UI
-    uiStatus?: string;
-    uiLeadsCount?: number;
-    uiRevenue?: number;
-    uiCpl?: number;
+    nombreLeads?: number;
 }
 
 // Task : aligné avec TaskItem.cs du backend

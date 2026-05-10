@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import {
     Facture, FactureRequest,
     Paiement, CreatePaiementRequest,
-    JournalTransaction, StatutFacture,
+    JournalTransaction,
     CompteBancaire, ModePaiement
 } from '../models/finance.model';
 import { environment } from '../../../environments/environment';
@@ -29,12 +29,12 @@ export class FinanceService {
         return this.http.post<Facture>(`${this.api}/factures`, request);
     }
 
-    changeStatutFacture(id: number, statut: StatutFacture): Observable<Facture> {
-        return this.http.patch<Facture>(`${this.api}/factures/${id}/statut`, { statut });
-    }
-
     deleteFacture(id: number): Observable<void> {
         return this.http.delete<void>(`${this.api}/factures/${id}`);
+    }
+
+    changeStatutFacture(id: number, statut: string): Observable<Facture> {
+        return this.http.patch<Facture>(`${this.api}/factures/${id}/statut`, { statut });
     }
 
     // --- Paiements ---

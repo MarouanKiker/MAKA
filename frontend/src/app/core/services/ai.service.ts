@@ -40,9 +40,24 @@ export class AiService {
         return this.http.get(this.baseUrl + '/insights');
     }
 
+    /** Etat des connecteurs MCP Email / Agenda */
+    getMcpStatus(): Observable<any> {
+        return this.http.get(this.baseUrl + '/mcp/status');
+    }
+
+    /** Preparation d'un brouillon email via MCP */
+    createEmailDraft(payload: { to?: string[]; subject: string; body: string; context?: string }): Observable<any> {
+        return this.http.post(this.baseUrl + '/mcp/email/draft', payload);
+    }
+
     /** Segmentation K-Means des clients */
     getSegmentation(): Observable<any> {
         return this.http.get(this.baseUrl + '/segmentation');
+    }
+
+    /** Customer Segmentation & Marketing Intelligence */
+    getMarketingIntelligence(): Observable<any> {
+        return this.http.get(this.baseUrl + '/marketing-intelligence');
     }
 
     /** Scoring ML d'un lead */

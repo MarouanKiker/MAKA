@@ -10,6 +10,10 @@ public static class LeadMapper
         return new Lead
         {
             Source = dto.Source,
+            Entreprise = dto.Entreprise,
+            NomContact = dto.NomContact,
+            Email = dto.Email,
+            Telephone = dto.Telephone,
             Score = dto.Score,
             CampagneId = dto.CampagneId,
             UtilisateurId = dto.UtilisateurId,
@@ -24,6 +28,10 @@ public static class LeadMapper
         {
             Id = lead.Id,
             Source = lead.Source,
+            Entreprise = lead.Entreprise,
+            NomContact = lead.NomContact,
+            Email = lead.Email,
+            Telephone = lead.Telephone,
             Statut = lead.Statut.ToString(),
             Score = lead.Score,
             DateCreation = lead.DateCreation,

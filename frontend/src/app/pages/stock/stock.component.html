@@ -1,0 +1,279 @@
+<div class="page-header">
+    <div>
+        <h1><i class="fa-solid fa-boxes-stacked page-icon"></i> Stock</h1>
+        <span class="page-subtitle">Articles, depots, mouvements et alertes de rupture</span>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        <button class="btn-add secondary" (click)="openDepotForm()">
+            <i class="fa-solid fa-warehouse"></i> Nouveau depot
+        </button>
+        <button class="btn-add secondary" (click)="openMouvementForm()">
+            <i class="fa-solid fa-right-left"></i> Mouvement
+        </button>
+        <button class="btn-add" (click)="openArticleForm()">
+            <i class="fa-solid fa-plus"></i> Nouvel article
+        </button>
+    </div>
+</div>
+
+<div class="toast" *ngIf="message" (click)="message = ''">{{ message }}</div>
+<div class="loading" *ngIf="isLoading">Chargement du stock...</div>
+
+<div class="page-stats mt-6">
+    <div class="mini-stat">
+        <div class="mini-stat-icon"><i class="fa-solid fa-box"></i></div>
+        <div class="mini-stat-value">{{ articles.length }}</div>
+        <div class="mini-stat-label">Articles</div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="mini-stat-value">{{ alertes.length }}</div>
+        <div class="mini-stat-label">Alertes stock</div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-icon"><i class="fa-solid fa-warehouse"></i></div>
+        <div class="mini-stat-value">{{ depots.length }}</div>
+        <div class="mini-stat-label">Depots</div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-icon"><i class="fa-solid fa-coins"></i></div>
+        <div class="mini-stat-value">{{ getStockValue() | number:'1.0-0' }}</div>
+        <div class="mini-stat-label">Valeur achat (MAD)</div>
+    </div>
+</div>
+
+<div class="stock-toolbar">
+    <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+        <input type="text" [(ngModel)]="search" (keyup.enter)="loadAll()" placeholder="Rechercher une reference ou designation">
+    </div>
+    <button class="btn-sm" (click)="loadAll()">Rechercher</button>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Reference</th>
+                <th>Designation</th>
+                <th>Stock</th>
+                <th>Seuil</th>
+                <th>Prix achat</th>
+                <th>Prix vente</th>
+                <th>Emplacement</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let article of articles">
+                <td class="font-bold text-slate-900 dark:text-white">{{ article.reference }}</td>
+                <td>{{ article.designation }}</td>
+                <td>
+                    <span class="stock-pill" [ngClass]="stockStatus(article)">
+                        {{ article.stockTotal || 0 }} {{ article.unite }}
+                    </span>
+                </td>
+                <td>{{ article.seuilMinAlerte }}</td>
+                <td>{{ article.prixAchat | number:'1.2-2' }} MAD</td>
+                <td class="font-semibold text-emerald-600 dark:text-emerald-400">{{ article.prixVente | number:'1.2-2' }} MAD</td>
+                <td>{{ article.emplacementRayon || '-' }}</td>
+                <td>
+                    <div class="flex items-center gap-1">
+                        <button class="btn-icon" (click)="openMouvementForm(article)" title="Ajouter un mouvement">
+                            <i class="fa-solid fa-right-left"></i>
+                        </button>
+                        <button class="btn-icon" (click)="openArticleForm(article)" title="Modifier">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn-icon delete" (click)="deleteArticle(article)" title="Supprimer">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr *ngIf="articles.length === 0 && !isLoading">
+                <td colspan="8">
+                    <div class="empty">
+                        <i class="fa-solid fa-box-open text-4xl mb-4"></i>
+                        <p>Aucun article stock trouve</p>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="stock-grid">
+    <section class="stock-panel">
+        <div class="panel-title">
+            <i class="fa-solid fa-warehouse"></i>
+            <span>Depots</span>
+        </div>
+        <div class="panel-list">
+            <div class="panel-row" *ngFor="let depot of depots">
+                <div>
+                    <strong>{{ depot.nom }}</strong>
+                    <span>{{ depot.adresse || 'Adresse non renseignee' }}</span>
+                </div>
+                <em>{{ depot.capaciteMax || 0 }} max</em>
+            </div>
+            <div class="panel-empty" *ngIf="depots.length === 0">Aucun depot</div>
+        </div>
+    </section>
+
+    <section class="stock-panel">
+        <div class="panel-title">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Derniers mouvements</span>
+        </div>
+        <div class="panel-list">
+            <div class="panel-row" *ngFor="let mouvement of mouvements">
+                <div>
+                    <strong>{{ mouvement.typeMvt }} - {{ mouvement.statut }}</strong>
+                    <span>{{ getDepotName(mouvement.depotSourceId) }} vers {{ getDepotName(mouvement.depotDestinationId) }}</span>
+                </div>
+                <em>{{ mouvement.sourceType || 'MANUEL' }}</em>
+            </div>
+            <div class="panel-empty" *ngIf="mouvements.length === 0">Aucun mouvement</div>
+        </div>
+    </section>
+</div>
+
+<div class="modal-overlay" *ngIf="showArticleForm" (click)="showArticleForm = false">
+    <div class="modal w-full max-w-3xl" (click)="$event.stopPropagation()">
+        <h2>{{ selectedArticle ? 'Modifier article' : 'Nouvel article' }}</h2>
+        <form (ngSubmit)="saveArticle()">
+            <div class="row">
+                <div class="champ">
+                    <label>Reference *</label>
+                    <input type="text" [(ngModel)]="articleForm.reference" name="reference" [disabled]="!!selectedArticle" required>
+                </div>
+                <div class="champ">
+                    <label>Designation *</label>
+                    <input type="text" [(ngModel)]="articleForm.designation" name="designation" required>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="champ">
+                    <label>Unite</label>
+                    <select [(ngModel)]="articleForm.unite" name="unite">
+                        <option *ngFor="let unite of unites" [value]="unite">{{ unite }}</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Seuil minimum</label>
+                    <input type="number" [(ngModel)]="articleForm.seuilMinAlerte" name="seuilMinAlerte" min="0">
+                </div>
+                <div class="champ">
+                    <label>Emplacement</label>
+                    <input type="text" [(ngModel)]="articleForm.emplacementRayon" name="emplacementRayon">
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="champ">
+                    <label>Prix achat *</label>
+                    <input type="number" [(ngModel)]="articleForm.prixAchat" name="prixAchat" min="0" step="0.01" required>
+                </div>
+                <div class="champ">
+                    <label>Prix vente *</label>
+                    <input type="number" [(ngModel)]="articleForm.prixVente" name="prixVente" min="0" step="0.01" required>
+                </div>
+            </div>
+            <div class="champ mt-4">
+                <label>Description</label>
+                <textarea rows="3" [(ngModel)]="articleForm.description" name="description"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" (click)="showArticleForm = false">Annuler</button>
+                <button type="submit" class="btn-save">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showDepotForm" (click)="showDepotForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Nouveau depot</h2>
+        <form (ngSubmit)="saveDepot()">
+            <div class="champ">
+                <label>Nom *</label>
+                <input type="text" [(ngModel)]="depotForm.nom" name="nomDepot" required>
+            </div>
+            <div class="champ">
+                <label>Adresse</label>
+                <input type="text" [(ngModel)]="depotForm.adresse" name="adresseDepot">
+            </div>
+            <div class="champ">
+                <label>Capacite maximale</label>
+                <input type="number" [(ngModel)]="depotForm.capaciteMax" name="capaciteMax" min="0">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" (click)="showDepotForm = false">Annuler</button>
+                <button type="submit" class="btn-save">Creer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showMouvementForm" (click)="showMouvementForm = false">
+    <div class="modal w-full max-w-3xl" (click)="$event.stopPropagation()">
+        <h2>Nouveau mouvement</h2>
+        <form (ngSubmit)="saveMouvement()">
+            <div class="row">
+                <div class="champ">
+                    <label>Article *</label>
+                    <select [(ngModel)]="mouvementForm.articleId" name="articleId" required>
+                        <option [ngValue]="0">Choisir un article</option>
+                        <option *ngFor="let article of articles" [ngValue]="article.id">{{ article.reference }} - {{ article.designation }}</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Type *</label>
+                    <select [(ngModel)]="mouvementForm.typeMvt" name="typeMvt">
+                        <option *ngFor="let type of typeMouvements" [value]="type">{{ type }}</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Quantite *</label>
+                    <input type="number" [(ngModel)]="mouvementForm.quantite" name="quantite" min="1" required>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="champ">
+                    <label>Depot source</label>
+                    <select [(ngModel)]="mouvementForm.depotSourceId" name="depotSourceId">
+                        <option [ngValue]="null">Aucun</option>
+                        <option *ngFor="let depot of depots" [ngValue]="depot.id">{{ depot.nom }}</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Depot destination</label>
+                    <select [(ngModel)]="mouvementForm.depotDestinationId" name="depotDestinationId">
+                        <option [ngValue]="null">Aucun</option>
+                        <option *ngFor="let depot of depots" [ngValue]="depot.id">{{ depot.nom }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="champ">
+                    <label>Source</label>
+                    <select [(ngModel)]="mouvementForm.sourceType" name="sourceType">
+                        <option *ngFor="let source of sourceTypes" [value]="source">{{ source }}</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>ID source externe</label>
+                    <input type="number" [(ngModel)]="mouvementForm.sourceId" name="sourceId" min="0">
+                </div>
+            </div>
+            <div class="champ mt-4">
+                <label>Motif</label>
+                <textarea rows="3" [(ngModel)]="mouvementForm.motif" name="motif"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" (click)="showMouvementForm = false">Annuler</button>
+                <button type="submit" class="btn-save">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>

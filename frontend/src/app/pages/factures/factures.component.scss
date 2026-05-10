@@ -1,4 +1,32 @@
 /* styles specifiques aux factures */
+.facture-statut-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.65rem;
+    border-radius: 9999px;
+    border: 1px solid currentColor;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: default;
+    user-select: none;
+}
+
+.facture-statut-select {
+    padding: 0.35rem 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid currentColor;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    max-width: 100%;
+}
+
 .cell-bold { font-weight: 700; color: var(--text-1); }
 .badge-success { background: rgba(52,211,153,.15); color: #34d399; }
 .badge-warning { background: rgba(251,191,36,.15); color: #fbbf24; }

@@ -14,6 +14,18 @@ public class Lead
     [MaxLength(100)]
     public string Source { get; set; } = string.Empty;
 
+    [MaxLength(200)]
+    public string Entreprise { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string NomContact { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string Email { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string Telephone { get; set; } = string.Empty;
+
     [Required]
     public LeadStatut Statut { get; set; } = LeadStatut.NOUVEAU;
 

@@ -87,3 +87,20 @@ class LeadScoreResponse(BaseModel):
 
 class LeadBatchRequest(BaseModel):
     leads: List[LeadScoreRequest]
+
+
+# --- MCP Email / Agenda ---
+class McpEmailDraftRequest(BaseModel):
+    to: List[str] = []
+    subject: str
+    body: str
+    context: Optional[str] = None
+
+
+class McpCalendarEventRequest(BaseModel):
+    title: str
+    start: str
+    end: Optional[str] = None
+    attendees: List[str] = []
+    description: Optional[str] = None
+    timezone: str = "Africa/Casablanca"
