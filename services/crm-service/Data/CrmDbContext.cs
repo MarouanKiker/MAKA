@@ -95,7 +95,7 @@ public class CrmDbContext : DbContext
 
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(1000);
-            entity.Property(e => e.Status).HasColumnName("Statut").IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()");
 
             // Relation Ticket → Lead

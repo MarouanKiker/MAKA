@@ -37,7 +37,7 @@ export class ProfileComponent implements OnInit {
       this.email = this.user.email || '';
       this.role = this.user.roles && this.user.roles.length > 0 ? this.user.roles[0].replace('ROLE_', '') : '';
       
-      this.profilePicture = localStorage.getItem(`profile_picture_${this.email}`);
+      this.profilePicture = this.auth.getProfilePicture();
     }
   }
 
@@ -47,12 +47,10 @@ export class ProfileComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.profilePicture = e.target.result;
-        // Save to local storage
-        if (this.email) {
-          localStorage.setItem(`profile_picture_${this.email}`, this.profilePicture!);
-          this.successMessage = 'Photo de profil mise à jour avec succès.';
-          setTimeout(() => this.successMessage = '', 3000);
-        }
+        // Save via service
+        this.auth.setProfilePicture(this.profilePicture!);
+        this.successMessage = 'Photo de profil mise à jour avec succès.';
+        setTimeout(() => this.successMessage = '', 3000);
       };
       reader.readAsDataURL(file);
     }

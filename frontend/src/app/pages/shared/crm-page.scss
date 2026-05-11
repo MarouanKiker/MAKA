@@ -131,10 +131,13 @@
 /* ——— modal ——— */
 .modal-overlay {
     @apply fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4;
+    overflow-y: auto;
 }
 
 .modal {
     @apply w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
 }
 
 .modal h2 {

@@ -53,6 +53,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
     // sidebar ouverte/fermee
     sidebarOpen = true;
 
+    profilePicture: string | null = null;
+
     // liens du menu lateral
     allMenuItems = [
         {
@@ -167,6 +169,25 @@ export class LayoutComponent implements OnInit, OnDestroy {
     searchLoading = false;
     allSearchableItems: SearchResult[] = [];
 
+    // Global confirmation modal
+    confirmReq: any = {
+        show: false,
+        title: '',
+        confirmText: '',
+        onConfirm: () => {},
+        onCancel: () => {}
+    };
+
+    onConfirmYes() {
+        if (this.confirmReq.onConfirm) this.confirmReq.onConfirm();
+        this.confirmReq.show = false;
+    }
+
+    onConfirmNo() {
+        if (this.confirmReq.onCancel) this.confirmReq.onCancel();
+        this.confirmReq.show = false;
+    }
+
     constructor(
         private auth: AuthService,
         public themeSvc: ThemeService,
@@ -182,7 +203,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
             filter(event => event instanceof NavigationEnd)
         ).subscribe((event: any) => {
             const url = event.urlAfterRedirects || event.url;
-            this.isHub = url === '/dashboard';
+            this.isHub = url === '/dashboard' || url === '/profile' || url === '/admin';
             
             if (url.includes('/leads') || url.includes('/opportunities') || url.includes('/campaigns') || url.includes('/tasks')) {
                 this.currentModule = 'CRM';
@@ -213,6 +234,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.loadNotifications();
         this.loadSearchIndex();
+        
+        // Charger la photo de profil via le service
+        this.profilePicture = this.auth.getProfilePicture();
+
         // Refresh notifications every 60 seconds
         this.refreshSub = interval(60000).subscribe(() => this.loadNotifications());
     }

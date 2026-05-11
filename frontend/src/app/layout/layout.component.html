@@ -109,17 +109,16 @@
                 <div class="relative">
                     <button (click)="toggleNotifs()" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors relative">
                         <i class="fa-regular fa-bell"></i>
-                        <span *ngIf="unreadNotifsCount > 0" class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-950 animate-pulse"></span>
-                        <span *ngIf="unreadNotifsCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ unreadNotifsCount }}</span>
+                        <span *ngIf="unreadCount > 0" class="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[18px] h-[18px] bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ unreadCount }}</span>
                     </button>
                     <!-- Panel -->
                     <div *ngIf="showNotifPanel" class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-slide-up z-50">
                         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <h3 class="font-bold text-slate-900 dark:text-white">Notifications</h3>
-                            <span class="text-xs text-indigo-500 hover:text-indigo-600 cursor-pointer font-medium" (click)="clearNotifs()">Tout effacer</span>
+                            <span class="text-xs text-indigo-600 dark:text-indigo-400 cursor-pointer font-medium" (click)="markAllRead()">Tout effacer</span>
                         </div>
                         <div class="max-h-96 overflow-y-auto">
-                            <div *ngFor="let notif of mockNotifications" class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors flex gap-3" [class.opacity-60]="notif.read">
+                            <div *ngFor="let notif of notifications" class="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer" (click)="goToNotif(notif)" [ngClass]="{'bg-slate-50/50 dark:bg-slate-800/30 opacity-70': notif.read}">
                                 <div class="mt-1 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
                                     <i [class]="notif.icon + ' ' + notif.color"></i>
                                 </div>
@@ -130,7 +129,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="px-4 py-2 text-center bg-slate-50 dark:bg-slate-800/30" *ngIf="mockNotifications.length === 0">
+                        <div class="px-4 py-8 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/30" *ngIf="notifications.length === 0">
                             <span class="text-xs font-semibold text-slate-500">Aucune nouvelle notification</span>
                         </div>
                     </div>
@@ -186,19 +185,19 @@
                 <div class="p-2 bg-slate-50 dark:bg-slate-800/50" *ngIf="searchResults.length > 0">
                     <div class="px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Résultats</div>
                     <div class="space-y-1">
-                        <a *ngFor="let item of searchResults" (click)="navigateFromSearch(item.path)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                        <button *ngFor="let item of searchResults" (click)="goToSearchResult(item)" class="flex items-center gap-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors text-left border-b border-slate-100 dark:border-slate-700/50 last:border-0 group">
                             <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                                 <i [class]="item.icon" [style.color]="item.color"></i>
                             </div>
                             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{{ item.label }}</span>
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Global Confirm Modal -->
-        <div *ngIf="confirmReq" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex justify-center items-center p-4 animate-fade-in" (click)="onConfirmNo()">
+        <div *ngIf="confirmReq?.show" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex justify-center items-center p-4 animate-fade-in" (click)="onConfirmNo()">
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-800 animate-scale-in" (click)="$event.stopPropagation()">
                 <div class="p-6">
                     <div class="flex items-center gap-4 mb-4">
@@ -233,7 +232,7 @@
 
         <!-- PAGE CONTENT -->
         <main class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
-            <div class="max-w-6xl mx-auto w-full animate-slide-up">
+            <div class="max-w-6xl mx-auto w-full">
                 <router-outlet></router-outlet>
             </div>
         </main>

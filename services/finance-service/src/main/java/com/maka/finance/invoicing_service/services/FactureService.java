@@ -13,6 +13,7 @@ import com.maka.finance.invoicing_service.metrics.FinanceMetrics;
 import com.maka.finance.invoicing_service.mappers.FactureMapper;
 import com.maka.finance.invoicing_service.repositories.FactureRepository;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -111,7 +112,12 @@ public class FactureService {
     @CacheEvict(value = "factures", allEntries = true)
     public void delete(Long id) {
         Facture facture = findByIdOrThrow(id);
-        factureRepository.delete(facture);
+        try {
+            factureRepository.delete(facture);
+        } catch (DataIntegrityViolationException ex) {
+            throw new BusinessException(
+                    "Suppression impossible : cette facture est liée à des paiements ou des écritures comptables.");
+        }
     }
 
     @CacheEvict(value = "factures", allEntries = true)

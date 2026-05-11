@@ -73,8 +73,10 @@ public class PaiementService {
                     .orElseThrow(() -> new ResourceNotFoundException("Compte bancaire introuvable"));
         }
 
-        if (facture.getStatut() != StatutFacture.ENVOYEE && facture.getStatut() != StatutFacture.PARTIELLEMENT_PAYEE) {
-            throw new BusinessException("Paiement autorisé seulement pour les factures ENVOYEE ou PARTIELLEMENT_PAYEE.");
+        if (facture.getStatut() != StatutFacture.ENVOYEE
+                && facture.getStatut() != StatutFacture.VALIDEE
+                && facture.getStatut() != StatutFacture.PARTIELLEMENT_PAYEE) {
+            throw new BusinessException("Paiement autorisé seulement pour les factures VALIDEE, ENVOYEE ou PARTIELLEMENT_PAYEE.");
         }
 
         Paiement paiement = paiementMapper.toEntity(request, facture);

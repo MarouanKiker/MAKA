@@ -42,36 +42,40 @@
 <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
     <div class="modal" (click)="$event.stopPropagation()">
         <h2>Générer une fiche de paie</h2>
-        <div class="champ">
-            <label>Employé</label>
-            <select [(ngModel)]="genForm.employeId">
-                <option [ngValue]="undefined" disabled>-- Choisir un employé --</option>
-                <option *ngFor="let e of employes" [ngValue]="e.id">{{ e.nom }}</option>
-            </select>
-        </div>
-        <div class="row">
+        
+        <div class="modal-body">
             <div class="champ">
-                <label>Mois</label>
-                <select [(ngModel)]="genForm.mois">
-                    <option [ngValue]="1">Janvier</option>
-                    <option [ngValue]="2">Février</option>
-                    <option [ngValue]="3">Mars</option>
-                    <option [ngValue]="4">Avril</option>
-                    <option [ngValue]="5">Mai</option>
-                    <option [ngValue]="6">Juin</option>
-                    <option [ngValue]="7">Juillet</option>
-                    <option [ngValue]="8">Août</option>
-                    <option [ngValue]="9">Septembre</option>
-                    <option [ngValue]="10">Octobre</option>
-                    <option [ngValue]="11">Novembre</option>
-                    <option [ngValue]="12">Décembre</option>
+                <label>Employé</label>
+                <select [(ngModel)]="genForm.employeId">
+                    <option [ngValue]="undefined" disabled>-- Choisir un employé --</option>
+                    <option *ngFor="let e of employes" [ngValue]="e.id">{{ e.nom }}</option>
                 </select>
             </div>
-            <div class="champ">
-                <label>Année</label>
-                <input type="number" [(ngModel)]="genForm.annee" />
+            <div class="row">
+                <div class="champ">
+                    <label>Mois</label>
+                    <select [(ngModel)]="genForm.mois">
+                        <option [ngValue]="1">Janvier</option>
+                        <option [ngValue]="2">Février</option>
+                        <option [ngValue]="3">Mars</option>
+                        <option [ngValue]="4">Avril</option>
+                        <option [ngValue]="5">Mai</option>
+                        <option [ngValue]="6">Juin</option>
+                        <option [ngValue]="7">Juillet</option>
+                        <option [ngValue]="8">Août</option>
+                        <option [ngValue]="9">Septembre</option>
+                        <option [ngValue]="10">Octobre</option>
+                        <option [ngValue]="11">Novembre</option>
+                        <option [ngValue]="12">Décembre</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Année</label>
+                    <input type="number" [(ngModel)]="genForm.annee" />
+                </div>
             </div>
         </div>
+
         <div class="modal-actions">
             <button class="btn-cancel" (click)="showForm = false">Annuler</button>
             <button class="btn-save" (click)="genererFiche()">Lancer le calcul</button>

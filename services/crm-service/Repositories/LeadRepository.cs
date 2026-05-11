@@ -59,6 +59,16 @@ public class LeadRepository : ILeadRepository
         var lead = await _context.Leads.FindAsync(id);
         if (lead == null) return false;
 
+        // Supprimer les entités liées pour éviter les violations de contrainte FK
+        var opportunites = _context.Opportunites.Where(o => o.LeadId == id);
+        _context.Opportunites.RemoveRange(opportunites);
+
+        var tickets = _context.Tickets.Where(t => t.LeadId == id);
+        _context.Tickets.RemoveRange(tickets);
+
+        var tasks = _context.Tasks.Where(t => t.LeadId == id);
+        _context.Tasks.RemoveRange(tasks);
+
         _context.Leads.Remove(lead);
         await _context.SaveChangesAsync();
         return true;

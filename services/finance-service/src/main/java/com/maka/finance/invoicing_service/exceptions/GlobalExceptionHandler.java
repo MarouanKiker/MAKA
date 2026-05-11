@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolationException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -45,6 +46,16 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toList());
 
         return build(HttpStatus.BAD_REQUEST, "Validation failed", request.getRequestURI(), details);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
+        return build(
+                HttpStatus.CONFLICT,
+                "Opération impossible : cet élément est référencé par d'autres données.",
+                request.getRequestURI(),
+                List.of()
+        );
     }
 
     @ExceptionHandler(Exception.class)

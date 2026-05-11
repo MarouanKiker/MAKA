@@ -35,6 +35,13 @@ public class Paiement {
     @Column(name = "reference_transaction", nullable = false, unique = true, length = 120)
     private String referenceTransaction;
 
+    /**
+     * Colonne de secours pour compatibilité avec le schéma existant (NOT NULL).
+     * Mappe la colonne physique 'mode_paiement' qui cause l'erreur 500.
+     */
+    @Column(name = "mode_paiement", length = 50)
+    private String modePaiementLibelle;
+
     @Column(nullable = false, length = 20)
     private String type; // "CLIENT" ou "FOURNISSEUR"
 
@@ -56,5 +63,12 @@ public class Paiement {
             datePaiement = now;
         }
         this.dateCreation = now;
+
+        // Synchroniser le libellé pour la colonne de secours 'mode_paiement'
+        if (modePaiement != null) {
+            this.modePaiementLibelle = modePaiement.getLibelle();
+        } else if (this.modePaiementLibelle == null) {
+            this.modePaiementLibelle = "N/A";
+        }
     }
 }

@@ -84,6 +84,23 @@ export class AuthService {
         return null;
     }
 
+    // recuperer la photo de profil (base64)
+    getProfilePicture(): string | null {
+        let user = this.getUser();
+        if (user && user.email) {
+            return localStorage.getItem(`profile_picture_${user.email}`);
+        }
+        return null;
+    }
+
+    // enregistrer la photo de profil
+    setProfilePicture(data: string): void {
+        let user = this.getUser();
+        if (user && user.email) {
+            localStorage.setItem(`profile_picture_${user.email}`, data);
+        }
+    }
+
     private mapUser(rawUser: any): User {
         return {
             id: rawUser?.id,

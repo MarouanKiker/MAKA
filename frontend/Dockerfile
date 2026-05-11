@@ -19,6 +19,5 @@ COPY . .
 # exposer le port Angular dev server
 EXPOSE 4200
 
-# lancer le serveur de developpement Angular
-# --host 0.0.0.0 permet d'acceder au serveur depuis l'exterieur du conteneur
-CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200"]
+# Options host/port/poll dans angular.json (evite flags obsoletes type --disable-host-check).
+CMD ["npx", "ng", "serve"]

@@ -89,11 +89,11 @@ $jc-muted: #64748b;
 }
 
 .jc-card {
-    background: var(--card, #fff);
+    background: var(--bg-2);
     border-radius: 14px;
     padding: 1.25rem 1.35rem;
-    border: 1px solid var(--border, #e8eef4);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    border: 1px solid var(--border-0);
+    box-shadow: var(--shadow-card);
 }
 
 .jc-card__value {
@@ -127,12 +127,12 @@ $jc-muted: #64748b;
     margin-bottom: 1.25rem;
     padding: 0.55rem 0.9rem;
     border-radius: 12px;
-    border: 1px solid var(--border, #e2e8f0);
-    background: var(--card, #fff);
+    border: 1px solid var(--border-0);
+    background: var(--bg-2);
 
     &:focus-within {
-        border-color: #94a3b8;
-        box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
     }
 }
 
@@ -155,11 +155,11 @@ $jc-muted: #64748b;
 }
 
 .jc-table-shell {
-    background: var(--card, #fff);
+    background: var(--bg-2);
     border-radius: 14px;
-    border: 1px solid var(--border, #e8eef4);
+    border: 1px solid var(--border-0);
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-card);
 }
 
 .jc-table {
@@ -168,7 +168,8 @@ $jc-muted: #64748b;
     font-size: 0.9rem;
 
     thead {
-        background: #fafbfc;
+        background: var(--bg-3);
+        border-bottom: 1px solid var(--border-0);
     }
 
     th {
@@ -187,7 +188,7 @@ $jc-muted: #64748b;
     }
 
     tbody tr {
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--border-0);
 
         &:last-child {
             border-bottom: none;
