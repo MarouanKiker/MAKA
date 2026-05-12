@@ -100,6 +100,9 @@ export class IntelligenceComponent implements OnInit {
     readonly forecastPreview = signal<{ month: string; actual: number; predicted: number }[]>([
         { month: 'N/A', actual: 0, predicted: 1 }
     ]);
+    readonly forecastAccuracy = signal<number | null>(null);
+    readonly forecastGrowth = signal<number | null>(null);
+    readonly forecastTrend = signal<string>('stable');
 
     readonly maxForecastBar = computed(() => {
         const vals = this.forecastPreview()
@@ -172,12 +175,16 @@ export class IntelligenceComponent implements OnInit {
 
         this.ai.getForecast().subscribe({
             next: (data) => {
+                this.forecastAccuracy.set(data?.precision_modele ?? null);
+                this.forecastGrowth.set(data?.croissance ?? null);
+                this.forecastTrend.set(data?.tendance || 'stable');
+
                 const rows = Array.isArray(data?.donnees) ? data.donnees : [];
                 if (!rows.length) return;
                 this.forecastPreview.set(rows.slice(-6).map((row: any) => ({
                     month: String(row.mois || ''),
                     actual: row.type === 'reel' ? Number(row.valeur || 0) : 0,
-                    predicted: Number(row.valeur || 0)
+                    predicted: row.type !== 'reel' ? Number(row.valeur || 0) : 0
                 })));
             },
             error: () => {
@@ -297,7 +304,7 @@ export class IntelligenceComponent implements OnInit {
             {
                 id: `ai-${Date.now()}`,
                 label,
-                detail: detail.length > 220 ? detail.slice(0, 220) + '...' : detail,
+                detail,
                 timeLabel: 'Maintenant',
                 tone,
                 icon: tone === 'warning' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-brain'

@@ -94,22 +94,22 @@ async def recuperer_contexte_bdd(db: Session, token: str = None):
             resp = await client.get(f"{CRM_BASE}/leads", headers=headers, timeout=3.0)
             if resp.status_code == 200:
                 leads = resp.json()
-                nouveaux = len([l for l in leads if l.get("statut", "").upper() in ("NOUVEAU", "NEW")])
-                qualifies = len([l for l in leads if l.get("statut", "").upper() in ("QUALIFIE", "QUALIFIED", "CONTACTE")])
+                nouveaux = len([l for l in leads if str(l.get("statut", "") or l.get("Statut", "")).upper() in ("NOUVEAU", "NEW", "0")])
+                qualifies = len([l for l in leads if str(l.get("statut", "") or l.get("Statut", "")).upper() in ("QUALIFIE", "QUALIFIED", "CONTACTE", "1")])
                 contexte.append(f"CRM LEADS: {len(leads)} leads — {nouveaux} nouveaux, {qualifies} qualifies.")
 
             # Opportunites
             resp = await client.get(f"{CRM_BASE}/opportunites", headers=headers, timeout=3.0)
             if resp.status_code == 200:
                 opps = resp.json()
-                pipeline = sum(float(o.get("montant", 0) or o.get("valeur", 0) or 0) for o in opps)
+                pipeline = sum(float(o.get("montant", 0) or o.get("Montant", 0) or o.get("valeur", 0) or o.get("Valeur", 0) or 0) for o in opps)
                 contexte.append(f"CRM PIPELINE: {len(opps)} opportunites, valeur pipeline: {round(pipeline, 0)} MAD.")
 
             # Tickets
             resp = await client.get(f"{CRM_BASE}/tickets", headers=headers, timeout=3.0)
             if resp.status_code == 200:
                 tickets = resp.json()
-                ouverts = len([t for t in tickets if str(t.get("statut", "")).upper() in ("OUVERT", "OPEN", "EN_COURS", "NOUVEAU")])
+                ouverts = len([t for t in tickets if str(t.get("statut", "") or t.get("Statut", "")).upper() in ("OUVERT", "OPEN", "EN_COURS", "NOUVEAU", "0", "1")])
                 contexte.append(f"CRM TICKETS: {len(tickets)} tickets dont {ouverts} ouverts.")
 
             # Campagnes
@@ -126,14 +126,16 @@ async def recuperer_contexte_bdd(db: Session, token: str = None):
             resp = await client.get(f"{FINANCE_BASE}/factures", headers=headers, timeout=3.0)
             if resp.status_code == 200:
                 factures = resp.json()
-                impayees = len([f for f in factures if str(f.get("statut", "")).upper() not in ("PAYEE", "PAID", "PAYÉE")])
-                total_du = sum(float(f.get("resteAPayer", 0) or f.get("reste_a_payer", 0) or 0) for f in factures)
-                contexte.append(f"FINANCE: {len(factures)} factures, {impayees} impayees. Total du: {round(total_du, 0)} MAD.")
+                impayees = len([f for f in factures if str(f.get("statut", "") or f.get("Statut", "")).upper() not in ("PAYEE", "PAID", "PAYÉE", "4", "VALIDEE", "VALIDATED", "1")])
+                total_du = sum(float(f.get("resteAPayer", 0) or f.get("ResteAPayer", 0) or f.get("reste_a_payer", 0) or 0) for f in factures)
+                ca_reel = sum(float(f.get("montantTTC", 0) or f.get("MontantTTC", 0) or f.get("montant_ttc", 0) or 0) for f in factures if str(f.get("statut", "") or f.get("Statut", "")).upper() not in ("BROUILLON", "ANNULEE", "0", "5"))
+                contexte.append(f"FINANCE (Donnees reelles factures): {len(factures)} factures emises. CA facturé reel: {round(ca_reel, 2)} MAD. {impayees} factures impayees (Reste a recouvrer: {round(total_du, 2)} MAD).")
 
             resp = await client.get(f"{FINANCE_BASE}/paiements", headers=headers, timeout=3.0)
             if resp.status_code == 200:
                 paiements = resp.json()
-                contexte.append(f"PAIEMENTS: {len(paiements)} paiements enregistres.")
+                total_encaisse = sum(float(p.get("montant", 0) or p.get("Montant", 0) or 0) for p in paiements if str(p.get("statut", "") or p.get("Statut", "")).upper() in ("VALIDE", "VALIDATED", "1", "PAYEE"))
+                contexte.append(f"PAIEMENTS REELS: {len(paiements)} encaissements valides pour un total de {round(total_encaisse, 2)} MAD.")
     except Exception:
         contexte.append("FINANCE: (Service temporairement indisponible)")
 
@@ -152,6 +154,28 @@ async def recuperer_contexte_bdd(db: Session, token: str = None):
                 contexte.append(f"CONGES: {len(conges)} demandes, {en_cours} actuellement en cours.")
     except Exception:
         contexte.append("RH: (Service temporairement indisponible)")
+
+    # --- 5. DONNEES STOCK (Appel stock-service) ---
+    STOCK_BASE = f"{GATEWAY_BASE}/api/stock"
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{STOCK_BASE}/articles", headers=headers, timeout=3.0)
+            if resp.status_code == 200:
+                data = resp.json()
+                # Le JSON retourné par stock-service est encapsulé : {"success": true, "data": {"data": [...], "total": ...}}
+                wrapper = data.get("data") if isinstance(data, dict) and "data" in data else data
+                if isinstance(wrapper, dict):
+                    articles = wrapper.get("data") or wrapper.get("content") or wrapper.get("items") or []
+                elif isinstance(wrapper, list):
+                    articles = wrapper
+                else:
+                    articles = []
+                
+                total_quantite = sum(int(a.get("stockTotal", 0) or a.get("stock_total", 0) or a.get("quantiteStock", 0) or 0) for a in articles)
+                valeur_stock = sum(float(a.get("prixVente", 0) or a.get("prix_vente", 0) or 0) * int(a.get("stockTotal", 0) or a.get("stock_total", 0) or a.get("quantiteStock", 0) or 0) for a in articles)
+                contexte.append(f"STOCK REEL: {len(articles)} articles differents references au catalogue. Quantite totale physique en stock: {total_quantite} unites. Valeur estimable du stock disponible: {round(valeur_stock, 2)} MAD.")
+    except Exception:
+        contexte.append("STOCK: (Service temporairement indisponible)")
 
     return "\n".join(contexte)
 

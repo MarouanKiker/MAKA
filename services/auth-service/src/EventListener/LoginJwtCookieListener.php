@@ -52,7 +52,7 @@ class LoginJwtCookieListener
                 ->withExpires(new \DateTimeImmutable('+1 hour'))
         );
 
-        // On garde le token dans le JSON pour que le frontend puisse le mettre en header (fallback dev)
+        // On garde le token dans le JSON pour que le frontend puisse le mettre en header
         // $response->headers->setCookie(...) est deja fait au dessus pour le mode secure cookie.
         $response->setContent((string) json_encode($data, JSON_UNESCAPED_UNICODE));
     }

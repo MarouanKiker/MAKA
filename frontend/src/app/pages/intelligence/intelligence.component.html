@@ -147,6 +147,13 @@
                 <div class="intel-wide__col">
                     <h2 class="intel-tile__title intel-tile__title--sm">Prévision vs réel</h2>
                     <p class="intel-tile__desc">Aperçu mensuel depuis la base Sales</p>
+                    @if (forecastAccuracy() !== null) {
+                        <div class="intel-forecast-meta" style="margin-top: 0.5rem; display: flex; gap: 1rem; font-size: 0.75rem; font-weight: 600; color: #64748b;">
+                            <span>🎯 Précision IA : <strong style="color: #10b981;">{{ forecastAccuracy() }}%</strong></span>
+                            <span>📈 Croissance modélisée : <strong [style.color]="(forecastGrowth() || 0) >= 0 ? '#10b981' : '#ef4444'">{{ forecastGrowth() }}%</strong></span>
+                            <span style="text-transform: capitalize;">Tendance : <strong>{{ forecastTrend() }}</strong></span>
+                        </div>
+                    }
                     <div class="intel-mini-chart">
                         @for (row of forecastPreview(); track row.month) {
                             <div class="intel-mini-chart__cell">
@@ -158,11 +165,13 @@
                                             title="Réel {{ row.actual }}"
                                         ></div>
                                     }
-                                    <div
-                                        class="intel-mini-chart__bar intel-mini-chart__bar--pred"
-                                        [style.height.%]="barHeight(row.predicted)"
-                                        title="Prévu {{ row.predicted }}"
-                                    ></div>
+                                    @if (row.predicted > 0) {
+                                        <div
+                                            class="intel-mini-chart__bar intel-mini-chart__bar--pred"
+                                            [style.height.%]="barHeight(row.predicted)"
+                                            title="Prévu {{ row.predicted }}"
+                                        ></div>
+                                    }
                                 </div>
                                 <span class="intel-mini-chart__mo">{{ row.month }}</span>
                             </div>

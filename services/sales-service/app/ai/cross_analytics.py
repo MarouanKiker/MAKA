@@ -98,25 +98,37 @@ async def generer_cross_analytics(db: Session, token: str = None) -> dict:
         employes = employes_data or []
         conges = conges_data or []
 
+        # Stock
+        STOCK_BASE = f"{GATEWAY_BASE}/api/stock"
+        stock_data = await _fetch(client, f"{STOCK_BASE}/articles", headers)
+        stock_ok = stock_data is not None
+        wrapper = stock_data.get("data") if isinstance(stock_data, dict) and "data" in stock_data else stock_data
+        if isinstance(wrapper, dict):
+            articles_stock = wrapper.get("data") or wrapper.get("content") or wrapper.get("items") or []
+        elif isinstance(wrapper, list):
+            articles_stock = wrapper
+        else:
+            articles_stock = []
+
     # --- 3. Calculer les metriques cross-modules ---
 
     # CRM
     nb_leads = len(leads)
-    leads_nouveaux = len([l for l in leads if l.get("statut", "").upper() in ("NOUVEAU", "NEW")])
-    leads_qualifies = len([l for l in leads if l.get("statut", "").upper() in ("QUALIFIE", "QUALIFIED", "CONTACTE")])
-    pipeline_total = sum(float(o.get("montant", 0) or o.get("valeur", 0) or 0) for o in opportunites)
-    opps_gagnees = len([o for o in opportunites if str(o.get("statut", "")).upper() in ("GAGNEE", "WON", "FERMEE_GAGNEE")])
-    tasks_en_retard = len([t for t in tasks if str(t.get("statut", "")).upper() in ("EN_RETARD", "OVERDUE")])
-    tickets_ouverts = len([t for t in tickets if str(t.get("statut", "")).upper() in ("OUVERT", "OPEN", "EN_COURS", "NOUVEAU")])
+    leads_nouveaux = len([l for l in leads if str(l.get("statut", "") or l.get("Statut", "")).upper() in ("NOUVEAU", "NEW", "0")])
+    leads_qualifies = len([l for l in leads if str(l.get("statut", "") or l.get("Statut", "")).upper() in ("QUALIFIE", "QUALIFIED", "CONTACTE", "1")])
+    pipeline_total = sum(float(o.get("montant", 0) or o.get("Montant", 0) or o.get("valeur", 0) or o.get("Valeur", 0) or 0) for o in opportunites)
+    opps_gagnees = len([o for o in opportunites if str(o.get("statut", "") or o.get("Statut", "")).upper() in ("GAGNEE", "WON", "FERMEE_GAGNEE", "2", "GAGNÉE")])
+    tasks_en_retard = len([t for t in tasks if str(t.get("statut", "") or t.get("Statut", "")).upper() in ("EN_RETARD", "OVERDUE")])
+    tickets_ouverts = len([t for t in tickets if str(t.get("statut", "") or t.get("Statut", "")).upper() in ("OUVERT", "OPEN", "EN_COURS", "NOUVEAU")])
 
     # Finance
-    factures_impayees = len([f for f in factures if str(f.get("statut", "")).upper() not in ("PAYEE", "PAID", "PAYÉE")])
-    montant_impaye = sum(float(f.get("resteAPayer", 0) or f.get("reste_a_payer", 0) or 0) for f in factures)
+    factures_impayees = len([f for f in factures if str(f.get("statut", "") or f.get("Statut", "")).upper() not in ("PAYEE", "PAID", "PAYÉE", "4", "VALIDEE", "VALIDATED", "1")])
+    montant_impaye = sum(float(f.get("resteAPayer", 0) or f.get("ResteAPayer", 0) or f.get("reste_a_payer", 0) or 0) for f in factures)
     nb_factures = len(factures)
 
     # HR
     nb_employes = len(employes)
-    conges_en_cours = len([c for c in conges if str(c.get("statut", "")).upper() in ("APPROUVE", "APPROVED", "EN_COURS", "ACCEPTE")])
+    conges_en_cours = len([c for c in conges if str(c.get("statut", "") or c.get("Statut", "")).upper() in ("APPROUVE", "APPROVED", "EN_COURS", "ACCEPTE")])
 
     # --- 4. Calculer le Score de Sante (0-100) ---
     score = 50  # base
@@ -155,6 +167,18 @@ async def generer_cross_analytics(db: Session, token: str = None) -> dict:
         score -= 10
     else:
         score -= 3
+
+    # --- RECOMPENSES DYNAMIQUES DES ACTIONS REELLES UTILISATEUR ---
+    # Récompenser fortement chaque opportunité gagnée
+    if opps_gagnees > 0:
+        score += opps_gagnees * 15
+    # Récompenser les leads qualifiés en cours
+    if leads_qualifies > 0:
+        score += leads_qualifies * 5
+    # Récompenser les factures payées ou validées
+    factures_payees = len([f for f in factures if str(f.get("statut", "") or f.get("Statut", "")).upper() in ("PAYEE", "PAID", "PAYÉE", "VALIDEE", "VALIDATED", "1", "4")])
+    if factures_payees > 0:
+        score += factures_payees * 10
 
     # Clamp entre 0 et 100
     score = max(0, min(100, score))
@@ -298,12 +322,17 @@ async def generer_cross_analytics(db: Session, token: str = None) -> dict:
             # RH
             "total_employes": nb_employes,
             "conges_en_cours": conges_en_cours,
+            # Stock
+            "total_articles_stock": len(articles_stock),
+            "quantite_stock_totale": sum(int(a.get("stockTotal", 0) or a.get("stock_total", 0) or a.get("quantiteStock", 0) or 0) for a in articles_stock),
+            "valeur_stock": round(sum(float(a.get("prixVente", 0) or a.get("prix_vente", 0) or 0) * int(a.get("stockTotal", 0) or a.get("stock_total", 0) or a.get("quantiteStock", 0) or 0) for a in articles_stock), 2),
         },
         "modules_status": {
             "ventes": "ok",
             "crm": "ok" if crm_ok else "auth_required_or_down",
             "finance": "ok" if finance_ok else "auth_required_or_down",
             "rh": "ok" if rh_ok else "auth_required_or_down",
+            "stock": "ok" if stock_ok else "auth_required_or_down",
         },
         "timestamp": datetime.utcnow().isoformat(),
     }

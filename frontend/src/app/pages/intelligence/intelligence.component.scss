@@ -575,6 +575,8 @@
     font-size: 0.82rem;
     line-height: 1.45;
     color: rgb(51 65 85);
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 :host-context(.dark) .intel-pulse__detail {
