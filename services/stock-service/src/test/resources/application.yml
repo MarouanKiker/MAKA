@@ -1,0 +1,25 @@
+# =========================================================
+# Configuration minimale pour les tests unitaires UNIQUEMENT
+# Spring NE démarre PAS — ce fichier évite les erreurs de
+# chargement de propriétés manquantes si @SpringBootTest est ajouté.
+# =========================================================
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: never             # Ne pas exécuter schema.sql pendant les tests
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: ""
+
+logging:
+  level:
+    root: WARN

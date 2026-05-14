@@ -1,0 +1,98 @@
+# =============================================================================
+# CI/CD Pipeline — MAKA ERP : stock-service
+#
+# Déclenchement : push ou pull_request sur les branches main et dev
+# Job : Compilation Maven + Tests unitaires JUnit 5
+# Environnement : ubuntu-latest avec JDK 17 (correspond au pom.xml)
+#
+# IMPORTANT : Les tests utilisent Mockito (sans base de données).
+# Le pipeline n'a donc besoin d'AUCUN service externe (pas de PostgreSQL, pas de Redis).
+# =============================================================================
+
+name: CI — MAKA Stock Service
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Déclencheurs : sur chaque push ou Pull Request vers main ou dev
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      # Optimisation : le pipeline ne se lance que si des fichiers du stock-service changent
+      - 'services/stock-service/**'
+      - '.github/workflows/ci-maka.yml'
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'services/stock-service/**'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Jobs
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ---------------------------------------------------------------------------
+  # Job principal : build + tests du stock-service
+  # ---------------------------------------------------------------------------
+  build-stock-service:
+    name: "Build & Test — stock-service (Java 17)"
+    runs-on: ubuntu-latest  # OS gratuit fourni par GitHub Actions
+
+    steps:
+
+      # Étape 1 : Récupérer le code source du dépôt
+      - name: "📥 Checkout du code source"
+        uses: actions/checkout@v4
+
+      # Étape 2 : Installer le JDK 17 (correspond à <java.version>17</java.version> dans pom.xml)
+      - name: "☕ Installation du JDK 17 (Temurin)"
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'   # Distribution Eclipse Temurin (anciennement AdoptOpenJDK)
+          cache: 'maven'            # Cache du dépôt Maven local (.m2) pour accélérer les builds
+
+      # Étape 3 : Compiler et lancer les tests unitaires
+      # mvn clean verify :
+      #   - clean    : supprime le dossier target/ (build propre)
+      #   - verify   : compile + teste + vérifie (phases Maven : compile, test, package, verify)
+      # -pl services/stock-service : cible UNIQUEMENT le module stock-service (monorepo)
+      # -am : construit aussi les dépendances parentes si nécessaire
+      - name: "🔨 Compilation et exécution des tests unitaires"
+        run: mvn clean verify -pl services/stock-service -am
+        env:
+          # Variables d'environnement vides pour éviter les erreurs de démarrage Spring
+          # Les tests unitaires n'utilisent PAS ces variables (pas de contexte Spring)
+          STOCK_DB_HOST: "localhost"
+          STOCK_DB_PORT: "5432"
+          STOCK_DB_NAME: "stock_db"
+          STOCK_DB_USER: "stock_user"
+          STOCK_DB_PASSWORD: "stock_pass"
+          JWT_PUBLIC_KEY_PATH: "/dev/null"  # Chemin fictif (non utilisé dans les tests unitaires)
+
+      # Étape 4 : Publier le rapport de tests JUnit en cas d'échec (lisible dans l'UI GitHub)
+      - name: "📊 Publication du rapport de tests"
+        uses: actions/upload-artifact@v4
+        if: always()   # Publie même si les tests échouent (pour analyser les erreurs)
+        with:
+          name: test-results-stock-service
+          path: services/stock-service/target/surefire-reports/
+          retention-days: 7   # Conserve les rapports pendant 7 jours
+
+      # Étape 5 : Afficher un résumé dans l'interface GitHub Actions
+      - name: "✅ Résumé du build"
+        if: success()
+        run: |
+          echo "## ✅ Build réussi !" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Détail | Valeur |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | stock-service |" >> $GITHUB_STEP_SUMMARY
+          echo "| Java | 17 (Temurin) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Framework | Spring Boot 3.2.5 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | JUnit 5 + Mockito |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branche | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
