@@ -15,14 +15,18 @@ name: CI — MAKA Stock Service
 # Déclencheurs : sur chaque push ou Pull Request vers main ou dev
 # ─────────────────────────────────────────────────────────────────────────────
 on:
+  # Déclenchement manuel depuis l'onglet Actions sur GitHub (bouton "Run workflow")
+  workflow_dispatch:
+
   push:
     branches:
       - main
       - dev
+      - 'feature/unit-tests-stock-service'   # ← branche des tests
     paths:
-      # Optimisation : le pipeline ne se lance que si des fichiers du stock-service changent
       - 'services/stock-service/**'
       - '.github/workflows/ci-maka.yml'
+
   pull_request:
     branches:
       - main
