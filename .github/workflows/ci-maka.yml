@@ -61,31 +61,28 @@ jobs:
           cache: 'maven'            # Cache du dépôt Maven local (.m2) pour accélérer les builds
 
       # Étape 3 : Compiler et lancer les tests unitaires
-      # mvn clean verify :
-      #   - clean    : supprime le dossier target/ (build propre)
-      #   - verify   : compile + teste + vérifie (phases Maven : compile, test, package, verify)
-      # -pl services/stock-service : cible UNIQUEMENT le module stock-service (monorepo)
-      # -am : construit aussi les dépendances parentes si nécessaire
+      # On navigue directement dans le dossier du service (pas de pom.xml parent à la racine)
+      # mvn clean verify : compile + teste + vérifie (sans connexion BD grâce aux mocks Mockito)
       - name: "🔨 Compilation et exécution des tests unitaires"
-        run: mvn clean verify -pl services/stock-service -am
+        working-directory: services/stock-service
+        run: mvn clean verify --no-transfer-progress
         env:
-          # Variables d'environnement vides pour éviter les erreurs de démarrage Spring
-          # Les tests unitaires n'utilisent PAS ces variables (pas de contexte Spring)
+          # Variables fictives — non utilisées par les tests unitaires (Mockito = pas de BD)
           STOCK_DB_HOST: "localhost"
           STOCK_DB_PORT: "5432"
           STOCK_DB_NAME: "stock_db"
           STOCK_DB_USER: "stock_user"
           STOCK_DB_PASSWORD: "stock_pass"
-          JWT_PUBLIC_KEY_PATH: "/dev/null"  # Chemin fictif (non utilisé dans les tests unitaires)
+          JWT_PUBLIC_KEY_PATH: "/dev/null"
 
-      # Étape 4 : Publier le rapport de tests JUnit en cas d'échec (lisible dans l'UI GitHub)
+      # Étape 4 : Publier le rapport de tests (visible dans l'onglet Actions sur GitHub)
       - name: "📊 Publication du rapport de tests"
         uses: actions/upload-artifact@v4
-        if: always()   # Publie même si les tests échouent (pour analyser les erreurs)
+        if: always()
         with:
           name: test-results-stock-service
           path: services/stock-service/target/surefire-reports/
-          retention-days: 7   # Conserve les rapports pendant 7 jours
+          retention-days: 7
 
       # Étape 5 : Afficher un résumé dans l'interface GitHub Actions
       - name: "✅ Résumé du build"
